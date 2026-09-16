@@ -12,6 +12,12 @@ from docx import Document
 from openpyxl import load_workbook
 from pptx import Presentation
 
+from deployment_config import (
+    DEFAULT_CONFIG_PATH,
+    get_config_value,
+    load_deployment_config,
+    resolve_deployment_path,
+)
 from generate_corpus import (
     FRACTION_PERCENT_FIELDS,
     PERCENTAGE_POINT_FIELDS,
@@ -27,15 +33,12 @@ from generate_corpus import (
 )
 
 
-FORMAT_ORDER = ("docx", "pptx", "xlsx")
-
-
-def expected_formats(document_count: int) -> Counter[str]:
-    base, remainder = divmod(document_count, len(FORMAT_ORDER))
+def expected_formats(document_count: int, format_order: tuple[str, ...]) -> Counter[str]:
+    base, remainder = divmod(document_count, len(format_order))
     return Counter(
         {
             extension: base + (1 if index < remainder else 0)
-            for index, extension in enumerate(FORMAT_ORDER)
+            for index, extension in enumerate(format_order)
         }
     )
 
@@ -224,34 +227,46 @@ def validate_xlsx(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate the generated Office corpus.")
-    parser.add_argument("--corpus", type=Path, default=Path("corpus"))
-    parser.add_argument("--expected-count", type=int, default=100)
-    parser.add_argument("--profile", type=Path, default=Path("data/semiconductor_profile.json"))
+    parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    parser.add_argument("--corpus", type=Path)
+    parser.add_argument("--expected-count", type=int)
+    parser.add_argument("--profile", type=Path)
     args = parser.parse_args()
-    if args.expected_count < 1:
-        parser.error("--expected-count must be at least 1")
-    manifest = json.loads((args.corpus / "manifest.json").read_text(encoding="utf-8"))
-    profile = json.loads(args.profile.read_text(encoding="utf-8"))
-    grouped_rows = group_rows(profile)
-    assert len(manifest) == args.expected_count, (
-        f"Expected {args.expected_count} manifest entries, found {len(manifest)}"
+    config, _ = load_deployment_config(args.config)
+    corpus_path = args.corpus or resolve_deployment_path(
+        get_config_value(config, "paths", "corpus")
     )
-    assert len({item["artifact_id"] for item in manifest}) == args.expected_count, "Artifact IDs are not unique"
-    assert len({item["relative_path"] for item in manifest}) == args.expected_count, "Paths are not unique"
-    expected = expected_formats(args.expected_count)
+    profile_path = args.profile or resolve_deployment_path(
+        get_config_value(config, "paths", "profile")
+    )
+    expected_count = args.expected_count or int(
+        get_config_value(config, "corpus", "expectedDocuments")
+    )
+    format_order = tuple(get_config_value(config, "corpus", "formats"))
+    if expected_count < 1:
+        parser.error("--expected-count must be at least 1")
+    manifest = json.loads((corpus_path / "manifest.json").read_text(encoding="utf-8"))
+    profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    grouped_rows = group_rows(profile)
+    assert len(manifest) == expected_count, (
+        f"Expected {expected_count} manifest entries, found {len(manifest)}"
+    )
+    assert len({item["artifact_id"] for item in manifest}) == expected_count, "Artifact IDs are not unique"
+    assert len({item["relative_path"] for item in manifest}) == expected_count, "Paths are not unique"
+    expected = expected_formats(expected_count, format_order)
     assert Counter(item["extension"] for item in manifest) == expected
 
     files = [
         path
-        for path in args.corpus.rglob("*")
+        for path in corpus_path.rglob("*")
         if path.is_file() and path.suffix.lower() in {".docx", ".pptx", ".xlsx"}
     ]
-    assert len(files) == args.expected_count, (
-        f"Expected {args.expected_count} Office files, found {len(files)}"
+    assert len(files) == expected_count, (
+        f"Expected {expected_count} Office files, found {len(files)}"
     )
     counts: Counter[str] = Counter()
     for path in files:
-        relative = path.relative_to(args.corpus).as_posix()
+        relative = path.relative_to(corpus_path).as_posix()
         item = next(entry for entry in manifest if entry["relative_path"] == relative)
         aggregate = aggregate_for_table(profile, item["source_table"])
         columns = columns_for_table(profile, item["source_table"])

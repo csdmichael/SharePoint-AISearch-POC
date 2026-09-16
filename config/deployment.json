@@ -1,0 +1,177 @@
+{
+  "azure": {
+    "tenantId": "12a4b86b-e64c-43f9-af05-d9130a72dfd2",
+    "subscriptionId": "cf824570-a8ba-497a-a184-0a52f1830aa9",
+    "resourceGroup": "m365-myaacoub",
+    "location": "westus"
+  },
+  "sharePoint": {
+    "siteDisplayName": "Semiconductor Knowledge Hub",
+    "mailNickname": "semiconductorknowledgehub",
+    "productionLibraryName": "Semiconductor Knowledge",
+    "bootstrapLibraryName": "Semiconductor Knowledge Bootstrap",
+    "provisioningApplicationName": "Semiconductor SharePoint Provisioner"
+  },
+  "search": {
+    "serviceName": "semiconductor-search-myaacoub",
+    "sku": "basic",
+    "partitionCount": 1,
+    "replicaCount": 1,
+    "resourceNamePrefix": "semiconductor",
+    "bootstrapResourceNamePrefix": "semiconductor-bootstrap",
+    "indexNameSuffix": "knowledge-chunks",
+    "dataSourceNameSuffix": "sharepoint-datasource",
+    "skillsetNameSuffix": "chunking-skillset",
+    "indexerNameSuffix": "sharepoint-indexer",
+    "indexAliasName": "semiconductor-knowledge",
+    "feedbackIndexName": "semiconductor-search-feedback",
+    "ingestionApplicationName": "Semiconductor SharePoint Search Indexer",
+    "semanticConfigurationName": "semiconductor-semantic-config",
+    "vectorAlgorithmName": "semiconductor-hnsw",
+    "vectorProfileName": "semiconductor-vector-profile",
+    "vectorizerName": "semiconductor-openai-vectorizer",
+    "embeddingDeployment": "text-embedding-3-small",
+    "embeddingModel": "text-embedding-3-small",
+    "embeddingDimensions": 1536,
+    "chunkUnit": "azureOpenAITokens",
+    "tokenizer": "cl100k_base",
+    "corpusLanguage": "en",
+    "vectorAlgorithmKind": "hnsw",
+    "vectorMetric": "cosine",
+    "hnswM": 4,
+    "hnswEfConstruction": 400,
+    "hnswEfSearch": 500,
+    "chunkSize": 512,
+    "chunkOverlap": 128,
+    "scheduleInterval": "PT1H",
+    "indexerBatchSize": 10
+  },
+  "foundry": {
+    "embeddingAccountName": "foundry-myaacoub-private",
+    "profileSource": {
+      "accountName": "foundry-myaacoub-private",
+      "projectName": "sales-poc",
+      "agentName": "semiconductor-sales",
+      "promptPath": "config/profile-agent-prompt.md"
+    },
+    "knowledgeAgent": {
+      "accountName": "foundry-myaacoub",
+      "projectName": "proj-default",
+      "agentName": "sharepoint-agent",
+      "agentModelDeployment": "gpt-6-astra",
+      "agentReasoningEffort": "low",
+      "knowledgeBaseModelDeployment": "gpt-5.4-mini",
+      "knowledgeSourceName": "semiconductor-sharepoint-knowledge-source",
+      "knowledgeBaseName": "semiconductor-sharepoint-knowledge-base",
+      "connectionName": "semiconductor-sharepoint-knowledge",
+      "retrievalReasoningEffort": "low",
+      "outputMode": "answerSynthesis",
+      "knowledgeSourceDescription": "Indexed SharePoint semiconductor documents with retrievable citations and Databricks lineage.",
+      "knowledgeBaseDescription": "Foundry IQ knowledge base for the SharePoint semiconductor document corpus.",
+      "retrievalInstructions": "Search the semiconductor document chunks. Prefer passages whose category, artifact ID, and source table match the question. Preserve the SharePoint URL and Databricks lineage fields in source references.",
+      "answerInstructions": "Synthesize a concise answer from retrieved passages and include source references. Distinguish source facts from recommendations and state when the indexed documents do not answer the question.",
+      "instructionsPath": "config/foundry-agent-instructions.md",
+      "smokeTestQuery": "Which Databricks source table contains wafer-yield data, and what does the indexed corpus say about AI accelerator wafer-yield risk? Cite the SharePoint sources."
+    }
+  },
+  "databricks": {
+    "catalog": "caldova_dbx_westus2",
+    "schema": "arrow_semiconductor"
+  },
+  "corpus": {
+    "author": "Michael Yaacoub @ Microsoft",
+    "sourceSystem": "Azure Databricks via Microsoft Foundry Databricks MCP",
+    "expectedDocuments": 100,
+    "bootstrapDocuments": 6,
+    "categories": [
+      "Quality",
+      "Manufacturing",
+      "Inventory",
+      "Sales",
+      "Supply Chain",
+      "Yield"
+    ],
+    "perspectives": [
+      "Executive Brief",
+      "Operational Review",
+      "Trend Analysis",
+      "Risk Snapshot",
+      "Performance Deep Dive",
+      "Planning Workbook",
+      "Quality Review",
+      "Regional Analysis",
+      "Management Summary"
+    ],
+    "tableConfiguration": {
+      "defect_analysis": {
+        "category": "Quality",
+        "displayName": "Defect Analysis",
+        "accent": "C0392B"
+      },
+      "fab_production": {
+        "category": "Manufacturing",
+        "displayName": "Fab Production",
+        "accent": "1565C0"
+      },
+      "inventory": {
+        "category": "Inventory",
+        "displayName": "Inventory Position",
+        "accent": "2E7D32"
+      },
+      "product_sales": {
+        "category": "Sales",
+        "displayName": "Product Sales",
+        "accent": "B35A00"
+      },
+      "supply_chain": {
+        "category": "Supply Chain",
+        "displayName": "Supply Chain",
+        "accent": "6C3483"
+      },
+      "wafer_yield": {
+        "category": "Yield",
+        "displayName": "Wafer Yield",
+        "accent": "00796B"
+      }
+    },
+    "formats": [
+      "docx",
+      "pptx",
+      "xlsx"
+    ]
+  },
+  "evaluation": {
+    "top": 5,
+    "minimumSourceHitAt3": 0.9,
+    "bootstrapMinimumSourceHitAt3": 0.8,
+    "waitMinutes": 30,
+    "validationQuery": "AI accelerator wafer yield defects production risk"
+  },
+  "apiVersions": {
+    "armAuthorization": "2022-04-01",
+    "foundryAccount": "2025-06-01",
+    "foundryAgent": "v1",
+    "foundryConnection": "2025-10-01-preview",
+    "graph": "v1.0",
+    "searchManagement": "2025-05-01",
+    "searchService": "2026-08-01-preview"
+  },
+  "paths": {
+    "pythonExecutable": ".venv/Scripts/python.exe",
+    "profile": "data/semiconductor_profile.json",
+    "corpus": "corpus",
+    "bootstrapCorpus": "corpus-bootstrap",
+    "manifest": "corpus/manifest.json",
+    "bootstrapManifest": "corpus-bootstrap/manifest.json",
+    "sharePointState": ".state/sharepoint.json",
+    "bootstrapSharePointState": ".state/sharepoint-bootstrap.json",
+    "searchState": ".state/search.json",
+    "bootstrapSearchState": ".state/search-bootstrap.json",
+    "candidateSearchState": ".state/search-candidate.json",
+    "searchEvaluationCases": "config/search-evaluation.cases",
+    "searchEvaluationReport": ".state/search-evaluation.json",
+    "bootstrapSearchEvaluationReport": ".state/search-evaluation-bootstrap.json",
+    "finalSearchEvaluationReport": ".state/search-evaluation-final.json",
+    "foundryState": ".state/foundry-agent.json"
+  }
+}

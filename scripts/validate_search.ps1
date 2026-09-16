@@ -1,15 +1,39 @@
 [CmdletBinding()]
 param(
-    [string]$ResourceGroup = 'm365-myaacoub',
-    [string]$SearchStatePath = (Join-Path $PSScriptRoot '..\.state\search.json'),
-    [string]$SharePointStatePath = (Join-Path $PSScriptRoot '..\.state\sharepoint.json'),
-    [string]$ManifestPath = (Join-Path $PSScriptRoot '..\corpus\manifest.json'),
-    [int]$ExpectedDocuments = 100,
-    [int]$WaitMinutes = 30
+    [string]$ConfigPath = (Join-Path $PSScriptRoot '..\config\deployment.json'),
+    [string]$ResourceGroup,
+    [string]$SearchStatePath,
+    [string]$SharePointStatePath,
+    [string]$ManifestPath,
+    [int]$ExpectedDocuments,
+    [int]$WaitMinutes
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'deployment_config.ps1')
+$repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$config = Import-DeploymentConfig -Path $ConfigPath
+function Get-ConfigValue {
+    param([Parameter(Mandatory)][string]$Path)
+    return Get-DeploymentConfigValue -Config $config -Path $Path
+}
+if (-not $PSBoundParameters.ContainsKey('ResourceGroup')) { $ResourceGroup = Get-ConfigValue 'azure.resourceGroup' }
+foreach ($binding in @(
+    @{ Name = 'SearchStatePath'; Config = 'paths.searchState' },
+    @{ Name = 'SharePointStatePath'; Config = 'paths.sharePointState' },
+    @{ Name = 'ManifestPath'; Config = 'paths.manifest' }
+)) {
+    if (-not $PSBoundParameters.ContainsKey($binding.Name)) {
+        Set-Variable -Name $binding.Name -Value (Resolve-DeploymentPath -RepositoryRoot $repositoryRoot -Path (Get-ConfigValue $binding.Config))
+    }
+}
+if (-not $PSBoundParameters.ContainsKey('ExpectedDocuments')) { $ExpectedDocuments = Get-ConfigValue 'corpus.expectedDocuments' }
+if (-not $PSBoundParameters.ContainsKey('WaitMinutes')) { $WaitMinutes = Get-ConfigValue 'evaluation.waitMinutes' }
+$SearchManagementApiVersion = Get-ConfigValue 'apiVersions.searchManagement'
+$SemanticConfigurationName = Get-ConfigValue 'search.semanticConfigurationName'
+$ValidationQuery = Get-ConfigValue 'evaluation.validationQuery'
+$Top = Get-ConfigValue 'evaluation.top'
 
 if (-not (Test-Path $SearchStatePath)) { throw "Search state not found at $SearchStatePath." }
 if (-not (Test-Path $SharePointStatePath)) { throw "SharePoint state not found at $SharePointStatePath." }
@@ -25,7 +49,7 @@ $armToken = if ($tokenResult.Token -is [Security.SecureString]) {
     [Net.NetworkCredential]::new('', $tokenResult.Token).Password
 } else { [string]$tokenResult.Token }
 $searchResourcePath = "/subscriptions/$($state.subscriptionId)/resourceGroups/$ResourceGroup/providers/Microsoft.Search/searchServices/$($state.searchServiceName)"
-$keysUri = "https://management.azure.com$searchResourcePath/listAdminKeys?api-version=2025-05-01"
+$keysUri = "https://management.azure.com$searchResourcePath/listAdminKeys?api-version=$SearchManagementApiVersion"
 $keys = Invoke-RestMethod -Method POST -Headers @{ Authorization = "Bearer $armToken" } -Uri $keysUri
 $adminKey = $keys.primaryKey
 if (-not $adminKey) { throw 'Could not obtain an ephemeral Search admin key.' }
@@ -82,18 +106,18 @@ $missingLineageQuery = @{
 $missingLineage = Invoke-RestMethod -Method POST -Headers $headers -Uri "$baseUri/indexes/$($state.indexName)/docs/search?api-version=$apiVersion" -Body ($missingLineageQuery | ConvertTo-Json -Depth 10)
 
 $query = @{
-    search = 'AI accelerator wafer yield defects production risk'
+    search = $ValidationQuery
     count = $true
-    top = 5
+    top = $Top
     queryType = 'semantic'
-    semanticConfiguration = 'semiconductor-semantic-config'
+    semanticConfiguration = $SemanticConfigurationName
     select = 'parent_id,title,chunk,document_url,file_extension,artifact_id,category,source_table'
     vectorQueries = @(
         @{
             kind = 'text'
-            text = 'AI accelerator wafer yield defects production risk'
+            text = $ValidationQuery
             fields = 'chunk_vector'
-            k = 5
+            k = $Top
         }
     )
 }
@@ -143,9 +167,10 @@ if ($parentCount -ne $ExpectedDocuments) {
 if ($artifactCount -ne $ExpectedDocuments) {
     throw "Expected $ExpectedDocuments unique artifact IDs, found $artifactCount."
 }
-$formatDifference = @(Compare-Object @('.docx', '.pptx', '.xlsx') @($formats | Sort-Object))
+$expectedFormats = @(Get-ConfigValue 'corpus.formats' | ForEach-Object { ".$($_)" } | Sort-Object)
+$formatDifference = @(Compare-Object $expectedFormats @($formats | Sort-Object))
 if ($formatDifference.Count) { throw "Indexed formats are incomplete: $($formats -join ', ')." }
-$expectedCategories = @('Inventory', 'Manufacturing', 'Quality', 'Sales', 'Supply Chain', 'Yield')
+$expectedCategories = @(Get-ConfigValue 'corpus.categories' | Sort-Object)
 $categoryDifference = @(Compare-Object $expectedCategories @($categories | Sort-Object))
 if ($categoryDifference.Count) { throw "Indexed categories are incomplete: $($categories -join ', ')." }
 if ($missingLineage.'@odata.count' -ne 0) {

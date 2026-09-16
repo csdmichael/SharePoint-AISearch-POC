@@ -1,13 +1,35 @@
 [CmdletBinding()]
 param(
-    [string]$AliasName = 'semiconductor-knowledge',
-    [string]$CandidateSearchStatePath = (Join-Path $PSScriptRoot '..\.state\search-candidate.json'),
-    [string]$CurrentSearchStatePath = (Join-Path $PSScriptRoot '..\.state\search.json'),
-    [string]$SharePointStatePath = (Join-Path $PSScriptRoot '..\.state\sharepoint.json')
+    [string]$ConfigPath = (Join-Path $PSScriptRoot '..\config\deployment.json'),
+    [string]$AliasName,
+    [string]$CandidateSearchStatePath,
+    [string]$CurrentSearchStatePath,
+    [string]$SharePointStatePath
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'deployment_config.ps1')
+$repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$config = Import-DeploymentConfig -Path $ConfigPath
+function Get-ConfigValue {
+    param([Parameter(Mandatory)][string]$Path)
+    return Get-DeploymentConfigValue -Config $config -Path $Path
+}
+if (-not $PSBoundParameters.ContainsKey('AliasName')) { $AliasName = Get-ConfigValue 'search.indexAliasName' }
+foreach ($binding in @(
+    @{ Name = 'CandidateSearchStatePath'; Config = 'paths.candidateSearchState' },
+    @{ Name = 'CurrentSearchStatePath'; Config = 'paths.searchState' },
+    @{ Name = 'SharePointStatePath'; Config = 'paths.sharePointState' }
+)) {
+    if (-not $PSBoundParameters.ContainsKey($binding.Name)) {
+        Set-Variable -Name $binding.Name -Value (Resolve-DeploymentPath -RepositoryRoot $repositoryRoot -Path (Get-ConfigValue $binding.Config))
+    }
+}
+$SearchManagementApiVersion = Get-ConfigValue 'apiVersions.searchManagement'
+$ManagedPrefix = Get-ConfigValue 'search.resourceNamePrefix'
+$IndexerNameSuffix = Get-ConfigValue 'search.indexerNameSuffix'
+$IndexNameSuffix = Get-ConfigValue 'search.indexNameSuffix'
 
 foreach ($requiredPath in @($CandidateSearchStatePath, $SharePointStatePath)) {
     if (-not (Test-Path $requiredPath)) { throw "Required state file not found: $requiredPath" }
@@ -19,7 +41,7 @@ $armToken = if ($tokenResult.Token -is [Security.SecureString]) {
     [Net.NetworkCredential]::new('', $tokenResult.Token).Password
 } else { [string]$tokenResult.Token }
 $resourcePath = "/subscriptions/$($candidate.subscriptionId)/resourceGroups/$($candidate.resourceGroup)/providers/Microsoft.Search/searchServices/$($candidate.searchServiceName)"
-$keys = Invoke-RestMethod -Method POST -Headers @{ Authorization = "Bearer $armToken" } -Uri "https://management.azure.com$resourcePath/listAdminKeys?api-version=2025-05-01"
+$keys = Invoke-RestMethod -Method POST -Headers @{ Authorization = "Bearer $armToken" } -Uri "https://management.azure.com$resourcePath/listAdminKeys?api-version=$SearchManagementApiVersion"
 $headers = @{ 'api-key' = $keys.primaryKey; 'Content-Type' = 'application/json' }
 $aliasUri = "$($candidate.searchEndpoint)/aliases/$AliasName`?api-version=$($candidate.apiVersion)"
 $body = @{ name = $AliasName; indexes = @($candidate.indexName) }
@@ -32,8 +54,8 @@ if (@($alias.indexes).Count -ne 1 -or $alias.indexes[0] -ne $candidate.indexName
 $indexers = Invoke-RestMethod -Method GET -Headers $headers -Uri "$($candidate.searchEndpoint)/indexers?api-version=$($candidate.apiVersion)"
 $disabledRollbackIndexers = @()
 foreach ($indexer in @($indexers.value)) {
-    $isManagedIndexer = $indexer.name -like 'semiconductor*-sharepoint-indexer' -and
-        $indexer.targetIndexName -like 'semiconductor*-knowledge-chunks'
+    $isManagedIndexer = $indexer.name -like "$ManagedPrefix*-$IndexerNameSuffix" -and
+        $indexer.targetIndexName -like "$ManagedPrefix*-$IndexNameSuffix"
     if (-not $isManagedIndexer) { continue }
     $shouldDisable = $indexer.name -ne $candidate.indexerName
     if ([bool]$indexer.disabled -ne $shouldDisable) {

@@ -1,15 +1,38 @@
 [CmdletBinding()]
 param(
-    [string]$CasesPath = (Join-Path $PSScriptRoot '..\config\search-evaluation.cases'),
-    [string]$SearchStatePath = (Join-Path $PSScriptRoot '..\.state\search.json'),
-    [string]$SharePointStatePath = (Join-Path $PSScriptRoot '..\.state\sharepoint.json'),
-    [string]$ReportPath = (Join-Path $PSScriptRoot '..\.state\search-evaluation.json'),
-    [ValidateRange(3, 50)][int]$Top = 5,
-    [ValidateRange(0, 1)][double]$MinimumSourceHitAt3 = 0.9
+    [string]$ConfigPath = (Join-Path $PSScriptRoot '..\config\deployment.json'),
+    [string]$CasesPath,
+    [string]$SearchStatePath,
+    [string]$SharePointStatePath,
+    [string]$ReportPath,
+    [ValidateRange(3, 50)][int]$Top,
+    [ValidateRange(0, 1)][double]$MinimumSourceHitAt3
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'deployment_config.ps1')
+$repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$config = Import-DeploymentConfig -Path $ConfigPath
+function Get-ConfigValue {
+    param([Parameter(Mandatory)][string]$Path)
+    return Get-DeploymentConfigValue -Config $config -Path $Path
+}
+foreach ($binding in @(
+    @{ Name = 'CasesPath'; Config = 'paths.searchEvaluationCases' },
+    @{ Name = 'SearchStatePath'; Config = 'paths.searchState' },
+    @{ Name = 'SharePointStatePath'; Config = 'paths.sharePointState' },
+    @{ Name = 'ReportPath'; Config = 'paths.searchEvaluationReport' }
+)) {
+    if (-not $PSBoundParameters.ContainsKey($binding.Name)) {
+        Set-Variable -Name $binding.Name -Value (Resolve-DeploymentPath -RepositoryRoot $repositoryRoot -Path (Get-ConfigValue $binding.Config))
+    }
+}
+if (-not $PSBoundParameters.ContainsKey('Top')) { $Top = Get-ConfigValue 'evaluation.top' }
+if (-not $PSBoundParameters.ContainsKey('MinimumSourceHitAt3')) { $MinimumSourceHitAt3 = Get-ConfigValue 'evaluation.minimumSourceHitAt3' }
+$SearchManagementApiVersion = Get-ConfigValue 'apiVersions.searchManagement'
+$SemanticConfigurationName = Get-ConfigValue 'search.semanticConfigurationName'
+$ExpectedSourcePrefix = "$(Get-ConfigValue 'databricks.catalog').$(Get-ConfigValue 'databricks.schema')"
 
 function Get-PlainToken {
     param([Parameter(Mandatory)][object]$TokenResult)
@@ -41,18 +64,23 @@ $sharePoint = Get-Content $SharePointStatePath -Raw | ConvertFrom-Json
 
 $armToken = Get-PlainToken (Get-AzAccessToken -ResourceUrl 'https://management.azure.com' -TenantId $sharePoint.tenantId)
 $resourcePath = "/subscriptions/$($state.subscriptionId)/resourceGroups/$($state.resourceGroup)/providers/Microsoft.Search/searchServices/$($state.searchServiceName)"
-$keys = Invoke-RestMethod -Method POST -Headers @{ Authorization = "Bearer $armToken" } -Uri "https://management.azure.com$resourcePath/listAdminKeys?api-version=2025-05-01"
+$keys = Invoke-RestMethod -Method POST -Headers @{ Authorization = "Bearer $armToken" } -Uri "https://management.azure.com$resourcePath/listAdminKeys?api-version=$SearchManagementApiVersion"
 $headers = @{ 'api-key' = $keys.primaryKey; 'Content-Type' = 'application/json' }
 $searchUri = "$($state.searchEndpoint)/indexes/$($state.indexName)/docs/search?api-version=$($state.apiVersion)"
 
 $evaluations = @()
 foreach ($case in $cases) {
+    $expectedSourceTable = if ($case.expectedSourceTable.Contains('.')) {
+        $case.expectedSourceTable
+    } else {
+        "$ExpectedSourcePrefix.$($case.expectedSourceTable)"
+    }
     $body = @{
         search = $case.query
         count = $true
         top = $Top
         queryType = 'semantic'
-        semanticConfiguration = 'semiconductor-semantic-config'
+        semanticConfiguration = $SemanticConfigurationName
         select = 'chunk_id,parent_id,title,document_url,category,source_table'
         vectorQueries = @(
             @{
@@ -68,12 +96,12 @@ foreach ($case in $cases) {
     $timer.Stop()
     $results = @($response.value)
     $categoryRank = Find-Rank -Results $results -Field 'category' -Expected $case.expectedCategory
-    $sourceRank = Find-Rank -Results $results -Field 'source_table' -Expected $case.expectedSourceTable
+    $sourceRank = Find-Rank -Results $results -Field 'source_table' -Expected $expectedSourceTable
     $evaluations += [ordered]@{
         id = $case.id
         query = $case.query
         expectedCategory = $case.expectedCategory
-        expectedSourceTable = $case.expectedSourceTable
+        expectedSourceTable = $expectedSourceTable
         categoryRank = $categoryRank
         sourceTableRank = $sourceRank
         latencyMs = $timer.ElapsedMilliseconds
@@ -129,8 +157,8 @@ if ($state.PSObject.Properties.Name -contains 'feedbackIndexName') {
 $report = [ordered]@{
     generatedAt = (Get-Date).ToUniversalTime().ToString('o')
     indexName = $state.indexName
-    chunkSize = if ($state.PSObject.Properties.Name -contains 'chunkSize') { $state.chunkSize } else { 512 }
-    chunkOverlap = if ($state.PSObject.Properties.Name -contains 'chunkOverlap') { $state.chunkOverlap } else { 128 }
+    chunkSize = if ($state.PSObject.Properties.Name -contains 'chunkSize') { $state.chunkSize } else { Get-ConfigValue 'search.chunkSize' }
+    chunkOverlap = if ($state.PSObject.Properties.Name -contains 'chunkOverlap') { $state.chunkOverlap } else { Get-ConfigValue 'search.chunkOverlap' }
     top = $Top
     metrics = [ordered]@{
         caseCount = $caseCount

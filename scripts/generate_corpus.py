@@ -32,33 +32,27 @@ from pptx.util import Inches, Pt
 
 try:
     from .fetch_semiconductor_profile import validate_profile
+    from .deployment_config import (
+        DEFAULT_CONFIG_PATH,
+        get_config_value,
+        load_deployment_config,
+        resolve_deployment_path,
+    )
 except ImportError:
     from fetch_semiconductor_profile import validate_profile
+    from deployment_config import (
+        DEFAULT_CONFIG_PATH,
+        get_config_value,
+        load_deployment_config,
+        resolve_deployment_path,
+    )
 
 
-AUTHOR = "Michael Yaacoub @ Microsoft"
-SOURCE_SYSTEM = "Azure Databricks via Microsoft Foundry Databricks MCP"
-FORMAT_ORDER = ("docx", "pptx", "xlsx")
-PERSPECTIVES = (
-    "Executive Brief",
-    "Operational Review",
-    "Trend Analysis",
-    "Risk Snapshot",
-    "Performance Deep Dive",
-    "Planning Workbook",
-    "Quality Review",
-    "Regional Analysis",
-    "Management Summary",
-)
-
-TABLE_CONFIG = {
-    "defect_analysis": ("Quality", "Defect Analysis", "C0392B"),
-    "fab_production": ("Manufacturing", "Fab Production", "1565C0"),
-    "inventory": ("Inventory", "Inventory Position", "2E7D32"),
-    "product_sales": ("Sales", "Product Sales", "B35A00"),
-    "supply_chain": ("Supply Chain", "Supply Chain", "6C3483"),
-    "wafer_yield": ("Yield", "Wafer Yield", "00796B"),
-}
+AUTHOR: str
+SOURCE_SYSTEM: str
+FORMAT_ORDER: tuple[str, ...]
+PERSPECTIVES: tuple[str, ...]
+TABLE_CONFIG: dict[str, tuple[str, str, str]]
 
 FRACTION_PERCENT_FIELDS = {
     "yield_pct",
@@ -999,27 +993,49 @@ def build_specs(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate the 100-file Office corpus.")
-    parser.add_argument("--profile", type=Path, default=Path("data/semiconductor_profile.json"))
-    parser.add_argument("--output", type=Path, default=Path("corpus"))
-    parser.add_argument("--document-count", type=int, default=100)
+    parser = argparse.ArgumentParser(description="Generate the configured Office corpus.")
+    parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    parser.add_argument("--profile", type=Path)
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--document-count", type=int)
     args = parser.parse_args()
-    if args.document_count < 1:
+    config, _ = load_deployment_config(args.config)
+    corpus_config = get_config_value(config, "corpus")
+    profile_path = args.profile or resolve_deployment_path(
+        get_config_value(config, "paths", "profile")
+    )
+    output_path = args.output or resolve_deployment_path(
+        get_config_value(config, "paths", "corpus")
+    )
+    document_count = args.document_count or int(
+        get_config_value(corpus_config, "expectedDocuments")
+    )
+    global AUTHOR, SOURCE_SYSTEM, FORMAT_ORDER, PERSPECTIVES, TABLE_CONFIG
+    AUTHOR = str(get_config_value(corpus_config, "author"))
+    SOURCE_SYSTEM = str(get_config_value(corpus_config, "sourceSystem"))
+    FORMAT_ORDER = tuple(get_config_value(corpus_config, "formats"))
+    PERSPECTIVES = tuple(get_config_value(corpus_config, "perspectives"))
+    table_configuration = get_config_value(corpus_config, "tableConfiguration")
+    TABLE_CONFIG = {
+        table: (settings["category"], settings["displayName"], settings["accent"])
+        for table, settings in table_configuration.items()
+    }
+    if document_count < 1:
         parser.error("--document-count must be at least 1")
 
-    profile = json.loads(args.profile.read_text(encoding="utf-8"))
+    profile = json.loads(profile_path.read_text(encoding="utf-8"))
     validate_profile(profile)
     grouped = group_rows(profile)
-    specs = build_specs(profile, grouped, args.document_count)
-    if args.output.exists():
-        shutil.rmtree(args.output)
-    args.output.mkdir(parents=True)
+    specs = build_specs(profile, grouped, document_count)
+    if output_path.exists():
+        shutil.rmtree(output_path)
+    output_path.mkdir(parents=True)
 
     manifest = []
     with tempfile.TemporaryDirectory(prefix="semiconductor-diagrams-") as temp_directory:
         temp_path = Path(temp_directory)
         for spec in specs:
-            destination = args.output / spec["relative_path"]
+            destination = output_path / spec["relative_path"]
             destination.parent.mkdir(parents=True, exist_ok=True)
             rows = sample_rows(grouped[spec["source_table"]], spec["number"])
             aggregate = aggregate_for_table(profile, spec["source_table"])
@@ -1045,7 +1061,7 @@ def main() -> None:
                 }
             )
 
-    manifest_path = args.output / "manifest.json"
+    manifest_path = output_path / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(
         json.dumps(

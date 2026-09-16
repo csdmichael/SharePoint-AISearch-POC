@@ -2,9 +2,10 @@
 
 This proof of concept turns source-grounded semiconductor data from Azure
 Databricks into a rich Microsoft 365 document corpus and indexes it directly
-from SharePoint Online with Azure AI Search. The resulting chunk index is
-designed for hybrid retrieval and a later Microsoft Foundry agent that merges
-document knowledge with live Databricks MCP answers.
+from SharePoint Online with [Azure AI Search](https://learn.microsoft.com/azure/search/search-what-is-azure-search).
+[Foundry IQ](https://learn.microsoft.com/azure/foundry/agents/concepts/what-is-foundry-iq)
+exposes the promoted chunk index through a knowledge source and knowledge base,
+and a Microsoft Foundry prompt agent returns grounded answers with citations.
 
 The solution does **not** copy or stage SharePoint files in Azure Blob Storage.
 SharePoint Online remains the document system of record.
@@ -16,34 +17,37 @@ SharePoint Online remains the document system of record.
 3. [Architecture](#architecture)
 4. [Data and corpus](#data-and-corpus)
 5. [Repository layout](#repository-layout)
-6. [Prerequisites](#prerequisites)
-7. [Deploy the solution](#deploy-the-solution)
-8. [Azure AI Search design](#azure-ai-search-design)
-9. [Security model](#security-model)
-10. [Operations and validation](#operations-and-validation)
-11. [Relevance evaluation and feedback](#relevance-evaluation-and-feedback)
-12. [Foundry agent integration](#foundry-agent-integration)
-13. [Preview limitations](#preview-limitations)
-14. [Cost and production scaling](#cost-and-production-scaling)
-15. [Best-practice references](#best-practice-references)
-16. [License](#license)
+6. [Configuration](#configuration)
+7. [Prerequisites](#prerequisites)
+8. [Deploy the solution](#deploy-the-solution)
+9. [Azure AI Search design](#azure-ai-search-design)
+10. [Security model](#security-model)
+11. [Operations and validation](#operations-and-validation)
+12. [Relevance evaluation and feedback](#relevance-evaluation-and-feedback)
+13. [Foundry agent integration](#foundry-agent-integration)
+14. [Sample prompts](#sample-prompts)
+15. [Preview limitations](#preview-limitations)
+16. [Cost and production scaling](#cost-and-production-scaling)
+17. [Additional references](#additional-references)
+18. [License](#license)
 
 ## Solution status
 
 | Component | Configuration | Status |
 | --- | --- | --- |
-| Databricks source | Six tables in `caldova_dbx_westus2.arrow_semiconductor` | Profiled through the existing private MCP agent |
-| Office corpus | 34 DOCX, 33 PPTX, 33 XLSX | 100/100 structurally validated |
-| Azure AI Search | Basic, West US, 1 partition, 1 replica, system identity | Deployed |
-| Embeddings | `text-embedding-3-small`, 1,536 dimensions | Existing deployment authorized for Search |
-| SharePoint site and library | Private Microsoft 365 group site, 100 files | Deployed and validated |
-| Direct SharePoint indexer | `2026-08-01-preview`, hourly | 100 files processed, 0 failed, 289 chunks indexed |
-| Ranking evaluation | 12 hybrid semantic/vector queries | Source-table routing@1 100%, routing MRR 1.0 |
-| Feedback loop | `semiconductor-search-feedback` index | Deployed and write-tested |
+| Databricks source | Six tables in `{Databricks Catalog}.{Databricks Schema}` | Profiled through `{Profile Source Agent}` |
+| Office corpus | `{DOCX Count}` DOCX, `{PPTX Count}` PPTX, `{XLSX Count}` XLSX | `{Expected Document Count}` structurally validated |
+| Azure AI Search | `{Search SKU}`, `{Azure Region}`, `{Partition Count}` partition, `{Replica Count}` replica | Deployed |
+| Embeddings | `{Embedding Deployment}`, `{Embedding Dimensions}` dimensions | Deployment authorized for Search |
+| SharePoint site and library | Private Microsoft 365 group site, `{Expected Document Count}` files | Deployed and validated |
+| Direct SharePoint indexer | `{Search Service API Version}`, `{Indexer Schedule}` | `{Expected Document Count}` files processed, zero failed, `{Indexed Chunk Count}` chunks indexed |
+| Foundry IQ | `{Knowledge Source}` -> `{Knowledge Base}` -> `{Foundry Agent}` | Agent active and citation smoke test passed |
+| Ranking evaluation | `{Evaluation Case Count}` hybrid semantic/vector queries | Routing thresholds passed |
+| Feedback loop | `{Feedback Index}` | Deployed and write-tested |
 
 SharePoint Online is a Microsoft 365 service, so the site itself is not an
-Azure resource inside `m365-myaacoub`. Azure AI Search, Databricks, Foundry,
-and related Azure resources are in that resource group.
+Azure resource inside `{Resource Group}`. Azure AI Search, Databricks, Foundry,
+and related Azure resources are in the configured resource group.
 
 ## Deployed URLs
 
@@ -56,31 +60,34 @@ and related Azure resources are in that resource group.
 | Search Explorer | [Open Search Explorer](https://portal.azure.com/#@caldova37587778.onmicrosoft.com/resource/subscriptions/cf824570-a8ba-497a-a184-0a52f1830aa9/resourceGroups/m365-myaacoub/providers/Microsoft.Search/searchServices/semiconductor-search-myaacoub/searchExplorer) |
 | Databricks workspace | [caldova-dbx-westus2](https://portal.azure.com/#@caldova37587778.onmicrosoft.com/resource/subscriptions/cf824570-a8ba-497a-a184-0a52f1830aa9/resourceGroups/m365-myaacoub/providers/Microsoft.Databricks/workspaces/caldova-dbx-westus2/overview) |
 | Foundry resource | [foundry-myaacoub-private](https://portal.azure.com/#@caldova37587778.onmicrosoft.com/resource/subscriptions/cf824570-a8ba-497a-a184-0a52f1830aa9/resourceGroups/m365-myaacoub/providers/Microsoft.CognitiveServices/accounts/foundry-myaacoub-private/overview) |
+| Foundry IQ agent | [Open the deployed SharePoint agent](https://ai.azure.com/nextgen/r/z4JFcKi6SXqhhApS8YMKqQ,m365-myaacoub,,foundry-myaacoub,proj-default/build/agents/sharepoint-agent/build?tid=12a4b86b-e64c-43f9-af05-d9130a72dfd2) |
 
 The deployment scripts write confirmed, non-secret resource identifiers and
 URLs under `.state/`. That folder is intentionally ignored by Git.
-Applications should query the stable `semiconductor-knowledge` index alias,
-not a timestamped physical index name.
+Applications should query `{Search Index Alias}`, not a timestamped physical
+index name. All non-URL placeholders in this document map to
+`config/deployment.json` or generated `.state` evidence.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    DBX[Azure Databricks<br/>arrow_semiconductor tables]
-    MCP[Private Databricks MCP<br/>through APIM]
-    AGENT[Existing Foundry agent<br/>semiconductor-sales]
+    DBX[Azure Databricks<br/>{Databricks Schema} tables]
+    MCP[Private Databricks MCP]
+    PROFILE[Profile-source Foundry agent]
     GEN[Corpus generator]
-    SP[SharePoint Online<br/>Semiconductor Knowledge]
-    IDX[SharePoint indexer<br/>2026-08-01-preview]
-    SPLIT[Text Split skill<br/>512 tokens + 128 overlap]
-    EMB[text-embedding-3-small<br/>1536 dimensions]
-    SEARCH[Chunk index<br/>semantic + vector + keyword]
-    FUTURE[Future Foundry agent]
+    SP[SharePoint Online<br/>{Production Library}]
+    IDX[SharePoint indexer<br/>{Search Service API Version}]
+    SPLIT[Text Split skill<br/>{Chunk Size} + {Chunk Overlap}]
+    EMB[Embedding model<br/>{Embedding Dimensions} dimensions]
+    SEARCH[Promoted chunk index<br/>semantic + vector + keyword]
+    KS[Foundry IQ<br/>knowledge source]
+    KB[Foundry IQ<br/>knowledge base]
+    AGENT[Foundry prompt agent]
 
-    DBX --> MCP --> AGENT --> GEN --> SP
+    DBX --> MCP --> PROFILE --> GEN --> SP
     SP --> IDX --> SPLIT --> EMB --> SEARCH
-    SEARCH --> FUTURE
-    MCP -. live structured facts .-> FUTURE
+    SEARCH --> KS --> KB --> AGENT
 ```
 
 There is no Blob Storage hop between SharePoint and Azure AI Search. The
@@ -91,15 +98,15 @@ scoped to the dedicated document library.
 
 The source profile contains six fully qualified Databricks tables:
 
-- `caldova_dbx_westus2.arrow_semiconductor.defect_analysis`
-- `caldova_dbx_westus2.arrow_semiconductor.fab_production`
-- `caldova_dbx_westus2.arrow_semiconductor.inventory`
-- `caldova_dbx_westus2.arrow_semiconductor.product_sales`
-- `caldova_dbx_westus2.arrow_semiconductor.supply_chain`
-- `caldova_dbx_westus2.arrow_semiconductor.wafer_yield`
+- `{Databricks Catalog}.{Databricks Schema}.defect_analysis`
+- `{Databricks Catalog}.{Databricks Schema}.fab_production`
+- `{Databricks Catalog}.{Databricks Schema}.inventory`
+- `{Databricks Catalog}.{Databricks Schema}.product_sales`
+- `{Databricks Catalog}.{Databricks Schema}.supply_chain`
+- `{Databricks Catalog}.{Databricks Schema}.wafer_yield`
 
-The profile was obtained through the existing `semiconductor-sales` Foundry
-agent and private Databricks MCP connection. It includes aggregate metrics,
+The profile is obtained through `{Profile Source Agent}` and its private
+Databricks MCP connection. It includes aggregate metrics,
 schema definitions, source SQL, quality notes, and a bounded representative
 sample. No direct personal-identifier columns were present.
 
@@ -131,6 +138,9 @@ inherits them.
 |-- LICENSE
 |-- requirements.txt
 |-- config/
+|   |-- deployment.json                 # non-secret deployment configuration
+|   |-- profile-agent-prompt.md
+|   |-- foundry-agent-instructions.md
 |   `-- search-evaluation.cases
 |-- docs/
 |   `-- deployment-evidence.md
@@ -141,10 +151,13 @@ inherits them.
 |   `-- <category>/*.docx|*.pptx|*.xlsx  # generated, ignored
 `-- scripts/
     |-- deploy_staged.ps1
+  |-- deployment_config.ps1
+  |-- deployment_config.py
     |-- evaluate_search.ps1
     |-- fetch_semiconductor_profile.py
     |-- generate_corpus.py
     |-- promote_search_index.ps1
+    |-- provision_foundry_agent.ps1
     |-- provision_search.ps1
     |-- provision_sharepoint.ps1
     |-- submit_search_feedback.ps1
@@ -152,14 +165,41 @@ inherits them.
     `-- validate_search.ps1
 ```
 
+  ## Configuration
+
+  `config/deployment.json` is the single source of truth for non-secret
+  deployment values. Scripts accept `-ConfigPath` or `--config` to select a
+  different environment file, and explicit command-line arguments remain
+  available as one-run overrides.
+
+  | README placeholder | Configuration key |
+  | --- | --- |
+  | `{Tenant Id}` / `{Subscription Id}` / `{Resource Group}` | `azure.*` |
+  | `{Production Library}` | `sharePoint.productionLibraryName` |
+  | `{Search Service}` / `{Search Index Alias}` | `search.serviceName` / `search.indexAliasName` |
+  | `{Search SKU}` / `{Azure Region}` | `search.sku` / `azure.location` |
+  | `{Partition Count}` / `{Replica Count}` | `search.partitionCount` / `search.replicaCount` |
+  | `{Chunk Size}` / `{Chunk Overlap}` | `search.chunkSize` / `search.chunkOverlap` |
+  | `{Chunk Unit}` / `{Tokenizer}` / `{Corpus Language}` | `search.chunkUnit` / `search.tokenizer` / `search.corpusLanguage` |
+  | `{Embedding Deployment}` / `{Embedding Dimensions}` | `search.embeddingDeployment` / `search.embeddingDimensions` |
+  | `{Vector Algorithm}` / `{Vector Metric}` | `search.vectorAlgorithmKind` / `search.vectorMetric` |
+  | `{Indexer Schedule}` | `search.scheduleInterval` |
+  | `{Databricks Catalog}` / `{Databricks Schema}` | `databricks.catalog` / `databricks.schema` |
+  | `{Profile Source Agent}` | `foundry.profileSource.agentName` |
+  | `{Foundry Agent}` / `{Knowledge Source}` / `{Knowledge Base}` | `foundry.knowledgeAgent.*` |
+  | `{Expected Document Count}` / `{Bootstrap Document Count}` | `corpus.*Documents` |
+  | `{Search Service API Version}` | `apiVersions.searchService` |
+
+  No secret, access token, password, Search key, or connection credential belongs
+  in the config file. Runtime secrets remain in process memory only.
+
 ## Prerequisites
 
 - Windows PowerShell 7 and Azure CLI.
 - Python 3.13 or a compatible supported Python 3 release.
-- Azure access to subscription `cf824570-a8ba-497a-a184-0a52f1830aa9`.
+- Azure access to subscription `{Subscription Id}`.
 - An active Azure PowerShell context for that subscription (`Get-AzContext`).
-- Microsoft 365 administrator access in tenant
-  `12a4b86b-e64c-43f9-af05-d9130a72dfd2`.
+- Microsoft 365 administrator access in tenant `{Tenant Id}`.
 - Permission to create Microsoft 365 groups, SharePoint lists, Entra
   applications, app-role grants, role assignments, and Search resources.
 - Registration for the [SharePoint indexer preview](https://aka.ms/azure-cognitive-search/indexer-preview).
@@ -186,7 +226,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe scripts\fetch_semiconductor_profile.py
 ```
 
-This invokes the existing Foundry prompt agent. It issues bounded, read-only
+This invokes `{Profile Source Agent}`. It issues bounded, read-only
 queries through the private Databricks MCP server and validates the returned
 JSON shape before writing the profile.
 
@@ -199,15 +239,15 @@ JSON shape before writing the profile.
 This is the default end-to-end workflow. It executes the requested order:
 
 1. Provision or reuse the SharePoint site, library, folders, and metadata.
-2. Generate six fast bootstrap files: two DOCX, two PPTX, and two XLSX, with
-  one artifact from each semiconductor domain.
+2. Generate `{Bootstrap Document Count}` bootstrap files, distributed across
+  the configured formats and semiconductor domains.
 3. Upload those files to a dedicated bootstrap library, create isolated
    bootstrap Search resources, validate them, and run the routing suite.
-4. Generate and structurally validate the full 100-file replacement corpus
+4. Generate and structurally validate the configured replacement corpus
    before changing the production library.
 5. Upload the full set, build a versioned candidate index without touching the
    current index, validate coverage and routing, then atomically promote it
-   through the stable `semiconductor-knowledge` Search alias.
+  through `{Search Index Alias}`.
 
 The previous physical index is retained for rollback. The standing feedback
 index is preserved across document generations. Before production files are
@@ -219,7 +259,7 @@ before generation.
 
 ### 4. Run individual stages
 
-Generate and validate exactly 100 documents:
+Generate and validate the configured document count:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\generate_corpus.py
@@ -232,8 +272,8 @@ provenance, page/slide/sheet structure, tables, charts, and diagrams.
 ### 5. Authenticate Azure PowerShell
 
 ```powershell
-Connect-AzAccount -Tenant 12a4b86b-e64c-43f9-af05-d9130a72dfd2
-Set-AzContext -Subscription cf824570-a8ba-497a-a184-0a52f1830aa9
+Connect-AzAccount -Tenant '{Tenant Id}'
+Set-AzContext -Subscription '{Subscription Id}'
 ```
 
 The signed-in account needs `Application.ReadWrite.All` and
@@ -271,7 +311,7 @@ before alias promotion rather than being destructively removed up front.
 
 The script creates or updates the Entra ingestion app, federated credential,
 Graph application permissions, versioned chunk index, skillset, SharePoint data
-source, hourly indexer, and independent `semiconductor-search-feedback` index.
+source, scheduled indexer, and independent `{Feedback Index}`.
 Search admin keys are read only into process memory for control-plane setup and
 are then discarded. `-RecreateIndex` deletes and recreates only the document
 index and indexer; feedback and identity resources remain intact.
@@ -287,37 +327,54 @@ Wait for the indexer to complete, then run:
 Validation requires all of the following:
 
 - The most recent indexer run succeeded with zero failed items.
-- The chunk index contains 100 distinct parent document IDs.
-- DOCX, PPTX, and XLSX facets are present.
-- All six knowledge categories are present.
+- The chunk index contains `{Expected Document Count}` distinct parent IDs.
+- Every configured Office format facet is present.
+- Every configured knowledge category is present.
 - A semantic hybrid query with query-time vectorization returns results.
 
-The verified deployment contains 100 distinct parent documents and 289
-projected chunks. All three file formats and all six knowledge categories are
-present. A hybrid query for AI accelerator wafer-yield risk returned a
-semantic result linked to the original SharePoint Word document.
+The verified deployment contains `{Expected Document Count}` distinct parent
+documents and `{Indexed Chunk Count}` projected chunks. All configured formats
+and categories are present. The configured validation query returned a semantic
+result linked to an original SharePoint document.
+
+### 9. Provision the Foundry IQ agent
+
+```powershell
+.\scripts\provision_foundry_agent.ps1
+```
+
+Following the Microsoft guidance for [connecting Foundry IQ to Foundry Agent
+Service](https://learn.microsoft.com/azure/foundry/agents/how-to/foundry-iq-connect),
+the script enables dual Search authentication, applies least-privilege managed
+identity roles, creates or updates `{Knowledge Source}` and `{Knowledge Base}`,
+creates a project-managed-identity MCP connection, versions `{Foundry Agent}`,
+and runs one citation-bearing smoke query. Confirmed state is written to the
+configured Foundry state path under `.state/`.
 
 ## Azure AI Search design
 
 ### Direct SharePoint indexing
 
-The data source uses the preview `sharepoint` type and `useQuery` container.
-`includeLibrary` limits crawling to the Semiconductor Knowledge library, and
+The [SharePoint in Microsoft 365 indexer](https://learn.microsoft.com/azure/search/search-how-to-index-sharepoint-online)
+uses the preview `sharepoint` data-source type and `useQuery` container.
+`includeLibrary` limits crawling to `{Production Library}`, and
 `additionalColumns` brings corpus lineage into the enrichment tree. The
-indexer accepts only `.docx`, `.pptx`, and `.xlsx` files and runs hourly for
-incremental additions, updates, and deletes.
+indexer accepts the formats in `corpus.formats` and runs on `{Indexer Schedule}`
+for incremental additions, updates, and deletes.
 
 ### Chunking
 
-The Text Split skill uses token-aware page splitting:
+The [Text Split skill](https://learn.microsoft.com/azure/search/cognitive-search-skill-textsplit)
+uses token-aware page splitting. The values below come from
+`config/deployment.json`:
 
 | Setting | Value | Rationale |
 | --- | --- | --- |
-| Unit | `azureOpenAITokens` | Keeps chunks aligned with embedding-model input units |
-| Tokenizer | `cl100k_base` | Supported tokenizer for the selected embedding family |
-| Maximum length | 512 tokens | Microsoft general recommendation for embedding chunks |
-| Overlap | 128 tokens | 25% context carryover across boundaries |
-| Language | English | Matches the generated corpus |
+| Unit | `{Chunk Unit}` | Keeps chunks aligned with embedding-model input units |
+| Tokenizer | `{Tokenizer}` | Matches the selected embedding family |
+| Maximum length | `{Chunk Size}` | Bounds each embedding input |
+| Overlap | `{Chunk Overlap}` | Carries context across boundaries |
+| Language | `{Corpus Language}` | Matches the generated corpus |
 
 The overlap improves continuity for table-adjacent narrative and sections
 that cross chunk boundaries. All pages are retained; `maximumPagesToTake` is
@@ -325,7 +382,8 @@ not set.
 
 ### Index projection
 
-The recommended single-index RAG pattern is used. Each chunk repeats its
+The recommended [index projection](https://learn.microsoft.com/azure/search/search-how-to-define-index-projections)
+single-index RAG pattern is used. Each chunk repeats its
 parent's title, SharePoint URL, file metadata, corpus category, and Databricks
 lineage. `projectionMode` is `skipIndexingParentDocuments`, which avoids extra
 parent rows with null chunk fields. The generated projected key supports
@@ -333,10 +391,10 @@ incremental child updates and deletion tracking.
 
 ### Vector search
 
-- Model: `text-embedding-3-small`.
-- Dimensions: 1,536 in both the embedding skill and vector field.
-- Algorithm: HNSW with cosine similarity.
-- HNSW parameters: `m=4`, `efConstruction=400`, `efSearch=500`.
+- Model and deployment: `{Embedding Model}` / `{Embedding Deployment}`.
+- Dimensions: `{Embedding Dimensions}` in both the embedding skill and vector field.
+- Algorithm and metric: `{Vector Algorithm}` with `{Vector Metric}` similarity.
+- HNSW parameters: `{HNSW M}`, `{HNSW EF Construction}`, `{HNSW EF Search}`.
 - Query vectorizer: the same model and deployment as indexing.
 - Authentication: Search system-assigned managed identity.
 
@@ -347,16 +405,16 @@ and query traffic so each has independent TPM capacity and telemetry.
 
 ### Hybrid and semantic retrieval
 
-The index supports keyword, vector, hybrid, filtering, faceting, and semantic
-ranking. `title` is the semantic title field, `chunk` is the prioritized
-content field, and category/source table are semantic keyword fields. A later
-agent should use hybrid retrieval by default because exact identifiers such as
-fab IDs and process nodes benefit from lexical matching while narrative
-questions benefit from vectors and semantic reranking.
+The index supports keyword, vector, [hybrid](https://learn.microsoft.com/azure/search/hybrid-search-overview),
+filtering, faceting, and [semantic ranking](https://learn.microsoft.com/azure/search/semantic-search-overview).
+`title` is the semantic title field, `chunk` is the prioritized content field,
+and category/source table are semantic keyword fields. Foundry IQ plans and
+executes retrieval against this index; exact identifiers benefit from lexical
+matching while narrative questions benefit from vectors and semantic reranking.
 
 ### Partitions
 
-The POC uses one partition. Partitions provide index storage and indexing
+The POC uses `{Partition Count}` partition(s). Partitions provide index storage and indexing
 throughput; the application does not manually assign documents to partitions.
 Azure AI Search distributes index data internally. Increase partitions only
 after measuring index size, ingestion throughput, throttling, and query
@@ -366,13 +424,16 @@ $$
 \text{Search units} = \text{replicas} \times \text{partitions}
 $$
 
-For this 100-document corpus, additional partitions would add cost without a
-meaningful capacity benefit. The measured rebuilt index contains 289 chunks,
-uses approximately 5.07 MB of index storage, and has a 1.80 MB vector index.
+For this `{Expected Document Count}`-document corpus, additional partitions
+would add cost without a measured capacity benefit. Generated deployment
+evidence records `{Indexed Chunk Count}`, `{Index Storage Size}`, and
+`{Vector Index Size}` without baking one environment's measurements into this
+document.
 
 ### Replicas and replication
 
-The POC uses one replica to minimize cost and has no availability SLA. Azure
+The POC uses `{Replica Count}` replica(s) to minimize cost and has no
+availability SLA. Azure
 AI Search automatically copies index data across configured replicas; the
 solution does not implement custom file or index replication.
 
@@ -386,7 +447,11 @@ solution does not implement custom file or index replication.
 ## Security model
 
 The Search service has a system-assigned managed identity. It receives only
-`Cognitive Services OpenAI User` on the existing Foundry resource.
+the configured model-inference role on the embedding resource and
+`Cognitive Services User` on the Foundry IQ model provider. The Foundry
+project identity receives `Search Index Data Reader` on Search. See
+[Search RBAC](https://learn.microsoft.com/azure/search/search-security-rbac)
+and [Foundry RBAC](https://learn.microsoft.com/azure/foundry/concepts/rbac-foundry).
 
 The dedicated Entra ingestion application has Microsoft Graph application
 permissions `Files.Read.All` and `Sites.Read.All`, as required by the standard
@@ -406,7 +471,7 @@ placing permission-sensitive documents in the corpus.
 1. Refresh the Databricks profile.
 2. Regenerate and validate the corpus.
 3. Re-run the SharePoint provisioning script to replace files and metadata.
-4. Let the hourly indexer run, or invoke its `/run` endpoint.
+4. Let the scheduled indexer run, or invoke its `/run` endpoint.
 5. Run the Search validation script.
 
 Avoid renaming SharePoint folders after indexing. The preview indexer treats a
@@ -416,7 +481,7 @@ renamed folder as new content, which can disrupt incremental behavior.
 
 - Review indexer execution history and warnings in the Search portal.
 - Enable Azure Monitor diagnostic settings for Search query and indexer logs.
-- Monitor embedding deployment TPM, latency, 429 responses, and failures.
+- Monitor embedding deployment TPM, latency, throttling responses, and failures.
 - Alert on failed indexer runs and unexpected drops in unique parent count.
 - Use exponential backoff for application query retries. Indexers include
   built-in retry and resume behavior for transient source failures.
@@ -430,8 +495,8 @@ be deterministically recreated from a validated Databricks profile.
 Use the following command for a clean full rebuild without deleting feedback:
 
 ```powershell
-.\scripts\provision_search.ps1 -ChunkSize 512 -ChunkOverlap 128 -RecreateIndex
-.\scripts\validate_search.ps1 -ExpectedDocuments 100
+.\scripts\provision_search.ps1 -RecreateIndex
+.\scripts\validate_search.ps1
 ```
 
 For a zero-downtime staged replacement, prefer `deploy_staged.ps1`. It validates
@@ -439,9 +504,11 @@ a versioned candidate and switches the stable alias only after every gate passes
 
 ## Relevance evaluation and feedback
 
-The fixed test set in `config/search-evaluation.cases` contains 12 questions,
-two per semiconductor domain. Each case declares its expected category and
-fully qualified Databricks source table. The evaluator runs keyword and vector
+The fixed test set in `config/search-evaluation.cases` contains
+`{Evaluation Case Count}` questions spanning the configured semiconductor
+domains. Each case declares its expected category and unqualified table name;
+the evaluator builds the fully qualified name from the configured Databricks
+catalog and schema. The evaluator runs keyword and vector
 retrieval together, applies semantic reranking, and records:
 
 - Category routing@1.
@@ -456,14 +523,13 @@ Run it with:
 .\scripts\evaluate_search.ps1
 ```
 
-The promoted enriched candidate scored 100% for category routing@1,
-source-table routing@1, and source-table routing@3, with routing MRR 1.0.
-The latest measured run averaged 394 ms with a 792 ms p95.
+The latest generated report records `{Category Routing At 1}`,
+`{Source Table Routing At 1}`, `{Source Table Routing At 3}`, routing MRR,
+average latency, and p95 latency.
 These are routing metrics: they prove the right domain/table reaches the top,
-not that every returned passage is fully relevant. Because routing was perfect,
-the reviewed decision was to retain 512-token chunks, 128-token overlap, HNSW
-cosine retrieval, and semantic reranking rather than add unjustified scoring
-boosts or more partitions.
+not that every returned passage is fully relevant. Any change to chunking,
+vector tuning, or semantic ranking should be compared against the configured
+thresholds before promotion.
 
 Applications can write an explicit relevance judgment with:
 
@@ -475,7 +541,7 @@ Applications can write an explicit relevance judgment with:
   -DocumentUrl '<returned document_url>' `
   -Category '<returned category>' `
   -SourceTable '<returned source_table>' `
-  -Rating 5 `
+  -Rating <1-to-5 rating> `
   -Relevant $true `
   -Comment '<optional reason>'
 ```
@@ -488,27 +554,43 @@ artifact/chunk judgments for passage-level relevance, then compare chunking or
 ranking candidates against the fixed suite before deployment. Do not train on
 raw thumbs-up/down data without review.
 
-The feedback write path was validated with a generation-scoped positive
-judgment and a successful Search indexing response (`201`).
+The feedback write path is validated with a generation-scoped judgment and a
+successful Search indexing response.
 
 ## Foundry agent integration
 
-The target agent should have two complementary tools:
+The deployed `{Foundry Agent}` has one MCP tool: the Foundry IQ
+`knowledge_base_retrieve` operation exposed by `{Knowledge Base}`. The
+knowledge base uses `{Knowledge Source}` to query the promoted Azure AI Search
+index, plan subqueries, rerank passages, synthesize an answer, and return
+source references. See [create a search-index knowledge source](https://learn.microsoft.com/azure/search/agentic-knowledge-source-how-to-search-index)
+and [create a knowledge base](https://learn.microsoft.com/azure/search/agentic-retrieval-how-to-create-knowledge-base).
 
-1. Azure AI Search for unstructured document retrieval, citations, diagrams,
-   slide text, workbook tables, and narrative context.
-2. Databricks MCP for current structured facts, aggregations, and source SQL.
+The profile-source agent remains separate. It queries Databricks through the
+private MCP connection to regenerate the bounded source profile; it is not a
+runtime tool on `{Foundry Agent}`. Retrieved Search passages preserve
+`document_url`, `title`, `artifact_id`, `source_table`, and
+`profile_generated_at`, allowing the agent to cite SharePoint and explain data
+freshness without claiming that the documents are live Databricks results.
 
-The orchestrator should classify each question, call one or both tools, and
-merge results only after preserving provenance. Search results should cite
-`document_url`, `title`, `artifact_id`, and `source_table`. Databricks answers
-should retain table names and SQL. When values disagree, treat Databricks as
-the current system of record and explain that SharePoint documents reflect the
-profile timestamp stored in `profile_generated_at`.
+## Sample prompts
+
+Use these prompts in the [deployed Foundry IQ agent](https://ai.azure.com/nextgen/r/z4JFcKi6SXqhhApS8YMKqQ,m365-myaacoub,,foundry-myaacoub,proj-default/build/agents/sharepoint-agent/build?tid=12a4b86b-e64c-43f9-af05-d9130a72dfd2):
+
+1. Which wafer-yield results are below target for AI accelerators? Cite the SharePoint documents and include the Databricks source table.
+2. Compare average, best, worst, and target wafer yield by process node. Separate source facts from recommended follow-up actions.
+3. Which fabrication processes show high defect PPM from pattern, contamination, or etch defects? Include artifact IDs and citations.
+4. Summarize high-severity semiconductor defects by fab and process node, and identify any limitations in the indexed sample.
+5. Compare fab production cycle time, wafers started, wafers completed, and good dies. Cite each supporting document.
+6. Find inventory positions below reorder point with limited days of supply. Group the answer by warehouse region.
+7. Compare semiconductor revenue, units sold, average selling price, and gross margin by region or customer segment.
+8. Which suppliers show high risk, long lead times, weak on-time delivery, or low quality scores for wafers and substrates?
+9. Trace one claim about AI accelerator yield back to its SharePoint URL, artifact ID, Databricks source table, and profile timestamp.
+10. Produce a cross-domain executive summary of yield, quality, production, inventory, sales, and supply-chain risk. Cite every section and state where evidence is insufficient.
 
 ## Preview limitations
 
-The SharePoint Online indexer and API version `2026-08-01-preview` are offered
+The SharePoint Online indexer and `{Search Service API Version}` are offered
 under Azure preview terms and are not recommended for production without a
 risk review. Current documented limitations include:
 
@@ -520,14 +602,14 @@ risk review. Current documented limitations include:
 
 This tenant showed a Conditional Access challenge during interactive Graph
 administration. The user requested proceeding with the preview indexer, and
-the direct application-authenticated indexer completed successfully here:
-100 files processed, zero failed, and no warnings. Because Microsoft still
+the direct application-authenticated indexer completed successfully for
+`{Expected Document Count}` files with zero failures. Because Microsoft still
 documents Conditional Access as unsupported for this preview, repeat the
 end-to-end validation after any tenant policy or indexer API change.
 
 ## Cost and production scaling
 
-The recurring POC costs are the Basic Search service and embedding tokens.
+The recurring POC costs are the configured Search SKU and embedding tokens.
 SharePoint licensing and the existing Foundry/Databricks resources are outside
 this repository's incremental Search estimate.
 
@@ -544,9 +626,16 @@ Before production:
   before accepting ranking, schema, or chunking changes.
 - Review preview, Conditional Access, network, ACL, and compliance constraints.
 
-## Best-practice references
+## Additional references
 
 - [SharePoint in Microsoft 365 indexer](https://learn.microsoft.com/azure/search/search-how-to-index-sharepoint-online)
+- [What is Foundry IQ?](https://learn.microsoft.com/azure/foundry/agents/concepts/what-is-foundry-iq)
+- [Connect Foundry IQ to Foundry Agent Service](https://learn.microsoft.com/azure/foundry/agents/how-to/foundry-iq-connect)
+- [Create a search-index knowledge source](https://learn.microsoft.com/azure/search/agentic-knowledge-source-how-to-search-index)
+- [Create an Azure AI Search knowledge base](https://learn.microsoft.com/azure/search/agentic-retrieval-how-to-create-knowledge-base)
+- [Microsoft Foundry prompt agents](https://learn.microsoft.com/azure/foundry/agents/quickstarts/prompt-agent)
+- [Foundry role-based access control](https://learn.microsoft.com/azure/foundry/concepts/rbac-foundry)
+- [Azure AI Search role-based access control](https://learn.microsoft.com/azure/search/search-security-rbac)
 - [Integrated vectorization](https://learn.microsoft.com/azure/search/vector-search-integrated-vectorization)
 - [Chunk documents for vector search](https://learn.microsoft.com/azure/search/vector-search-how-to-chunk-documents)
 - [Text Split skill](https://learn.microsoft.com/azure/search/cognitive-search-skill-textsplit)

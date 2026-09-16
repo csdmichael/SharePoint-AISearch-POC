@@ -3,72 +3,72 @@
     "id": "quality-defect-ppm",
     "query": "Which fabrication process has high defect PPM from pattern, contamination, or etch defects?",
     "expectedCategory": "Quality",
-    "expectedSourceTable": "caldova_dbx_westus2.arrow_semiconductor.defect_analysis"
+    "expectedSourceTable": "defect_analysis"
   },
   {
     "id": "quality-severity",
     "query": "Summarize high severity semiconductor defects by fab and process node",
     "expectedCategory": "Quality",
-    "expectedSourceTable": "caldova_dbx_westus2.arrow_semiconductor.defect_analysis"
+    "expectedSourceTable": "defect_analysis"
   },
   {
     "id": "manufacturing-cycle-time",
     "query": "Compare fab production cycle time, wafers started, and wafers completed",
     "expectedCategory": "Manufacturing",
-    "expectedSourceTable": "caldova_dbx_westus2.arrow_semiconductor.fab_production"
+    "expectedSourceTable": "fab_production"
   },
   {
     "id": "manufacturing-good-dies",
     "query": "What production records show good dies, total dies, and yield by fab location?",
     "expectedCategory": "Manufacturing",
-    "expectedSourceTable": "caldova_dbx_westus2.arrow_semiconductor.fab_production"
+    "expectedSourceTable": "fab_production"
   },
   {
     "id": "inventory-low-stock",
     "query": "Find low stock inventory below reorder point with limited days of supply",
     "expectedCategory": "Inventory",
-    "expectedSourceTable": "caldova_dbx_westus2.arrow_semiconductor.inventory"
+    "expectedSourceTable": "inventory"
   },
   {
     "id": "inventory-region",
     "query": "Compare on hand and reserved semiconductor inventory by warehouse region",
     "expectedCategory": "Inventory",
-    "expectedSourceTable": "caldova_dbx_westus2.arrow_semiconductor.inventory"
+    "expectedSourceTable": "inventory"
   },
   {
     "id": "sales-margin",
     "query": "Compare semiconductor revenue, units sold, and gross margin by region",
     "expectedCategory": "Sales",
-    "expectedSourceTable": "caldova_dbx_westus2.arrow_semiconductor.product_sales"
+    "expectedSourceTable": "product_sales"
   },
   {
     "id": "sales-segment",
     "query": "Which product sales and average selling prices apply to automotive and aerospace customer segments?",
     "expectedCategory": "Sales",
-    "expectedSourceTable": "caldova_dbx_westus2.arrow_semiconductor.product_sales"
+    "expectedSourceTable": "product_sales"
   },
   {
     "id": "supply-risk",
     "query": "Which semiconductor suppliers have high risk and long component lead times?",
     "expectedCategory": "Supply Chain",
-    "expectedSourceTable": "caldova_dbx_westus2.arrow_semiconductor.supply_chain"
+    "expectedSourceTable": "supply_chain"
   },
   {
     "id": "supply-quality",
     "query": "Compare supplier on-time delivery percentage and quality score for wafers and substrates",
     "expectedCategory": "Supply Chain",
-    "expectedSourceTable": "caldova_dbx_westus2.arrow_semiconductor.supply_chain"
+    "expectedSourceTable": "supply_chain"
   },
   {
     "id": "yield-target",
     "query": "Which wafer yield results are below target for AI accelerators?",
     "expectedCategory": "Yield",
-    "expectedSourceTable": "caldova_dbx_westus2.arrow_semiconductor.wafer_yield"
+    "expectedSourceTable": "wafer_yield"
   },
   {
     "id": "yield-process-node",
     "query": "Compare average, best, worst, and target wafer yield by process node",
     "expectedCategory": "Yield",
-    "expectedSourceTable": "caldova_dbx_westus2.arrow_semiconductor.wafer_yield"
+    "expectedSourceTable": "wafer_yield"
   }
 ]

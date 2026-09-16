@@ -1,26 +1,76 @@
 [CmdletBinding()]
 param(
-    [string]$TenantId = '12a4b86b-e64c-43f9-af05-d9130a72dfd2',
-    [string]$SubscriptionId = 'cf824570-a8ba-497a-a184-0a52f1830aa9',
-    [string]$ResourceGroup = 'm365-myaacoub',
-    [string]$SearchServiceName = 'semiconductor-search-myaacoub',
-    [string]$FoundryResourceName = 'foundry-myaacoub-private',
-    [string]$EmbeddingDeployment = 'text-embedding-3-small',
-    [string]$IngestionAppName = 'Semiconductor SharePoint Search Indexer',
-    [ValidatePattern('^[a-z0-9][a-z0-9-]{1,79}$')][string]$ResourceNamePrefix = 'semiconductor',
+    [string]$ConfigPath = (Join-Path $PSScriptRoot '..\config\deployment.json'),
+    [string]$TenantId,
+    [string]$SubscriptionId,
+    [string]$ResourceGroup,
+    [string]$SearchServiceName,
+    [string]$FoundryResourceName,
+    [string]$EmbeddingDeployment,
+    [string]$IngestionAppName,
+    [ValidatePattern('^[a-z0-9][a-z0-9-]{1,79}$')][string]$ResourceNamePrefix,
     [string]$IndexName = '',
-    [string]$FeedbackIndexName = 'semiconductor-search-feedback',
-    [ValidateRange(300, 8000)][int]$ChunkSize = 512,
-    [ValidateRange(0, 4000)][int]$ChunkOverlap = 128,
+    [string]$FeedbackIndexName,
+    [ValidateRange(300, 8000)][int]$ChunkSize,
+    [ValidateRange(0, 4000)][int]$ChunkOverlap,
     [switch]$ResetIndexer,
     [switch]$RecreateIndex,
-    [string]$SharePointStatePath = (Join-Path $PSScriptRoot '..\.state\sharepoint.json'),
-    [string]$SearchStatePath = (Join-Path $PSScriptRoot '..\.state\search.json')
+    [string]$SharePointStatePath,
+    [string]$SearchStatePath
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$SearchApiVersion = '2026-08-01-preview'
+. (Join-Path $PSScriptRoot 'deployment_config.ps1')
+$repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$config = Import-DeploymentConfig -Path $ConfigPath
+function Get-ConfigValue {
+    param([Parameter(Mandatory)][string]$Path)
+    return Get-DeploymentConfigValue -Config $config -Path $Path
+}
+if (-not $PSBoundParameters.ContainsKey('TenantId')) { $TenantId = Get-ConfigValue 'azure.tenantId' }
+if (-not $PSBoundParameters.ContainsKey('SubscriptionId')) { $SubscriptionId = Get-ConfigValue 'azure.subscriptionId' }
+if (-not $PSBoundParameters.ContainsKey('ResourceGroup')) { $ResourceGroup = Get-ConfigValue 'azure.resourceGroup' }
+if (-not $PSBoundParameters.ContainsKey('SearchServiceName')) { $SearchServiceName = Get-ConfigValue 'search.serviceName' }
+if (-not $PSBoundParameters.ContainsKey('FoundryResourceName')) { $FoundryResourceName = Get-ConfigValue 'foundry.embeddingAccountName' }
+if (-not $PSBoundParameters.ContainsKey('EmbeddingDeployment')) { $EmbeddingDeployment = Get-ConfigValue 'search.embeddingDeployment' }
+if (-not $PSBoundParameters.ContainsKey('IngestionAppName')) { $IngestionAppName = Get-ConfigValue 'search.ingestionApplicationName' }
+if (-not $PSBoundParameters.ContainsKey('ResourceNamePrefix')) { $ResourceNamePrefix = Get-ConfigValue 'search.resourceNamePrefix' }
+if (-not $PSBoundParameters.ContainsKey('FeedbackIndexName')) { $FeedbackIndexName = Get-ConfigValue 'search.feedbackIndexName' }
+if (-not $PSBoundParameters.ContainsKey('ChunkSize')) { $ChunkSize = Get-ConfigValue 'search.chunkSize' }
+if (-not $PSBoundParameters.ContainsKey('ChunkOverlap')) { $ChunkOverlap = Get-ConfigValue 'search.chunkOverlap' }
+if (-not $PSBoundParameters.ContainsKey('SharePointStatePath')) {
+    $SharePointStatePath = Resolve-DeploymentPath -RepositoryRoot $repositoryRoot -Path (Get-ConfigValue 'paths.sharePointState')
+}
+if (-not $PSBoundParameters.ContainsKey('SearchStatePath')) {
+    $SearchStatePath = Resolve-DeploymentPath -RepositoryRoot $repositoryRoot -Path (Get-ConfigValue 'paths.searchState')
+}
+$SearchApiVersion = Get-ConfigValue 'apiVersions.searchService'
+$SearchManagementApiVersion = Get-ConfigValue 'apiVersions.searchManagement'
+$FoundryApiVersion = Get-ConfigValue 'apiVersions.foundryAccount'
+$AuthorizationApiVersion = Get-ConfigValue 'apiVersions.armAuthorization'
+$GraphApiVersion = Get-ConfigValue 'apiVersions.graph'
+$EmbeddingModel = Get-ConfigValue 'search.embeddingModel'
+$EmbeddingDimensions = Get-ConfigValue 'search.embeddingDimensions'
+$ChunkUnit = Get-ConfigValue 'search.chunkUnit'
+$Tokenizer = Get-ConfigValue 'search.tokenizer'
+$CorpusLanguage = Get-ConfigValue 'search.corpusLanguage'
+$VectorAlgorithmKind = Get-ConfigValue 'search.vectorAlgorithmKind'
+$VectorMetric = Get-ConfigValue 'search.vectorMetric'
+$HnswM = Get-ConfigValue 'search.hnswM'
+$HnswEfConstruction = Get-ConfigValue 'search.hnswEfConstruction'
+$HnswEfSearch = Get-ConfigValue 'search.hnswEfSearch'
+$VectorAlgorithmName = Get-ConfigValue 'search.vectorAlgorithmName'
+$VectorProfileName = Get-ConfigValue 'search.vectorProfileName'
+$VectorizerName = Get-ConfigValue 'search.vectorizerName'
+$SemanticConfigurationName = Get-ConfigValue 'search.semanticConfigurationName'
+$ScheduleInterval = Get-ConfigValue 'search.scheduleInterval'
+$IndexerBatchSize = Get-ConfigValue 'search.indexerBatchSize'
+$IndexNameSuffix = Get-ConfigValue 'search.indexNameSuffix'
+$DataSourceNameSuffix = Get-ConfigValue 'search.dataSourceNameSuffix'
+$SkillsetNameSuffix = Get-ConfigValue 'search.skillsetNameSuffix'
+$IndexerNameSuffix = Get-ConfigValue 'search.indexerNameSuffix'
+$IndexedFileNameExtensions = @($config.corpus.formats | ForEach-Object { ".$($_)" }) -join ','
 $GraphAppId = '00000003-0000-0000-c000-000000000000'
 if ($ChunkOverlap -ge $ChunkSize) {
     throw 'ChunkOverlap must be smaller than ChunkSize.'
@@ -42,7 +92,7 @@ function Invoke-Graph {
         [switch]$AllowNotFound,
         [switch]$AllowConflict
     )
-    $requestUri = if ($Uri.StartsWith('https://')) { $Uri } else { "https://graph.microsoft.com/v1.0$Uri" }
+    $requestUri = if ($Uri.StartsWith('https://')) { $Uri } else { "https://graph.microsoft.com/$GraphApiVersion$Uri" }
     for ($attempt = 1; $attempt -le 5; $attempt++) {
         try {
             $parameters = @{
@@ -149,7 +199,7 @@ if (-not $context -or $context.Subscription.Id -ne $SubscriptionId -or $context.
 }
 $script:ArmToken = Get-AzBearerToken -ResourceUrl 'https://management.azure.com'
 $searchResourcePath = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Search/searchServices/$SearchServiceName"
-$search = Invoke-Arm -Method GET -Path "$searchResourcePath`?api-version=2025-05-01"
+$search = Invoke-Arm -Method GET -Path "$searchResourcePath`?api-version=$SearchManagementApiVersion"
 if ($search.sku.name -eq 'free') { throw 'The SharePoint indexer requires Basic tier or higher.' }
 if ($search.identity.type -notmatch 'SystemAssigned') {
     throw "Search service $SearchServiceName must have a system-assigned managed identity."
@@ -274,22 +324,22 @@ if (-not $federatedCredential) {
 }
 
 $script:SearchEndpoint = "https://$SearchServiceName.search.windows.net"
-$searchKeys = Invoke-Arm -Method POST -Path "$searchResourcePath/listAdminKeys?api-version=2025-05-01"
+$searchKeys = Invoke-Arm -Method POST -Path "$searchResourcePath/listAdminKeys?api-version=$SearchManagementApiVersion"
 $script:SearchAdminKey = $searchKeys.primaryKey
 if (-not $script:SearchAdminKey) { throw 'Could not obtain an ephemeral Search admin key.' }
 $foundryResourcePath = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.CognitiveServices/accounts/$FoundryResourceName"
-$foundry = Invoke-Arm -Method GET -Path "$foundryResourcePath`?api-version=2025-06-01"
+$foundry = Invoke-Arm -Method GET -Path "$foundryResourcePath`?api-version=$FoundryApiVersion"
 $openAiEndpoint = "https://$($foundry.properties.customSubDomainName).openai.azure.com"
 
 $openAiUserRoleId = "/subscriptions/$SubscriptionId/providers/Microsoft.Authorization/roleDefinitions/5e0bd9bd-7b93-4f28-af87-19fc36ad61bd"
-$roleAssignments = Invoke-Arm -Method GET -Path "$($foundry.id)/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01&`$filter=atScope()"
+$roleAssignments = Invoke-Arm -Method GET -Path "$($foundry.id)/providers/Microsoft.Authorization/roleAssignments?api-version=$AuthorizationApiVersion&`$filter=atScope()"
 $hasOpenAiRole = @($roleAssignments.value) | Where-Object {
     $_.properties.principalId -eq $search.identity.principalId -and
     $_.properties.roleDefinitionId -eq $openAiUserRoleId
 } | Select-Object -First 1
 if (-not $hasOpenAiRole) {
     $roleAssignmentId = [Guid]::NewGuid().ToString()
-    Invoke-Arm -Method PUT -Path "$($foundry.id)/providers/Microsoft.Authorization/roleAssignments/$roleAssignmentId`?api-version=2022-04-01" -Body @{
+    Invoke-Arm -Method PUT -Path "$($foundry.id)/providers/Microsoft.Authorization/roleAssignments/$roleAssignmentId`?api-version=$AuthorizationApiVersion" -Body @{
         properties = @{
             roleDefinitionId = $openAiUserRoleId
             principalId = $search.identity.principalId
@@ -298,11 +348,11 @@ if (-not $hasOpenAiRole) {
     } | Out-Null
 }
 
-$indexName = if ($IndexName) { $IndexName } else { "$ResourceNamePrefix-knowledge-chunks" }
+$indexName = if ($IndexName) { $IndexName } else { "$ResourceNamePrefix-$IndexNameSuffix" }
 $feedbackIndexName = $FeedbackIndexName
-$dataSourceName = "$ResourceNamePrefix-sharepoint-datasource"
-$skillsetName = "$ResourceNamePrefix-chunking-skillset"
-$indexerName = "$ResourceNamePrefix-sharepoint-indexer"
+$dataSourceName = "$ResourceNamePrefix-$DataSourceNameSuffix"
+$skillsetName = "$ResourceNamePrefix-$SkillsetNameSuffix"
+$indexerName = "$ResourceNamePrefix-$IndexerNameSuffix"
 
 if ($RecreateIndex) {
     Invoke-Search -Method DELETE -Path "indexers/$indexerName" -AllowNotFound | Out-Null
@@ -315,7 +365,7 @@ $indexDefinition = @{
         @{ name = 'chunk_id'; type = 'Edm.String'; key = $true; filterable = $true; analyzer = 'keyword' },
         @{ name = 'parent_id'; type = 'Edm.String'; filterable = $true },
         @{ name = 'chunk'; type = 'Edm.String'; searchable = $true; retrievable = $true },
-        @{ name = 'chunk_vector'; type = 'Collection(Edm.Single)'; searchable = $true; retrievable = $false; stored = $false; dimensions = 1536; vectorSearchProfile = 'semiconductor-vector-profile' },
+        @{ name = 'chunk_vector'; type = 'Collection(Edm.Single)'; searchable = $true; retrievable = $false; stored = $false; dimensions = $EmbeddingDimensions; vectorSearchProfile = $VectorProfileName },
         @{ name = 'title'; type = 'Edm.String'; searchable = $true; filterable = $true; sortable = $true; retrievable = $true },
         @{ name = 'document_url'; type = 'Edm.String'; retrievable = $true },
         @{ name = 'document_path'; type = 'Edm.String'; searchable = $true; filterable = $true; retrievable = $true },
@@ -331,31 +381,36 @@ $indexDefinition = @{
     vectorSearch = @{
         algorithms = @(
             @{
-                name = 'semiconductor-hnsw'
-                kind = 'hnsw'
-                hnswParameters = @{ metric = 'cosine'; m = 4; efConstruction = 400; efSearch = 500 }
+                name = $VectorAlgorithmName
+                kind = $VectorAlgorithmKind
+                hnswParameters = @{
+                    metric = $VectorMetric
+                    m = $HnswM
+                    efConstruction = $HnswEfConstruction
+                    efSearch = $HnswEfSearch
+                }
             }
         )
         profiles = @(
-            @{ name = 'semiconductor-vector-profile'; algorithm = 'semiconductor-hnsw'; vectorizer = 'semiconductor-openai-vectorizer' }
+            @{ name = $VectorProfileName; algorithm = $VectorAlgorithmName; vectorizer = $VectorizerName }
         )
         vectorizers = @(
             @{
-                name = 'semiconductor-openai-vectorizer'
+                name = $VectorizerName
                 kind = 'azureOpenAI'
                 azureOpenAIParameters = @{
                     resourceUri = $openAiEndpoint
                     deploymentId = $EmbeddingDeployment
-                    modelName = 'text-embedding-3-small'
+                    modelName = $EmbeddingModel
                 }
             }
         )
     }
     semantic = @{
-        defaultConfiguration = 'semiconductor-semantic-config'
+        defaultConfiguration = $SemanticConfigurationName
         configurations = @(
             @{
-                name = 'semiconductor-semantic-config'
+                name = $SemanticConfigurationName
                 prioritizedFields = @{
                     titleField = @{ fieldName = 'title' }
                     prioritizedContentFields = @(@{ fieldName = 'chunk' })
@@ -414,10 +469,10 @@ $skillsetDefinition = @{
             name = 'split-content'
             description = "Split documents into $ChunkSize-token pages with $ChunkOverlap-token overlap."
             context = '/document'
-            defaultLanguageCode = 'en'
+            defaultLanguageCode = $CorpusLanguage
             textSplitMode = 'pages'
-            unit = 'azureOpenAITokens'
-            azureOpenAITokenizerParameters = @{ encoderModelName = 'cl100k_base' }
+            unit = $ChunkUnit
+            azureOpenAITokenizerParameters = @{ encoderModelName = $Tokenizer }
             maximumPageLength = $ChunkSize
             pageOverlapLength = $ChunkOverlap
             inputs = @(@{ name = 'text'; source = '/document/content' })
@@ -426,12 +481,12 @@ $skillsetDefinition = @{
         @{
             '@odata.type' = '#Microsoft.Skills.Text.AzureOpenAIEmbeddingSkill'
             name = 'embed-chunks'
-            description = 'Create 1536-dimensional vectors with the Search managed identity.'
+            description = "Create $EmbeddingDimensions-dimensional vectors with the Search managed identity."
             context = '/document/pages/*'
             resourceUri = $openAiEndpoint
             deploymentId = $EmbeddingDeployment
-            modelName = 'text-embedding-3-small'
-            dimensions = 1536
+            modelName = $EmbeddingModel
+            dimensions = $EmbeddingDimensions
             inputs = @(@{ name = 'text'; source = '/document/pages/*' })
             outputs = @(@{ name = 'embedding'; targetName = 'chunk_vector' })
         }
@@ -466,13 +521,13 @@ $indexerDefinition = @{
     dataSourceName = $dataSourceName
     targetIndexName = $indexName
     skillsetName = $skillsetName
-    schedule = @{ interval = 'PT1H' }
+    schedule = @{ interval = $ScheduleInterval }
     parameters = @{
-        batchSize = 10
+        batchSize = $IndexerBatchSize
         maxFailedItems = 0
         maxFailedItemsPerBatch = 0
         configuration = @{
-            indexedFileNameExtensions = '.docx,.pptx,.xlsx'
+            indexedFileNameExtensions = $IndexedFileNameExtensions
             dataToExtract = 'contentAndMetadata'
             failOnUnsupportedContentType = $false
             failOnUnprocessableDocument = $false

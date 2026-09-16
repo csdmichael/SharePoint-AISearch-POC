@@ -1,18 +1,40 @@
 [CmdletBinding()]
 param(
-    [string]$TenantId = '12a4b86b-e64c-43f9-af05-d9130a72dfd2',
-    [string]$SiteDisplayName = 'Semiconductor Knowledge Hub',
-    [string]$MailNickname = 'semiconductorknowledgehub',
-    [string]$LibraryDisplayName = 'Semiconductor Knowledge',
-    [string]$CorpusPath = (Join-Path $PSScriptRoot '..\corpus'),
-    [string]$StatePath = (Join-Path $PSScriptRoot '..\.state\sharepoint.json'),
-    [int]$ExpectedDocuments = 100,
+    [string]$ConfigPath = (Join-Path $PSScriptRoot '..\config\deployment.json'),
+    [string]$TenantId,
+    [string]$SiteDisplayName,
+    [string]$MailNickname,
+    [string]$LibraryDisplayName,
+    [string]$CorpusPath,
+    [string]$StatePath,
+    [int]$ExpectedDocuments,
     [switch]$SiteOnly,
     [switch]$PruneMissingDocuments
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'deployment_config.ps1')
+$repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$config = Import-DeploymentConfig -Path $ConfigPath
+function Get-ConfigValue {
+    param([Parameter(Mandatory)][string]$Path)
+    return Get-DeploymentConfigValue -Config $config -Path $Path
+}
+if (-not $PSBoundParameters.ContainsKey('TenantId')) { $TenantId = Get-ConfigValue 'azure.tenantId' }
+if (-not $PSBoundParameters.ContainsKey('SiteDisplayName')) { $SiteDisplayName = Get-ConfigValue 'sharePoint.siteDisplayName' }
+if (-not $PSBoundParameters.ContainsKey('MailNickname')) { $MailNickname = Get-ConfigValue 'sharePoint.mailNickname' }
+if (-not $PSBoundParameters.ContainsKey('LibraryDisplayName')) { $LibraryDisplayName = Get-ConfigValue 'sharePoint.productionLibraryName' }
+if (-not $PSBoundParameters.ContainsKey('CorpusPath')) {
+    $CorpusPath = Resolve-DeploymentPath -RepositoryRoot $repositoryRoot -Path (Get-ConfigValue 'paths.corpus')
+}
+if (-not $PSBoundParameters.ContainsKey('StatePath')) {
+    $StatePath = Resolve-DeploymentPath -RepositoryRoot $repositoryRoot -Path (Get-ConfigValue 'paths.sharePointState')
+}
+if (-not $PSBoundParameters.ContainsKey('ExpectedDocuments')) { $ExpectedDocuments = Get-ConfigValue 'corpus.expectedDocuments' }
+$GraphApiVersion = Get-ConfigValue 'apiVersions.graph'
+$ProvisioningApplicationName = Get-ConfigValue 'sharePoint.provisioningApplicationName'
+$Categories = @(Get-ConfigValue 'corpus.categories')
 
 function Get-JwtClaims {
     param([Parameter(Mandatory)][string]$Token)
@@ -33,7 +55,7 @@ function Invoke-Graph {
         [string]$Token = $script:GraphToken
     )
 
-    $requestUri = if ($Uri.StartsWith('https://')) { $Uri } else { "https://graph.microsoft.com/v1.0$Uri" }
+    $requestUri = if ($Uri.StartsWith('https://')) { $Uri } else { "https://graph.microsoft.com/$GraphApiVersion$Uri" }
     for ($attempt = 1; $attempt -le 5; $attempt++) {
         try {
             $parameters = @{
@@ -116,7 +138,7 @@ function Ensure-Column {
 $script:GraphToken = $null
 $script:AdminGraphToken = $null
 $provisioningCorrelationId = [Guid]::NewGuid().ToString('N')
-$temporaryDisplayName = "Semiconductor SharePoint Provisioner $($provisioningCorrelationId.Substring(0, 12))"
+$temporaryDisplayName = "$ProvisioningApplicationName $($provisioningCorrelationId.Substring(0, 12))"
 $temporaryApplication = $null
 $temporaryServicePrincipal = $null
 $temporaryRoleAssignmentIds = @()
@@ -298,8 +320,7 @@ foreach ($definition in $columnDefinitions) {
 }
 
 $drive = Invoke-Graph -Method GET -Uri "/sites/$($site.id)/lists/$($library.id)/drive?`$select=id,name,webUrl"
-$categories = @('Quality', 'Manufacturing', 'Inventory', 'Sales', 'Supply Chain', 'Yield')
-foreach ($category in $categories) {
+foreach ($category in $Categories) {
     $encodedCategory = [Uri]::EscapeDataString($category)
     $folder = Invoke-Graph -Method GET -Uri "/drives/$($drive.id)/root:/$encodedCategory" -AllowNotFound
     if (-not $folder) {
@@ -316,7 +337,7 @@ if ($PruneMissingDocuments -and -not $SiteOnly) {
     foreach ($item in $manifest) {
         $expectedPaths["$($item.category)/$($item.filename)"] = $true
     }
-    foreach ($category in $categories) {
+    foreach ($category in $Categories) {
         $encodedCategory = [Uri]::EscapeDataString($category)
         $children = Invoke-Graph -Method GET -Uri "/drives/$($drive.id)/root:/$encodedCategory`:/children?`$select=id,name,file"
         foreach ($child in @($children.value)) {
@@ -351,7 +372,7 @@ if (-not $SiteOnly) {
     $expectedByPath = @{}
     foreach ($item in $manifest) { $expectedByPath["$($item.category)/$($item.filename)"] = $item }
     $remoteByPath = @{}
-    foreach ($category in $categories) {
+    foreach ($category in $Categories) {
         $encodedCategory = [Uri]::EscapeDataString($category)
         $children = Invoke-Graph -Method GET -Uri "/drives/$($drive.id)/root:/$encodedCategory`:/children?`$select=id,name,file"
         foreach ($child in @($children.value)) {

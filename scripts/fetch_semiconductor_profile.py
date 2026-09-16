@@ -12,21 +12,23 @@ from typing import Any
 from azure.ai.projects import AIProjectClient
 from azure.identity import AzureCliCredential, AzurePowerShellCredential, ChainedTokenCredential
 
+try:
+    from .deployment_config import (
+        DEFAULT_CONFIG_PATH,
+        foundry_project_endpoint,
+        get_config_value,
+        load_deployment_config,
+        resolve_deployment_path,
+    )
+except ImportError:
+    from deployment_config import (
+        DEFAULT_CONFIG_PATH,
+        foundry_project_endpoint,
+        get_config_value,
+        load_deployment_config,
+        resolve_deployment_path,
+    )
 
-DEFAULT_PROJECT_ENDPOINT = (
-    "https://foundry-myaacoub-private.services.ai.azure.com/api/projects/sales-poc"
-)
-DEFAULT_AGENT_NAME = "semiconductor-sales"
-
-PROFILE_PROMPT = """
-Use the databricks-mcp tools to inspect the semiconductor dataset. First list all
-available tables and columns, then run read-only SQL queries to profile the data
-and collect a diverse representative sample of up to 100 rows total across
-relevant tables. Return strict JSON only with keys generated_at, source_tables,
-column_definitions, aggregate_metrics, representative_rows, data_quality_notes.
-Include fully qualified table names and exact SQL statements. Do not infer or
-invent any value. Exclude direct personal identifiers if any exist.
-""".strip()
 
 PII_COLUMN_PATTERN = re.compile(
     r"(^|_)(email|phone|mobile|ssn|social_security|passport|driver_license|date_of_birth|dob)(_|$)",
@@ -195,7 +197,7 @@ def parse_json_response(text: str) -> dict:
     return profile
 
 
-def fetch_profile(project_endpoint: str, agent_name: str) -> dict:
+def fetch_profile(project_endpoint: str, agent_name: str, prompt: str) -> dict:
     project = AIProjectClient(
         endpoint=project_endpoint,
         credential=ChainedTokenCredential(
@@ -207,7 +209,7 @@ def fetch_profile(project_endpoint: str, agent_name: str) -> dict:
     conversation = openai_client.conversations.create()
     response = openai_client.responses.create(
         conversation=conversation.id,
-        input=PROFILE_PROMPT,
+        input=prompt,
     )
     return parse_json_response(response.output_text)
 
@@ -220,8 +222,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Fetch a semiconductor data profile through the existing Foundry agent."
     )
-    parser.add_argument("--project-endpoint", default=DEFAULT_PROJECT_ENDPOINT)
-    parser.add_argument("--agent-name", default=DEFAULT_AGENT_NAME)
+    parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    parser.add_argument("--project-endpoint")
+    parser.add_argument("--agent-name")
     parser.add_argument(
         "--validate-existing",
         type=Path,
@@ -230,9 +233,22 @@ def main() -> None:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("data/semiconductor_profile.json"),
     )
     args = parser.parse_args()
+    config, _ = load_deployment_config(args.config)
+    profile_source = get_config_value(config, "foundry", "profileSource")
+    project_endpoint = args.project_endpoint or foundry_project_endpoint(
+        get_config_value(profile_source, "accountName"),
+        get_config_value(profile_source, "projectName"),
+    )
+    agent_name = args.agent_name or get_config_value(profile_source, "agentName")
+    output_path = args.output or resolve_deployment_path(
+        get_config_value(config, "paths", "profile")
+    )
+    prompt_path = resolve_deployment_path(get_config_value(profile_source, "promptPath"))
+    prompt = prompt_path.read_text(encoding="utf-8").strip()
+    if not prompt:
+        parser.error(f"Profile prompt is empty: {prompt_path}")
 
     if args.validate_existing:
         profile = json.loads(args.validate_existing.read_text(encoding="utf-8"))
@@ -249,9 +265,9 @@ def main() -> None:
         )
         return
 
-    profile = fetch_profile(args.project_endpoint, args.agent_name)
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(
+    profile = fetch_profile(project_endpoint, agent_name, prompt)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
         json.dumps(profile, indent=2, ensure_ascii=True) + "\n",
         encoding="utf-8",
     )

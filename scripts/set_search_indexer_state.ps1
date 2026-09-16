@@ -1,12 +1,23 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][string]$SearchStatePath,
+    [string]$ConfigPath = (Join-Path $PSScriptRoot '..\config\deployment.json'),
+    [string]$SearchStatePath,
     [Parameter(Mandatory)][bool]$Disabled,
-    [string]$SharePointStatePath = (Join-Path $PSScriptRoot '..\.state\sharepoint.json')
+    [string]$SharePointStatePath
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'deployment_config.ps1')
+$repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$config = Import-DeploymentConfig -Path $ConfigPath
+if (-not $PSBoundParameters.ContainsKey('SearchStatePath')) {
+    $SearchStatePath = Resolve-DeploymentPath -RepositoryRoot $repositoryRoot -Path (Get-DeploymentConfigValue -Config $config -Path 'paths.searchState')
+}
+if (-not $PSBoundParameters.ContainsKey('SharePointStatePath')) {
+    $SharePointStatePath = Resolve-DeploymentPath -RepositoryRoot $repositoryRoot -Path (Get-DeploymentConfigValue -Config $config -Path 'paths.sharePointState')
+}
+$SearchManagementApiVersion = Get-DeploymentConfigValue -Config $config -Path 'apiVersions.searchManagement'
 
 if (-not (Test-Path $SearchStatePath)) { throw "Search state not found: $SearchStatePath" }
 if (-not (Test-Path $SharePointStatePath)) { throw "SharePoint state not found: $SharePointStatePath" }
@@ -17,7 +28,7 @@ $armToken = if ($tokenResult.Token -is [Security.SecureString]) {
     [Net.NetworkCredential]::new('', $tokenResult.Token).Password
 } else { [string]$tokenResult.Token }
 $resourcePath = "/subscriptions/$($state.subscriptionId)/resourceGroups/$($state.resourceGroup)/providers/Microsoft.Search/searchServices/$($state.searchServiceName)"
-$keys = Invoke-RestMethod -Method POST -Headers @{ Authorization = "Bearer $armToken" } -Uri "https://management.azure.com$resourcePath/listAdminKeys?api-version=2025-05-01"
+$keys = Invoke-RestMethod -Method POST -Headers @{ Authorization = "Bearer $armToken" } -Uri "https://management.azure.com$resourcePath/listAdminKeys?api-version=$SearchManagementApiVersion"
 $headers = @{ 'api-key' = $keys.primaryKey; 'Content-Type' = 'application/json' }
 $uri = "$($state.searchEndpoint)/indexers/$($state.indexerName)?api-version=$($state.apiVersion)"
 $indexer = Invoke-RestMethod -Method GET -Headers $headers -Uri $uri
