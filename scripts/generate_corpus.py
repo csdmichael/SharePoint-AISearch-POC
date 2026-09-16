@@ -53,6 +53,7 @@ SOURCE_SYSTEM: str
 FORMAT_ORDER: tuple[str, ...]
 PERSPECTIVES: tuple[str, ...]
 TABLE_CONFIG: dict[str, tuple[str, str, str]]
+SHAREPOINT_LIBRARY_NAME: str
 
 FRACTION_PERCENT_FIELDS = {
     "yield_pct",
@@ -333,7 +334,7 @@ def create_lineage_image(path: Path, table_name: str, accent: str) -> None:
     draw = ImageDraw.Draw(image)
     boxes = (
         (55, 150, 385, 370, "Databricks", table_name),
-        (535, 150, 865, 370, "SharePoint", "Semiconductor Knowledge"),
+        (535, 150, 865, 370, "SharePoint", SHAREPOINT_LIBRARY_NAME),
         (1015, 150, 1345, 370, "Azure AI Search", "Chunked hybrid index"),
     )
     for left, top, right, bottom, heading, detail in boxes:
@@ -730,7 +731,7 @@ def create_pptx(path: Path, spec: dict, rows: list[dict], aggregate: dict, colum
     add_ppt_title(slide, "Knowledge lineage", accent)
     stages = (
         (0.65, "Databricks", suffix(spec["source_table"])),
-        (4.65, "SharePoint", "Semiconductor Knowledge"),
+        (4.65, "SharePoint", SHAREPOINT_LIBRARY_NAME),
         (8.65, "Azure AI Search", "Chunk + vector + hybrid"),
     )
     for index, (left, heading, detail) in enumerate(stages):
@@ -914,7 +915,7 @@ def create_xlsx(path: Path, spec: dict, rows: list[dict], aggregate: dict, colum
     lineage["A1"].font = Font(size=18, bold=True, color=accent)
     for cell_range, heading, detail in (
         ("B3:D6", "Databricks", suffix(spec["source_table"])),
-        ("F3:H6", "SharePoint", "Semiconductor Knowledge"),
+        ("F3:H6", "SharePoint", SHAREPOINT_LIBRARY_NAME),
         ("J3:L6", "Azure AI Search", "Chunked hybrid index"),
     ):
         lineage.merge_cells(cell_range)
@@ -998,6 +999,7 @@ def main() -> None:
     parser.add_argument("--profile", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--document-count", type=int)
+    parser.add_argument("--library-name")
     args = parser.parse_args()
     config, _ = load_deployment_config(args.config)
     corpus_config = get_config_value(config, "corpus")
@@ -1007,10 +1009,12 @@ def main() -> None:
     output_path = args.output or resolve_deployment_path(
         get_config_value(config, "paths", "corpus")
     )
-    document_count = args.document_count or int(
-        get_config_value(corpus_config, "expectedDocuments")
+    document_count = (
+        args.document_count
+        if args.document_count is not None
+        else int(get_config_value(corpus_config, "expectedDocuments"))
     )
-    global AUTHOR, SOURCE_SYSTEM, FORMAT_ORDER, PERSPECTIVES, TABLE_CONFIG
+    global AUTHOR, SOURCE_SYSTEM, FORMAT_ORDER, PERSPECTIVES, TABLE_CONFIG, SHAREPOINT_LIBRARY_NAME
     AUTHOR = str(get_config_value(corpus_config, "author"))
     SOURCE_SYSTEM = str(get_config_value(corpus_config, "sourceSystem"))
     FORMAT_ORDER = tuple(get_config_value(corpus_config, "formats"))
@@ -1020,11 +1024,17 @@ def main() -> None:
         table: (settings["category"], settings["displayName"], settings["accent"])
         for table, settings in table_configuration.items()
     }
+    SHAREPOINT_LIBRARY_NAME = args.library_name or str(
+        get_config_value(config, "sharePoint", "productionLibraryName")
+    )
     if document_count < 1:
         parser.error("--document-count must be at least 1")
 
     profile = json.loads(profile_path.read_text(encoding="utf-8"))
-    validate_profile(profile)
+    validate_profile(
+        profile,
+        int(get_config_value(config, "foundry", "profileSource", "maxRepresentativeRows")),
+    )
     grouped = group_rows(profile)
     specs = build_specs(profile, grouped, document_count)
     if output_path.exists():

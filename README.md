@@ -563,7 +563,10 @@ The deployed `{Foundry Agent}` has one MCP tool: the Foundry IQ
 `knowledge_base_retrieve` operation exposed by `{Knowledge Base}`. The
 knowledge base uses `{Knowledge Source}` to query the promoted Azure AI Search
 index, plan subqueries, rerank passages, synthesize an answer, and return
-source references. See [create a search-index knowledge source](https://learn.microsoft.com/azure/search/agentic-knowledge-source-how-to-search-index)
+source references. Agent instructions require each Foundry IQ annotation to be
+accompanied by a clickable `document_url` link to the underlying SharePoint
+document; the deployment smoke test rejects an answer without one. See
+[create a search-index knowledge source](https://learn.microsoft.com/azure/search/agentic-knowledge-source-how-to-search-index)
 and [create a knowledge base](https://learn.microsoft.com/azure/search/agentic-retrieval-how-to-create-knowledge-base).
 
 The profile-source agent remains separate. It queries Databricks through the

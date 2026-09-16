@@ -77,6 +77,7 @@ try {
         'scripts\generate_corpus.py',
         '--config', $resolvedConfigPath,
         '--document-count', [string]$BootstrapDocuments,
+        '--library-name', $bootstrapLibraryName,
         '--output', $bootstrapCorpusPath
     )
     Invoke-Python -Arguments @(

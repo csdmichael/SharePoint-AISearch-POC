@@ -40,6 +40,7 @@ $answerInstructions = Get-ConfigValue 'foundry.knowledgeAgent.answerInstructions
 $smokeTestQuery = Get-ConfigValue 'foundry.knowledgeAgent.smokeTestQuery'
 $instructionsPath = Resolve-DeploymentPath -RepositoryRoot $repositoryRoot -Path (Get-ConfigValue 'foundry.knowledgeAgent.instructionsPath')
 $statePath = Resolve-DeploymentPath -RepositoryRoot $repositoryRoot -Path (Get-ConfigValue 'paths.foundryState')
+$sharePointStatePath = Resolve-DeploymentPath -RepositoryRoot $repositoryRoot -Path (Get-ConfigValue 'paths.sharePointState')
 $authorizationApiVersion = Get-ConfigValue 'apiVersions.armAuthorization'
 $foundryApiVersion = Get-ConfigValue 'apiVersions.foundryAccount'
 $agentApiVersion = Get-ConfigValue 'apiVersions.foundryAgent'
@@ -48,8 +49,12 @@ $searchManagementApiVersion = Get-ConfigValue 'apiVersions.searchManagement'
 $searchApiVersion = Get-ConfigValue 'apiVersions.searchService'
 
 if (-not (Test-Path $instructionsPath)) { throw "Agent instructions not found: $instructionsPath" }
-$agentInstructions = Get-Content $instructionsPath -Raw
+if (-not (Test-Path $sharePointStatePath)) { throw "SharePoint state not found: $sharePointStatePath" }
+$agentInstructions = (Get-Content $instructionsPath -Raw).Trim()
 if ([string]::IsNullOrWhiteSpace($agentInstructions)) { throw "Agent instructions are empty: $instructionsPath" }
+$sharePointState = Get-Content $sharePointStatePath -Raw | ConvertFrom-Json
+$sharePointSiteUrl = ([string]$sharePointState.siteUrl).TrimEnd('/')
+if ([string]::IsNullOrWhiteSpace($sharePointSiteUrl)) { throw 'SharePoint state does not contain a site URL.' }
 
 $context = Get-AzContext
 if (-not $context -or $context.Subscription.Id -ne $subscriptionId -or $context.Tenant.Id -ne $tenantId) {
@@ -127,7 +132,8 @@ function Invoke-Foundry {
     param(
         [Parameter(Mandatory)][ValidateSet('GET', 'POST')][string]$Method,
         [Parameter(Mandatory)][string]$Path,
-        [object]$Body
+        [object]$Body,
+        [switch]$AllowNotFound
     )
 
     $requestUri = "$script:ProjectEndpoint/$Path"
@@ -145,9 +151,22 @@ function Invoke-Foundry {
     }
     catch {
         $status = if ($_.Exception.Response) { [int]$_.Exception.Response.StatusCode } else { 0 }
+        if ($AllowNotFound -and $status -eq 404) { return $null }
         $details = if ($_.ErrorDetails.Message) { $_.ErrorDetails.Message } else { $_.Exception.Message }
         throw "Microsoft Foundry $Method $requestUri failed ($status): $details"
     }
+}
+
+function Get-OptionalProperty {
+    param(
+        [object]$InputObject,
+        [Parameter(Mandatory)][string]$Name
+    )
+
+    if ($null -eq $InputObject -or $InputObject.PSObject.Properties.Name -notcontains $Name) {
+        return $null
+    }
+    return $InputObject.$Name
 }
 
 function Ensure-RoleAssignment {
@@ -323,26 +342,63 @@ $agentDefinition = @{
         }
     )
 }
-$existingAgent = Invoke-Foundry -Method GET -Path "agents/$agentName`?api-version=$agentApiVersion"
-$existingDefinition = $existingAgent.versions.latest.definition
-$existingTool = @($existingDefinition.tools) | Select-Object -First 1
-$agentNeedsUpdate = $existingDefinition.model -ne $agentModel -or
-    $existingDefinition.instructions -ne $agentInstructions -or
-    $existingDefinition.reasoning.effort -ne $agentReasoningEffort -or
-    -not $existingTool -or
-    $existingTool.type -ne 'mcp' -or
-    $existingTool.server_url -ne $mcpEndpoint -or
-    $existingTool.project_connection_id -ne $connectionName -or
-    @($existingTool.allowed_tools) -notcontains 'knowledge_base_retrieve'
-if ($agentNeedsUpdate) {
+$existingAgent = Invoke-Foundry -Method GET -Path "agents/$agentName`?api-version=$agentApiVersion" -AllowNotFound
+$agentCreated = $null -eq $existingAgent
+$agentNeedsUpdate = $agentCreated
+if ($agentCreated) {
+    Invoke-Foundry -Method POST -Path "agents?api-version=$agentApiVersion" -Body @{
+        name = $agentName
+        definition = $agentDefinition
+    } | Out-Null
+}
+else {
+    $existingVersions = Get-OptionalProperty -InputObject $existingAgent -Name 'versions'
+    $existingLatest = Get-OptionalProperty -InputObject $existingVersions -Name 'latest'
+    $existingDefinition = Get-OptionalProperty -InputObject $existingLatest -Name 'definition'
+    $existingReasoning = Get-OptionalProperty -InputObject $existingDefinition -Name 'reasoning'
+    $existingToolsValue = Get-OptionalProperty -InputObject $existingDefinition -Name 'tools'
+    $existingTools = @(
+        if ($null -ne $existingToolsValue) { $existingToolsValue }
+    )
+    $existingTool = $existingTools | Select-Object -First 1
+    $existingAllowedToolsValue = Get-OptionalProperty -InputObject $existingTool -Name 'allowed_tools'
+    $existingAllowedToolNames = Get-OptionalProperty -InputObject $existingAllowedToolsValue -Name 'tool_names'
+    $existingAllowedTools = @(
+        if ($null -ne $existingAllowedToolNames) {
+            $existingAllowedToolNames
+        }
+        elseif ($null -ne $existingAllowedToolsValue) {
+            $existingAllowedToolsValue
+        }
+    )
+    $agentNeedsUpdate = $null -eq $existingDefinition -or
+        (Get-OptionalProperty -InputObject $existingDefinition -Name 'model') -ne $agentModel -or
+        (Get-OptionalProperty -InputObject $existingDefinition -Name 'instructions') -ne $agentInstructions -or
+        (Get-OptionalProperty -InputObject $existingReasoning -Name 'effort') -ne $agentReasoningEffort -or
+        $existingTools.Count -ne 1 -or
+        (Get-OptionalProperty -InputObject $existingTool -Name 'type') -ne 'mcp' -or
+        (Get-OptionalProperty -InputObject $existingTool -Name 'server_label') -ne 'knowledge-base' -or
+        (Get-OptionalProperty -InputObject $existingTool -Name 'server_url') -ne $mcpEndpoint -or
+        (Get-OptionalProperty -InputObject $existingTool -Name 'require_approval') -ne 'never' -or
+        (Get-OptionalProperty -InputObject $existingTool -Name 'project_connection_id') -ne $connectionName -or
+        $existingAllowedTools.Count -ne 1 -or
+        $existingAllowedTools[0] -ne 'knowledge_base_retrieve'
+}
+if (-not $agentCreated -and $agentNeedsUpdate) {
     Invoke-Foundry -Method POST -Path "agents/$agentName/versions?api-version=$agentApiVersion" -Body @{
         definition = $agentDefinition
     } | Out-Null
 }
 
 $deployedAgent = Invoke-Foundry -Method GET -Path "agents/$agentName`?api-version=$agentApiVersion"
-$latest = $deployedAgent.versions.latest
-if ($latest.definition.tools[0].server_url -ne $mcpEndpoint) {
+$deployedVersions = Get-OptionalProperty -InputObject $deployedAgent -Name 'versions'
+$latest = Get-OptionalProperty -InputObject $deployedVersions -Name 'latest'
+$latestDefinition = Get-OptionalProperty -InputObject $latest -Name 'definition'
+$latestToolsValue = Get-OptionalProperty -InputObject $latestDefinition -Name 'tools'
+$latestTools = @(
+    if ($null -ne $latestToolsValue) { $latestToolsValue }
+)
+if ($latestTools.Count -ne 1 -or (Get-OptionalProperty -InputObject $latestTools[0] -Name 'server_url') -ne $mcpEndpoint) {
     throw "Agent $agentName is not connected to the configured Foundry IQ knowledge base."
 }
 
@@ -364,11 +420,56 @@ if (-not $SkipSmokeTest) {
     ) -join "`n"
     if ([string]::IsNullOrWhiteSpace($outputText)) { throw 'Foundry agent smoke test returned no text.' }
     if ($responseJson -notmatch 'knowledge_base_retrieve') { throw 'Foundry agent smoke test did not call the knowledge base.' }
+    $annotationPattern = '【\d+:\d+†[^】]+】'
+    $linkedCitationPattern = '【\d+:\d+†[^】]+】\s*\[[^\]]+\]\((?<url>https://[^\s\)]+)\)'
+    $annotations = [regex]::Matches($outputText, $annotationPattern)
+    $linkedCitations = [regex]::Matches($outputText, $linkedCitationPattern)
+    if (-not $annotations.Count -or $linkedCitations.Count -ne $annotations.Count) {
+        throw "Foundry agent smoke test linked $($linkedCitations.Count) of $($annotations.Count) citation annotations."
+    }
+    $retrievedDocumentUrls = @(
+        $response.output | Where-Object {
+            (Get-OptionalProperty -InputObject $_ -Name 'type') -eq 'mcp_call'
+        } | ForEach-Object {
+            $rawToolOutput = Get-OptionalProperty -InputObject $_ -Name 'output'
+            if ([string]::IsNullOrWhiteSpace($rawToolOutput)) { return }
+            $retrievalOutput = $rawToolOutput | ConvertFrom-Json
+            foreach ($document in @($retrievalOutput.documents)) {
+                $content = Get-OptionalProperty -InputObject $document -Name 'content'
+                if ($content -isnot [string] -or -not $content.TrimStart().StartsWith('{')) { continue }
+                try {
+                    $sourceDocument = $content | ConvertFrom-Json
+                    $documentUrl = Get-OptionalProperty -InputObject $sourceDocument -Name 'document_url'
+                    if (-not [string]::IsNullOrWhiteSpace($documentUrl)) { $documentUrl }
+                }
+                catch {
+                    continue
+                }
+            }
+        } | Sort-Object -Unique
+    )
+    if (-not $retrievedDocumentUrls.Count) {
+        throw 'Foundry agent smoke test returned no retrieved document_url values.'
+    }
+    $siteUri = [Uri]$sharePointSiteUrl
+    $expectedDocumentPath = "$($siteUri.AbsolutePath.TrimEnd('/'))/_layouts/15/Doc.aspx"
+    foreach ($linkedCitation in $linkedCitations) {
+        $citationUrl = $linkedCitation.Groups['url'].Value
+        $citationUri = [Uri]$citationUrl
+        $isSharePointDocument = $citationUri.Host -eq $siteUri.Host -and
+            $citationUri.AbsolutePath -eq $expectedDocumentPath
+        $cameFromTool = $retrievedDocumentUrls -contains $citationUrl
+        if (-not $isSharePointDocument -or -not $cameFromTool) {
+            throw "Foundry agent smoke test emitted an invalid or ungrounded citation URL: $citationUrl"
+        }
+    }
     $smokeTest = [ordered]@{
         conversationId = $conversation.id
         responseId = $response.id
         outputText = $outputText
         knowledgeToolCalled = $true
+        sharePointDocumentCitationPresent = $true
+        linkedCitationCount = $linkedCitations.Count
     }
 }
 
@@ -385,6 +486,7 @@ $state = [ordered]@{
     agentVersion = $latest.version
     agentStatus = $latest.status
     agentModel = $latest.definition.model
+    agentCreated = $agentCreated
     agentUpdated = $agentNeedsUpdate
     agentUrl = $agentUrl
     searchServiceName = $searchServiceName

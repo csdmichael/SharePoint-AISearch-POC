@@ -282,7 +282,7 @@ if (-not $library) {
     Write-Host "Creating document library '$LibraryDisplayName'..."
     $library = Invoke-Graph -Method POST -Uri "/sites/$($site.id)/lists" -Body @{
         displayName = $LibraryDisplayName
-        description = 'Generated semiconductor knowledge artifacts grounded in Databricks source data.'
+        description = 'Generated source-grounded artifacts for retrieval.'
         list        = @{ template = 'documentLibrary' }
     }
 }

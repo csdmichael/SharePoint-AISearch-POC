@@ -52,7 +52,8 @@
       "accountName": "foundry-myaacoub-private",
       "projectName": "sales-poc",
       "agentName": "semiconductor-sales",
-      "promptPath": "config/profile-agent-prompt.md"
+      "promptPath": "config/profile-agent-prompt.md",
+      "maxRepresentativeRows": 100
     },
     "knowledgeAgent": {
       "accountName": "foundry-myaacoub",
@@ -69,7 +70,7 @@
       "knowledgeSourceDescription": "Indexed SharePoint semiconductor documents with retrievable citations and Databricks lineage.",
       "knowledgeBaseDescription": "Foundry IQ knowledge base for the SharePoint semiconductor document corpus.",
       "retrievalInstructions": "Search the semiconductor document chunks. Prefer passages whose category, artifact ID, and source table match the question. Preserve the SharePoint URL and Databricks lineage fields in source references.",
-      "answerInstructions": "Synthesize a concise answer from retrieved passages and include source references. Distinguish source facts from recommendations and state when the indexed documents do not answer the question.",
+      "answerInstructions": "Synthesize a concise answer from retrieved passages. For every supported claim, preserve the Foundry IQ citation annotation and add a clickable Markdown citation whose target is that result's document_url SharePoint URL. Never use the knowledge-base MCP endpoint as a user-facing citation URL. Distinguish source facts from recommendations and state when the indexed documents do not answer the question.",
       "instructionsPath": "config/foundry-agent-instructions.md",
       "smokeTestQuery": "Which Databricks source table contains wafer-yield data, and what does the indexed corpus say about AI accelerator wafer-yield risk? Cite the SharePoint sources."
     }

@@ -1,3 +1,3 @@
-Use the databricks-mcp tools to inspect the semiconductor dataset. First list all available tables and columns, then run read-only SQL queries to profile the data and collect a diverse representative sample of up to 100 rows total across relevant tables.
+Use the databricks-mcp tools to inspect the semiconductor dataset. First list all available tables and columns, then run read-only SQL queries to profile the data and collect a diverse representative sample of up to {maxRepresentativeRows} rows total across relevant tables.
 
 Return strict JSON only with keys `generated_at`, `source_tables`, `column_definitions`, `aggregate_metrics`, `representative_rows`, and `data_quality_notes`. Include fully qualified table names and exact SQL statements. Do not infer or invent any value. Exclude direct personal identifiers if any exist.

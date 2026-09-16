@@ -102,7 +102,7 @@ def find_sql_values(value: Any) -> list[str]:
     return sql_values
 
 
-def validate_profile(profile: dict) -> None:
+def validate_profile(profile: dict, max_representative_rows: int) -> None:
     try:
         generated_at = datetime.fromisoformat(profile["generated_at"].replace("Z", "+00:00"))
     except (TypeError, ValueError) as error:
@@ -119,8 +119,11 @@ def validate_profile(profile: dict) -> None:
     schemas = column_tables(profile)
     aggregates = aggregate_tables(profile)
     rows = representative_rows(profile)
-    if not 1 <= len(rows) <= 100:
-        raise ValueError(f"Representative sample must contain 1-100 rows, found {len(rows)}")
+    if not 1 <= len(rows) <= max_representative_rows:
+        raise ValueError(
+            "Representative sample must contain between 1 and "
+            f"{max_representative_rows} rows, found {len(rows)}"
+        )
 
     missing_schemas = [table for table in source_tables if table not in schemas]
     missing_aggregates = [table for table in source_tables if table not in aggregates]
@@ -171,7 +174,7 @@ def validate_profile(profile: dict) -> None:
         raise ValueError("data_quality_notes must be a non-empty string list")
 
 
-def parse_json_response(text: str) -> dict:
+def parse_json_response(text: str, max_representative_rows: int) -> dict:
     """Parse a JSON response, tolerating a single Markdown JSON fence."""
     candidate = text.strip()
     if candidate.startswith("```"):
@@ -193,11 +196,16 @@ def parse_json_response(text: str) -> dict:
         raise ValueError(f"Profile is missing required keys: {sorted(missing)}")
     if not profile["source_tables"] or not profile["representative_rows"]:
         raise ValueError("Profile contains no source tables or representative rows")
-    validate_profile(profile)
+    validate_profile(profile, max_representative_rows)
     return profile
 
 
-def fetch_profile(project_endpoint: str, agent_name: str, prompt: str) -> dict:
+def fetch_profile(
+    project_endpoint: str,
+    agent_name: str,
+    prompt: str,
+    max_representative_rows: int,
+) -> dict:
     project = AIProjectClient(
         endpoint=project_endpoint,
         credential=ChainedTokenCredential(
@@ -211,7 +219,7 @@ def fetch_profile(project_endpoint: str, agent_name: str, prompt: str) -> dict:
         conversation=conversation.id,
         input=prompt,
     )
-    return parse_json_response(response.output_text)
+    return parse_json_response(response.output_text, max_representative_rows)
 
 
 def representative_row_count(profile: dict) -> int:
@@ -242,17 +250,22 @@ def main() -> None:
         get_config_value(profile_source, "projectName"),
     )
     agent_name = args.agent_name or get_config_value(profile_source, "agentName")
+    max_representative_rows = int(
+        get_config_value(profile_source, "maxRepresentativeRows")
+    )
     output_path = args.output or resolve_deployment_path(
         get_config_value(config, "paths", "profile")
     )
     prompt_path = resolve_deployment_path(get_config_value(profile_source, "promptPath"))
-    prompt = prompt_path.read_text(encoding="utf-8").strip()
+    prompt = prompt_path.read_text(encoding="utf-8").strip().replace(
+        "{maxRepresentativeRows}", str(max_representative_rows)
+    )
     if not prompt:
         parser.error(f"Profile prompt is empty: {prompt_path}")
 
     if args.validate_existing:
         profile = json.loads(args.validate_existing.read_text(encoding="utf-8"))
-        validate_profile(profile)
+        validate_profile(profile, max_representative_rows)
         print(
             json.dumps(
                 {
@@ -265,7 +278,12 @@ def main() -> None:
         )
         return
 
-    profile = fetch_profile(project_endpoint, agent_name, prompt)
+    profile = fetch_profile(
+        project_endpoint,
+        agent_name,
+        prompt,
+        max_representative_rows,
+    )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(
         json.dumps(profile, indent=2, ensure_ascii=True) + "\n",
