@@ -70,25 +70,7 @@ index name. All non-URL placeholders in this document map to
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    DBX[Azure Databricks<br/>{Databricks Schema} tables]
-    MCP[Private Databricks MCP]
-    PROFILE[Profile-source Foundry agent]
-    GEN[Corpus generator]
-    SP[SharePoint Online<br/>{Production Library}]
-    IDX[SharePoint indexer<br/>{Search Service API Version}]
-    SPLIT[Text Split skill<br/>{Chunk Size} + {Chunk Overlap}]
-    EMB[Embedding model<br/>{Embedding Dimensions} dimensions]
-    SEARCH[Promoted chunk index<br/>semantic + vector + keyword]
-    KS[Foundry IQ<br/>knowledge source]
-    KB[Foundry IQ<br/>knowledge base]
-    AGENT[Foundry prompt agent]
-
-    DBX --> MCP --> PROFILE --> GEN --> SP
-    SP --> IDX --> SPLIT --> EMB --> SEARCH
-    SEARCH --> KS --> KB --> AGENT
-```
+![SharePoint to Azure AI Search to Microsoft Foundry architecture](docs/SharePoint-AISearch-Architecture-Overview.png)
 
 There is no Blob Storage hop between SharePoint and Azure AI Search. The
 indexer's data source has type `sharepoint` and its `includeLibrary` query is
