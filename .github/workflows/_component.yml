@@ -30,8 +30,8 @@ jobs:
         run: |
           set -euo pipefail
           kind="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field kind)"
-          language="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field language.runtime || true)"
-          languageVersion="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field language.version || true)"
+          language="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field language.runtime 2>/dev/null || true)"
+          languageVersion="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field language.version 2>/dev/null || true)"
           {
             echo "kind=$kind"
             echo "language=$language"
@@ -89,9 +89,9 @@ jobs:
         run: |
           set -euo pipefail
           kind="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field kind)"
-          language="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field language.runtime || true)"
-          languageVersion="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field language.version || true)"
-          appName="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field azure.appName || true)"
+          language="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field language.runtime 2>/dev/null || true)"
+          languageVersion="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field language.version 2>/dev/null || true)"
+          appName="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field azure.appName 2>/dev/null || true)"
           bicepTemplate="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field infra.bicepTemplate)"
           resourceGroup="$(python3 scripts/deploy/deploy_tool.py setting --field resourceGroup)"
           location="$(python3 scripts/deploy/deploy_tool.py setting --field location)"

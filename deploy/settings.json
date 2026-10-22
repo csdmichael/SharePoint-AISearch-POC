@@ -21,7 +21,7 @@
     "name": "id-spacl-github-deploy",
     "issuer": "https://token.actions.githubusercontent.com",
     "audience": "api://AzureADTokenExchange",
-    "subject": "repo:csdmichael/SharePoint-AISearch-POC:environment:production",
+    "subject": "repo:csdmichael@26285760/SharePoint-AISearch-POC@1371547293:environment:production",
     "grantContributorOnResourceGroup": true,
     "grantUserAccessAdministratorOnFoundryAccount": true,
     "roleDefinitionIds": {
