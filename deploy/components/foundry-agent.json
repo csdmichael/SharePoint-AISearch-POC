@@ -32,6 +32,7 @@
     "apiIdentityRole": {
       "roleName": "Foundry User",
       "roleDefinitionId": "53ca6127-db72-4b80-b1b0-d745d6d5456d",
+      "assignmentName": "a0efdd6c-511b-4220-9cbd-0a4db8959223",
       "grant": true
     }
   }

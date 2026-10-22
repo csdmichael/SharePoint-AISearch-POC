@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { ConfigService } from '../../../core/config/config.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
 
@@ -22,8 +23,9 @@ import { I18nService } from '../../../core/i18n/i18n.service';
 export class MicrosoftLogoComponent {
   private readonly config = inject(ConfigService);
   private readonly i18n = inject(I18nService);
+  private readonly sanitizer = inject(DomSanitizer);
 
-  readonly svg = this.config.logoSvg;
+  readonly svg = this.sanitizer.bypassSecurityTrustHtml(this.config.logoSvg);
   readonly altText = this.i18n.text('header.logoAltText');
   readonly wordmark = this.i18n.text('header.microsoftWordmark');
 }

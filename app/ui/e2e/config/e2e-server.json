@@ -1,0 +1,10 @@
+{
+  "port": 4173,
+  "host": "127.0.0.1",
+  "url": "http://127.0.0.1:4173/",
+  "buildCommand": "npm run build -- --configuration production",
+  "serverCommand": "node server/static-server.mjs",
+  "outputFolder": "test-results",
+  "screenshotDir": "test-results/screenshots",
+  "startTimeoutMs": 120000
+}

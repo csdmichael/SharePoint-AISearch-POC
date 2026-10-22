@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "sp-acl-notifications/v1",
+  "mode": "dryRun",
+  "outboxPath": ".state/notifications/outbox.json",
+  "sender": {
+    "userPrincipalName": "<SENDER_UPN>"
+  },
+  "maxPerBatch": 25,
+  "dedupeWindowHours": 72,
+  "messages": {
+    "reviewerFallback": "the library reviewer",
+    "ownerFallback": "Owner",
+    "missingValue": "not recorded",
+    "unknownValue": "n/a",
+    "selectedFindingTitle": "Selected documents",
+    "selectedReason": "Selected for notification",
+    "sendRefused": "Send refused: the notifications mode is {mode}, so nothing was delivered. The draft stays in the outbox.",
+    "sendDelivery": "Sent with Microsoft Graph sendMail as the configured sender."
+  },
+  "templates": {
+    "expired-documents": {
+      "subject": "Action required: expired document \"{documentTitle}\"",
+      "body": "Hello {ownerName},\n\nThe document \"{documentTitle}\" ({documentUrl}) is listed under \"{findingTitle}\" in the Trusted Knowledge governance review. Its expiration date is {expirationDate} and its review date is {reviewDate}.\n\nPlease confirm whether the document should be renewed, superseded or archived, and reply to {reviewerName} with your decision.\n\nThank you."
+    },
+    "requires-review": {
+      "subject": "Review needed: \"{documentTitle}\"",
+      "body": "Hello {ownerName},\n\nThe document \"{documentTitle}\" ({documentUrl}) is flagged as \"{findingTitle}\" in the Trusted Knowledge governance review. Its review date is {reviewDate}.\n\nPlease review the content and update its metadata in SharePoint. Reply to {reviewerName} when the review is complete.\n\nThank you."
+    },
+    "draft-documents": {
+      "subject": "Draft still open: \"{documentTitle}\"",
+      "body": "Hello {ownerName},\n\nThe document \"{documentTitle}\" ({documentUrl}) is still a draft and is listed under \"{findingTitle}\". Please publish it, supersede it, or confirm it should stay out of Trusted Knowledge.\n\nReply to {reviewerName} with the next step.\n\nThank you."
+    },
+    "superseded-documents": {
+      "subject": "Superseded document to retire: \"{documentTitle}\"",
+      "body": "Hello {ownerName},\n\nThe document \"{documentTitle}\" ({documentUrl}) is marked Superseded and is listed under \"{findingTitle}\". Please confirm it can be archived or removed from the library.\n\nReply to {reviewerName} with your decision.\n\nThank you."
+    },
+    "exact-duplicates": {
+      "subject": "Duplicate content found: \"{documentTitle}\"",
+      "body": "Hello {ownerName},\n\nThe document \"{documentTitle}\" ({documentUrl}) has content identical to another document in the library and is listed under \"{findingTitle}\". Please confirm the canonical copy or remove this duplicate.\n\nReply to {reviewerName} with your decision.\n\nThank you."
+    },
+    "near-duplicates": {
+      "subject": "Near-duplicate content found: \"{documentTitle}\"",
+      "body": "Hello {ownerName},\n\nThe document \"{documentTitle}\" ({documentUrl}) is nearly identical to another document in the library and is listed under \"{findingTitle}\". Please confirm which copy is canonical.\n\nReply to {reviewerName} with your decision.\n\nThank you."
+    },
+    "conflicting-authoritative": {
+      "subject": "Conflicting authoritative documents: \"{documentTitle}\"",
+      "body": "Hello {ownerName},\n\nThe authoritative document \"{documentTitle}\" ({documentUrl}) conflicts with another authoritative document and is listed under \"{findingTitle}\". Knowledge-owner review is required before either document is used.\n\nReply to {reviewerName} with the resolution.\n\nThank you."
+    },
+    "conflicts-with-authoritative": {
+      "subject": "Conflict with an authoritative document: \"{documentTitle}\"",
+      "body": "Hello {ownerName},\n\nThe document \"{documentTitle}\" ({documentUrl}) conflicts with an authoritative document and is listed under \"{findingTitle}\". Please align its content or confirm the difference is intended.\n\nReply to {reviewerName} with your decision.\n\nThank you."
+    }
+  }
+}

@@ -20,10 +20,14 @@ export const appConfig: ApplicationConfig = {
     provideRouter([], withComponentInputBinding()),
     provideAppInitializer(async () => {
       const config = inject(ConfigService);
+      const theme = inject(ThemeService);
+      const router = inject(Router);
+      const auth = inject(AuthService);
+
       await config.load();
-      inject(ThemeService).apply();
-      inject(Router).resetConfig(buildRoutes(config));
-      await inject(AuthService).initialize();
+      theme.apply();
+      router.resetConfig(buildRoutes(config));
+      await auth.initialize();
     }),
   ],
 };

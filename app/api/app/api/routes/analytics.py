@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Query
 from app.api.deps import get_container
 from app.auth.validator import require_auditor
 from app.container import Container
+from app.services.exposure import unique_findings
 from app.services.documents import document_summary, expiry_view
 
 router = APIRouter(tags=["analytics"], dependencies=[Depends(require_auditor)])
@@ -132,6 +133,7 @@ def exposure(
     findings: list[dict[str, Any]] = []
     for corpus in corpora:
         findings.extend(container.analytics.exposure(corpus))
+    findings = unique_findings(findings)
     if finding_type:
         findings = [finding for finding in findings if finding["type"] == finding_type]
     findings.sort(key=container.exposure.sort_key)

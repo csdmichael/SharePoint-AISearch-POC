@@ -12,7 +12,8 @@ import pagesConfig from '../../../assets/config/pages.json';
 
 describe('ConfigService', () => {
   let service: ConfigService;
-  const validSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 23"></svg>';
+  const validSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 23"><rect class="sq-red" x="0" y="0" width="10.5" height="10.5"/><rect class="sq-green" x="11.5" y="0" width="10.5" height="10.5"/><rect class="sq-blue" x="0" y="11.5" width="10.5" height="10.5"/><rect class="sq-yellow" x="11.5" y="11.5" width="10.5" height="10.5"/></svg>';
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -41,7 +42,7 @@ describe('ConfigService', () => {
     expect(service.navigation.items.length).toBeGreaterThan(0);
     expect(service.agent.maxInputChars).toBe(agentConfig.maxInputChars);
     expect(service.strings.appName).toBe(stringsConfig.appName);
-    expect(service.theme.fontFamily).toBe(themeConfig.fontFamily);
+    expect(service.theme.logoPath).toBe(themeConfig.logoPath);
     expect(service.pages.homeRoute).toBe(pagesConfig.homeRoute);
     expect(service.logoSvg).toBe(validSvg);
   });

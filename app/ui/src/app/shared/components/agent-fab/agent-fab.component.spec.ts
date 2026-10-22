@@ -33,7 +33,7 @@ describe('AgentFabComponent', () => {
         theme: themeConfig,
         pages: pagesConfig,
       },
-      '<svg viewBox="0 0 10 10"></svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 23"><rect class="sq-red" x="0" y="0" width="10.5" height="10.5"/><rect class="sq-green" x="11.5" y="0" width="10.5" height="10.5"/><rect class="sq-blue" x="0" y="11.5" width="10.5" height="10.5"/><rect class="sq-yellow" x="11.5" y="11.5" width="10.5" height="10.5"/></svg>',
     );
 
     router = TestBed.inject(Router);
@@ -49,8 +49,9 @@ describe('AgentFabComponent', () => {
     const element: HTMLElement = fixture.nativeElement;
     const fab = element.querySelector('[data-testid="agent-fab"]');
     expect(fab).toBeTruthy();
-    expect(fab?.getAttribute('vertical')).toBe('bottom');
-    expect(fab?.getAttribute('horizontal')).toBe('end');
+    expect(component.vertical).toBe('bottom');
+    expect(component.horizontal).toBe('end');
+    expect(fab?.querySelector('ion-fab-button')).toBeTruthy();
   });
 
   it('navigates to the agent route when activated', async () => {

@@ -13,7 +13,8 @@ import pagesConfig from '../../../../assets/config/pages.json';
 describe('MicrosoftLogoComponent', () => {
   let fixture: ComponentFixture<MicrosoftLogoComponent>;
   let component: MicrosoftLogoComponent;
-  const sampleSvg = '<svg data-testid="test-svg" viewBox="0 0 10 10"></svg>';
+  const sampleSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg" data-testid="test-svg" viewBox="0 0 23 23"><rect class="sq-red" x="0" y="0" width="10.5" height="10.5"/><rect class="sq-green" x="11.5" y="0" width="10.5" height="10.5"/><rect class="sq-blue" x="0" y="11.5" width="10.5" height="10.5"/><rect class="sq-yellow" x="11.5" y="11.5" width="10.5" height="10.5"/></svg>';
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -46,10 +47,10 @@ describe('MicrosoftLogoComponent', () => {
     const logo = element.querySelector('[data-testid="ms-logo"]');
     expect(logo).toBeTruthy();
     expect(logo?.getAttribute('role')).toBe('img');
-    expect(logo?.getAttribute('aria-label')).toBe(stringsConfig['header.logoAltText']);
+    expect(logo?.getAttribute('aria-label')).toBe(stringsConfig.header.logoAltText);
 
     const wordmark = element.querySelector('.ms-logo__wordmark');
-    expect(wordmark?.textContent?.trim()).toBe(stringsConfig['header.microsoftWordmark']);
+    expect(wordmark?.textContent?.trim()).toBe(stringsConfig.header.microsoftWordmark);
 
     const mark = element.querySelector('.ms-logo__mark');
     expect(mark?.innerHTML).toContain('test-svg');

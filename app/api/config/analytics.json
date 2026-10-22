@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "sp-acl-analytics-config/v1",
+  "tfidf": {
+    "ngramRange": [1, 2],
+    "minDf": 1,
+    "maxFeatures": 20000,
+    "sublinearTf": true
+  },
+  "duplicates": {
+    "cosineThreshold": null,
+    "distanceThreshold": null,
+    "minClusterSize": 2,
+    "linkage": "average"
+  },
+  "anomaly": {
+    "contamination": 0.1,
+    "nEstimators": 200,
+    "randomState": 42,
+    "topN": 10,
+    "features": [
+      "daysSinceModified",
+      "principalCount",
+      "directGrantCount",
+      "brokenInheritance",
+      "anonymousLink",
+      "everyoneClaim",
+      "duplicateClusterSize"
+    ]
+  },
+  "expiry": {
+    "datePatterns": [
+      "(?i)(?:expir(?:es|ation|ed)|valid\\s+until|not\\s+be\\s+used\\s+after)[^0-9A-Za-z]{0,20}(?P<date>\\d{4}-\\d{2}-\\d{2})",
+      "(?i)(?:expir(?:es|ation|ed)|valid\\s+until)[^0-9A-Za-z]{0,20}(?P<date>[A-Za-z]{3,9}\\s+\\d{1,2},?\\s+\\d{4})",
+      "(?i)(?:review\\s+(?:date|due|by)|next\\s+review)[^0-9A-Za-z]{0,20}(?P<date>\\d{4}-\\d{2}-\\d{2})",
+      "(?i)(?:review\\s+(?:date|due|by)|next\\s+review)[^0-9A-Za-z]{0,20}(?P<date>[A-Za-z]{3,9}\\s+\\d{1,2},?\\s+\\d{4})"
+    ],
+    "textMaxChars": 20000,
+    "reviewOverdueGraceDays": 0
+  },
+  "exposure": {
+    "everyoneLoginPattern": "^c:0\\(\\.s\\|true$",
+    "externalUserPattern": "#ext#",
+    "anonymousLinkScopes": ["anonymous"],
+    "organizationLinkScopes": ["organization"],
+    "severities": {
+      "everyoneIncludingExternal": "critical",
+      "everyoneExceptExternal": "high",
+      "anonymousLink": "critical",
+      "organizationLink": "medium",
+      "specificPeopleLink": "low",
+      "externalUserDirectGrant": "medium",
+      "brokenInheritance": "medium",
+      "orphanedAccount": "high"
+    },
+    "severityOrder": ["critical", "high", "medium", "low"],
+    "everyoneLabels": {
+      "includingExternal": "Everyone (including external users)",
+      "exceptExternal": "Everyone except external users"
+    },
+    "linkLabels": {
+      "anonymous": "Anyone with the link",
+      "organization": "People in the organization with the link",
+      "users": "Specific people"
+    },
+    "details": {
+      "everyoneHolds": "{principal} holds {role}.",
+      "linkAccess": "{principal} link with {role} access.",
+      "externalGuest": "External guest {upn} has a direct {role} grant.",
+      "brokenInheritance": "Inheritance is broken and {count} user(s) hold direct grants.",
+      "orphanMissing": "The account does not exist in Entra ID (deleted or never created).",
+      "orphanUnknown": "The account state could not be checked.",
+      "orphanDisabled": "The account is disabled in Entra ID."
+    }
+  },
+  "extraction": {
+    "supportedExtensions": [".docx", ".pptx", ".xlsx"],
+    "maxFileBytes": 26214400
+  },
+  "loginNamePatterns": {
+    "user": "^i:0#\\.f\\|membership\\|(?P<upn>.+)$",
+    "entraGroup": "^c:0[o!]\\.c\\|federateddirectoryclaimprovider\\|(?P<id>[0-9a-fA-F-]{36})$",
+    "sharePointGroup": "^SharePoint Group:",
+    "everyoneClaim": "^c:0-\\.f\\|rolemanager\\|spo-grid-all-users/",
+    "sharingLink": "^SharingLinks\\."
+  }
+}

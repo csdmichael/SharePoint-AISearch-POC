@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "sp-acl-agent/v1",
+  "foundry": {
+    "enabled": true,
+    "projectEndpointTemplate": "https://{accountName}.services.ai.azure.com/api/projects/{projectName}",
+    "accountName": null,
+    "projectName": null,
+    "agentName": null,
+    "tokenScope": "https://ai.azure.com/.default",
+    "responsesPath": "openai/v1/responses",
+    "timeoutSeconds": 60,
+    "maxRetries": 2,
+    "retryBackoffSeconds": 2
+  },
+  "evidenceLimit": 25,
+  "limits": {
+    "maxExamples": 10,
+    "maxConversations": 200,
+    "maxTurnsPerConversation": 50,
+    "maxEvidenceChars": 60000
+  },
+  "fallbackIntent": "help",
+  "draftNotification": {
+    "templateId": "expired-documents",
+    "findingId": "expired-documents"
+  },
+  "findingIds": {
+    "missingOwners": "missing-owners",
+    "conflictingAuthoritative": "conflicting-authoritative",
+    "conflictsWithAuthoritative": "conflicts-with-authoritative"
+  },
+  "instructions": "You are the SharePoint governance assistant for the document libraries of the configured SharePoint site. Answer only from the live evidence supplied with the question. Quote document titles, owners, dates, roles and grant paths exactly as the evidence states them. Say so when the evidence does not contain the answer. Never recommend deleting content; recommend review, approval or notification steps. Owner notifications are drafts until a reviewer approves them.",
+  "messages": {
+    "foundryNotConfigured": "Microsoft Foundry is not configured for this API, so the answer is built from live evidence only.",
+    "foundryNotRequested": "Microsoft Foundry was not requested, so the answer is built from live evidence only.",
+    "foundryUnavailable": "Microsoft Foundry could not answer ({reason}), so the answer is built from live evidence only.",
+    "foundryUnexpected": "Microsoft Foundry failed unexpectedly, so the answer is built from live evidence only.",
+    "signedInUser": "the signed-in user"
+  },
+  "answers": {
+    "exposureSummary": "{count} over-exposure finding(s) across {items} item(s).",
+    "exposureTypeLine": "- {label}: {count}",
+    "exposureExample": "  {item} ({path}): {principal} holds {role} [{severity}]",
+    "userSummary": "{user} can reach {items} item(s) in the site through {paths} grant path(s).",
+    "grantPathsLine": "Grant paths: {paths}",
+    "grantPathsNone": "none",
+    "grantPair": "{kind} {count}",
+    "groupsLine": "Groups involved: {groups}",
+    "brokenSummary": "{count} item(s) have broken inheritance together with direct user grants.",
+    "brokenExample": "- {item} ({path}): {grants}",
+    "grantName": "{principal} ({role})",
+    "duplicatesLibrary": "{library}: {exact} exact cluster(s), {near} near-duplicate cluster(s), {conflicts} conflict candidate(s).",
+    "duplicateCluster": "- {kind} {clusterId}: keep \"{canonical}\" ({canonicalName}); duplicates: {duplicates}",
+    "expirySummary": "{expired} expired document(s); {overdue} past their review date.",
+    "expiredExample": "- expired: \"{title}\" expired {date} (sources: {sources})",
+    "reviewOverdueExample": "- review overdue: \"{title}\" review date {date}",
+    "ownershipSummary": "{count} document(s) have no knowledge owner.",
+    "ownershipExample": "- \"{title}\" ({path})",
+    "anomalySummary": "Top {count} anomaly candidate(s) (IsolationForest over exposure and staleness features).",
+    "anomalyExample": "- \"{title}\": score {score}, anomaly={anomaly}; main drivers: {drivers}",
+    "notificationsSummary": "Prepared {count} owner notification draft(s) from the {template} template (mode {mode}). Nothing was sent; approve each draft before it can be sent.",
+    "notificationsSkipped": "Skipped: {skipped}",
+    "skippedPair": "{reason} {count}",
+    "backlogSummary": "Cleanup backlog by severity (finding hits): {severities}",
+    "backlogNone": "none",
+    "severityPair": "{severity} {count}",
+    "backlogFinding": "- {title} [{severity}]: {count} ({libraries})",
+    "libraryPair": "{library} {count}",
+    "orphanSummary": "{count} grant(s) can be reached by disabled or missing accounts.",
+    "orphanExample": "- {item} ({path}): {who} [{status}]",
+    "conflictsSummary": "{stored} document(s) carry a stored conflict status; {live} live conflict candidate(s) found by analysis.",
+    "conflictExample": "- \"{first}\" vs \"{second}\": similarity {similarity}",
+    "helpIntro": "I answer governance questions from live SharePoint and Graph evidence. Examples:",
+    "helpExample": "- {example}"
+  },
+  "intents": [
+    {"id": "overexposure", "keywords": ["who can access", "through which group", "everyone", "anonymous", "anyone with the link", "shared with", "external users", "sharing link", "overexposed", "over-exposed", "overexposure", "exposure"], "handler": "exposure"},
+    {"id": "access-review", "keywords": ["what can", "can access", "access in this site", "how was each permission", "permissions for", "granted"], "handler": "userAccess"},
+    {"id": "broken-inheritance", "keywords": ["broken inheritance", "inheritance", "unique permission", "direct user grant", "direct grant"], "handler": "brokenInheritance"},
+    {"id": "duplicates", "keywords": ["duplicate", "canonical", "near-duplicate", "exact and near"], "handler": "duplicates"},
+    {"id": "expired-content", "keywords": ["expired", "expir", "past their review", "review date", "overdue"], "handler": "expiry"},
+    {"id": "ownership-gaps", "keywords": ["no knowledge owner", "knowledge owner", "missing owner", "unowned", "owner"], "handler": "ownership"},
+    {"id": "stale-content", "keywords": ["anomal", "stale", "outlier"], "handler": "anomalies"},
+    {"id": "owner-notification", "keywords": ["draft notification", "notification", "notify", "approval", "approval request", "draft approval", "owners of"], "handler": "notifications"},
+    {"id": "backlog-summary", "keywords": ["backlog", "summar", "severity", "cleanup"], "handler": "backlog"},
+    {"id": "orphaned-access", "keywords": ["disabled", "deleted account", "orphan", "reached by"], "handler": "orphans"},
+    {"id": "conflicts", "keywords": ["conflict", "contradict", "contradict each other"], "handler": "conflicts"},
+    {"id": "help", "keywords": ["help", "capabilit", "what can you do", "can you", "examples"], "handler": "help"}
+  ]
+}

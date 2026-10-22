@@ -68,3 +68,13 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Test and E2E reports
+test-results
+playwright-report
+
+# Deploy artifacts
+deploy/staging
+deploy\staging
+deploy/*.zip
+deploy\*.zip

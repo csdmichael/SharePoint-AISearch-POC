@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "sp-acl-expected-analytics/v1",
+  "asOfDate": "2026-10-21",
+  "libraries": {
+    "Trusted Knowledge": {"documentsScanned": 11, "folders": 3},
+    "Field Notes": {"documentsScanned": 0, "folders": 1}
+  },
+  "duplicates": {
+    "exactClusters": 1,
+    "exactCanonical": "Failure Analysis Procedure.docx",
+    "exactMembers": ["Failure Analysis Procedure (copy).docx", "Failure Analysis Procedure.docx"],
+    "nearClusters": 1,
+    "nearCanonical": "Failure Analysis Procedure.docx",
+    "nearMembers": [
+      "Failure Analysis Procedure (copy).docx",
+      "Failure Analysis Procedure (v2).docx",
+      "Failure Analysis Procedure.docx"
+    ],
+    "conflictCandidates": [
+      ["Failure Analysis Limits (2026).docx", "Failure Analysis Procedure (v2).docx"],
+      ["Failure Analysis Limits (2026).docx", "Failure Analysis Procedure.docx"]
+    ]
+  },
+  "expiry": {
+    "expired": ["Old Calibration Report.docx", "Quality Escalation Deck.pptx"],
+    "reviewOverdue": ["Calibration Checklist.docx"]
+  },
+  "anomalies": {
+    "topItem": "Anomalous Export.xlsx",
+    "topIsAnomaly": true
+  },
+  "exposure": {
+    "total": 11,
+    "bySeverity": {"critical": 2, "high": 4, "medium": 4, "low": 1},
+    "byType": {
+      "everyoneIncludingExternal": 1,
+      "everyoneExceptExternal": 1,
+      "anonymousLink": 1,
+      "organizationLink": 1,
+      "specificPeopleLink": 1,
+      "externalUserDirectGrant": 1,
+      "brokenInheritance": 2,
+      "orphanedAccount": 3
+    }
+  },
+  "hygiene": {
+    "findings": {
+      "conflicting-authoritative": 2,
+      "exact-duplicates": 1,
+      "near-duplicates": 2,
+      "expired-documents": 2,
+      "missing-owners": 1,
+      "superseded-documents": 1,
+      "draft-documents": 6,
+      "conflicts-with-authoritative": 0,
+      "requires-review": 9
+    },
+    "metrics": {
+      "totalIndexedDocuments": 11,
+      "authoritativeDocuments": 4,
+      "aiReadyDocuments": 3,
+      "draftDocuments": 6,
+      "supersededDocuments": 1,
+      "expiredDocuments": 2,
+      "documentsMissingOwners": 1,
+      "exactDuplicateCandidates": 1,
+      "nearDuplicateCandidates": 2,
+      "documentsRequiringReview": 9,
+      "conflictingAuthoritativeDocuments": 2,
+      "averageTrustScore": 39.7
+    }
+  }
+}

@@ -11,7 +11,8 @@
       {"member": {"Id": 21, "LoginName": "c:0o.c|federateddirectoryclaimprovider|aaaaaaaa-0000-4000-8000-000000000001", "Title": "Trusted Knowledge Readers", "PrincipalType": 4}, "roles": ["Read"]}
     ]
   },
-  "library": {
+  "libraries": [
+    {
     "id": "5f2c6a10-1111-4a2b-9c3d-000000000001",
     "title": "Trusted Knowledge",
     "rootPath": "/sites/knowledge/Shared Documents/Trusted Knowledge",
@@ -186,7 +187,20 @@
         "gov": {"ArtifactId": "TK-0008", "LifecycleStatus": "Draft", "Authoritative": false, "DocumentType": "Test Report", "ProductFamily": "ApexDrive X500", "ProcessArea": "General Engineering", "Sensitivity": "General", "AIReady": false, "TrustScore": 5, "DataQualityStatus": "Needs Review", "ConflictStatus": "None", "KnowledgeCategory": "Quality", "SourceSystem": "SharePoint Online"}
       }
     ]
-  },
+    },
+    {
+      "id": "5f2c6a10-1111-4a2b-9c3d-000000000002",
+      "title": "Field Notes",
+      "rootPath": "/sites/knowledge/Shared Documents/Field Notes",
+      "uniqueRoleAssignments": false,
+      "roleAssignments": [],
+      "driveId": "drive-2",
+      "items": [
+        {"key": "field-archive", "kind": "folder", "path": "Archive Notes", "unique": false, "modified": "2024-03-01T09:00:00Z", "roleAssignments": []},
+        {"key": "field-forms", "kind": "folder", "path": "Forms", "unique": false, "modified": "2024-03-01T09:00:00Z", "roleAssignments": []}
+      ]
+    }
+  ],
   "entraGroups": {
     "aaaaaaaa-0000-4000-8000-000000000001": {
       "displayName": "Trusted Knowledge Readers",

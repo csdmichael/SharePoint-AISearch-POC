@@ -18,12 +18,12 @@ module.exports = function (config) {
     browsers: ['ChromeHeadless'],
     customLaunchers: {
       ChromeHeadless: {
-        base: 'ChromeHeadless',
-        flags: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+        base: 'Chrome',
+        flags: ['--headless', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
       },
       ChromeHeadlessCI: {
-        base: 'ChromeHeadless',
-        flags: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+        base: 'Chrome',
+        flags: ['--headless', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
       },
     },
     browserNoActivityTimeout: 120000,

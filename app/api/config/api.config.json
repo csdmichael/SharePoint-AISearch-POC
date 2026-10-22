@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "sp-acl-api-config/v1",
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8000
+  },
+  "routePrefix": "/api/v1",
+  "docsPath": "/docs",
+  "redocPath": "/redoc",
+  "openapiPath": "/openapi.json",
+  "openapi": {
+    "title": "SharePoint Governance API",
+    "description": "Live SharePoint permissions, governance hygiene and cleanup analytics for the document libraries of the configured SharePoint site."
+  },
+  "cors": {
+    "allowedOrigins": [
+      "http://localhost:4200",
+      "http://localhost:8100"
+    ],
+    "allowedMethods": ["GET", "POST", "OPTIONS"],
+    "allowedHeaders": ["Authorization", "Content-Type"]
+  },
+  "auth": {
+    "audience": "api://<API_APP_CLIENT_ID>",
+    "requiredRole": "Auditor",
+    "clientId": "<API_APP_CLIENT_ID>",
+    "authorityHostUrl": "https://login.microsoftonline.com",
+    "jwksPath": "/discovery/v2.0/keys",
+    "validIssuerTemplate": "https://login.microsoftonline.com/{tenantId}/v2.0",
+    "clockSkewSeconds": 300,
+    "jwksCacheSeconds": 3600,
+    "jwksMinRefreshSeconds": 60
+  },
+  "identity": {
+    "managedIdentityClientId": "",
+    "graphScope": "https://graph.microsoft.com/.default",
+    "sharePointScopeTemplate": "https://{sharePointHost}/.default",
+    "tokenRefreshMarginSeconds": 300
+  },
+  "graph": {
+    "baseUrl": "https://graph.microsoft.com/v1.0",
+    "pageSize": 200,
+    "timeoutSeconds": 30,
+    "maxRetries": 4,
+    "retryBackoffSeconds": 2,
+    "maxRetryDelaySeconds": 120,
+    "maxConcurrency": 6,
+    "maxMembersPerGroup": 5000
+  },
+  "sharePoint": {
+    "libraryDisplayNames": [],
+    "pageSize": 500,
+    "maxSiteUsers": 2000,
+    "crawl": {
+      "maxItems": 5000,
+      "maxDepth": 20
+    },
+    "principalTypes": {
+      "1": "user",
+      "2": "entraGroup",
+      "4": "entraGroup",
+      "8": "sharePointGroup"
+    },
+    "linkRoleNames": {
+      "view": "Read",
+      "edit": "Edit",
+      "embed": "Read"
+    },
+    "defaultLinkRole": "Read",
+    "systemFolderNames": ["Forms"]
+  },
+  "api": {
+    "defaultPageSize": 50,
+    "maxPageSize": 200,
+    "sortableFields": [
+      "title",
+      "name",
+      "modified",
+      "artifactId",
+      "lifecycleStatus",
+      "dataQualityStatus",
+      "trustScore",
+      "reviewDate",
+      "expirationDate",
+      "effectiveDate"
+    ],
+    "defaultSort": "title"
+  },
+  "hygiene": {
+    "asOfDate": null,
+    "sampleSize": 5,
+    "reasons": {
+      "conflictStatus": "ConflictStatus = {label}",
+      "duplicate": "{kind} of {canonical}",
+      "expired": "Expired ({sources})",
+      "missingOwner": "KnowledgeOwner missing",
+      "lifecycleStatus": "LifecycleStatus = {label}",
+      "dataQualityNot": "DataQualityStatus = {status}",
+      "notRecorded": "not recorded",
+      "reviewPassed": "Review date has passed"
+    }
+  },
+  "cache": {
+    "libraryTtlSeconds": 300,
+    "membershipTtlSeconds": 900
+  },
+  "sharedConfig": {
+    "deploymentPath": "../../config/trusted-knowledge.json",
+    "vocabularyPath": "../../config/governance-vocabulary.json",
+    "policyPath": "../../config/governance-policy.json"
+  }
+}

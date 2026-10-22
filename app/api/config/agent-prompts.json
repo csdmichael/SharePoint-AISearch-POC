@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "sp-acl-agent-prompts/v1",
+  "provisional": false,
+  "note": "Sample prompts that map to the three Seagate issues: (1) content is scattered and inconsistently labelled, (2) source permissions do not match the approved audience, (3) decisions live in email, where AI cannot reach them. Each intent must match an id in agent.json.",
+  "placeholders": {
+    "{userUpn}": "Replaced with the UPN found in the question, or with the caller's UPN when none is given."
+  },
+  "prompts": [
+    {"id": "prompt-01", "issueId": "scattered-content", "issueLabel": "1. Content is scattered and inconsistently labelled", "intent": "duplicates", "text": "Find exact and near-duplicate documents and recommend the canonical copy"},
+    {"id": "prompt-02", "issueId": "scattered-content", "issueLabel": "1. Content is scattered and inconsistently labelled", "intent": "expired-content", "text": "Which documents are expired or past their review date?"},
+    {"id": "prompt-03", "issueId": "scattered-content", "issueLabel": "1. Content is scattered and inconsistently labelled", "intent": "ownership-gaps", "text": "Which documents have no knowledge owner?"},
+    {"id": "prompt-04", "issueId": "scattered-content", "issueLabel": "1. Content is scattered and inconsistently labelled", "intent": "stale-content", "text": "Which documents look anomalous or stale compared with their peers?"},
+    {"id": "prompt-05", "issueId": "scattered-content", "issueLabel": "1. Content is scattered and inconsistently labelled", "intent": "backlog-summary", "text": "Summarize the cleanup backlog by severity and library"},
+    {"id": "prompt-06", "issueId": "permissions-vs-audience", "issueLabel": "2. Source permissions do not match the approved audience", "intent": "overexposure", "text": "Who can access the Trusted Knowledge library, and through which group or sharing link?"},
+    {"id": "prompt-07", "issueId": "permissions-vs-audience", "issueLabel": "2. Source permissions do not match the approved audience", "intent": "access-review", "text": "What can {userUpn} access in this site, and how was each permission granted?"},
+    {"id": "prompt-08", "issueId": "permissions-vs-audience", "issueLabel": "2. Source permissions do not match the approved audience", "intent": "broken-inheritance", "text": "Which folders have broken inheritance together with direct user grants?"},
+    {"id": "prompt-09", "issueId": "permissions-vs-audience", "issueLabel": "2. Source permissions do not match the approved audience", "intent": "overexposure", "text": "Which documents are shared with Everyone except external users or through anonymous links?"},
+    {"id": "prompt-10", "issueId": "permissions-vs-audience", "issueLabel": "2. Source permissions do not match the approved audience", "intent": "orphaned-access", "text": "Which items can be reached by disabled or deleted accounts?"},
+    {"id": "prompt-11", "issueId": "decisions-in-inboxes", "issueLabel": "3. Decisions live in email, where AI cannot reach them", "intent": "conflicts", "text": "Which authoritative documents contradict each other and need an owner decision?"},
+    {"id": "prompt-12", "issueId": "decisions-in-inboxes", "issueLabel": "3. Decisions live in email, where AI cannot reach them", "intent": "owner-notification", "text": "Draft approval requests to the owners of expired or unowned documents"}
+  ]
+}
