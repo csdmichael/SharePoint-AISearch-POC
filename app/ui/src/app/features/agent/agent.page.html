@@ -1,0 +1,153 @@
+<ion-content>
+  <div class="page-frame" data-testid="page-agent">
+    <header class="agent-header">
+      <img class="agent-header__icon" [src]="foundryIconPath" [alt]="'agent.foundryIconAlt' | t" />
+      <h1 class="page-title">{{ 'pages.agent' | t }}</h1>
+    </header>
+
+    <div class="panes panes--two">
+      <section class="pane pane--master" data-testid="agent-prompts">
+        <h2 class="section-title">{{ 'agent.promptsHeading' | t }}</h2>
+        <app-state-view [state]="promptView()" emptyKey="agent.promptsEmpty" (retry)="retryPrompts()" />
+
+        @if (promptView().kind === 'ready') {
+          @for (name of placeholders(); track name) {
+            <ion-input
+              class="placeholder-input"
+              fill="outline"
+              labelPlacement="stacked"
+              [label]="placeholderLabel(name)"
+              [attr.data-placeholder]="name"
+              [value]="placeholderValue(name)"
+              (ionInput)="onPlaceholderInput(name, $event.detail.value)"
+            />
+          }
+
+          @if (promptHint(); as hint) {
+            <p class="inline-note" role="alert" data-testid="prompt-hint">{{ hint }}</p>
+          }
+
+          @for (group of groups(); track group.issueId) {
+            <section class="prompt-group" data-testid="prompt-group" [attr.data-issue-id]="group.issueId">
+              <h3 class="prompt-group__title">{{ group.issueLabel }}</h3>
+              <p class="muted prompt-group__count">{{ 'agent.promptGroupCount' | t: { count: i18n.number(group.prompts.length) } }}</p>
+              <ul class="prompt-list">
+                @for (prompt of group.prompts; track prompt.id) {
+                  <li>
+                    <button
+                      type="button"
+                      class="prompt"
+                      data-testid="prompt"
+                      [attr.data-prompt-id]="prompt.id"
+                      [disabled]="sending()"
+                      (click)="usePrompt(prompt)"
+                    >
+                      {{ prompt.text }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+        }
+      </section>
+
+      <section class="pane pane--primary conversation" data-testid="agent-conversation">
+        <h2 class="section-title">{{ 'agent.transcriptHeading' | t }}</h2>
+        <div class="transcript" role="log" aria-live="polite" data-testid="transcript">
+          @if (messages().length === 0) {
+            <p class="muted" data-testid="transcript-empty">{{ 'agent.transcriptEmpty' | t }}</p>
+          }
+          @for (message of messages(); track message.id) {
+            <article class="message" [attr.data-role]="message.role">
+              <p class="message__author">{{ authorLabel(message) }}</p>
+              @if (message.role === 'assistant' && message.reply; as reply) {
+                <p class="pre-wrap message__text" data-testid="agent-answer">{{ reply.answer }}</p>
+                @if (modeBadge(reply); as badge) {
+                  <app-badge data-testid="agent-mode-badge" [text]="badge.text" [color]="badge.color" />
+                }
+                @if (reply.intent) {
+                  <p class="muted message__meta">{{ 'agent.intent' | t }}: {{ reply.intent }}</p>
+                }
+                @if (reply.evidence; as evidence) {
+                  <h4 class="message__heading">{{ 'agent.evidence' | t }}</h4>
+                  @if (evidence.rows.length === 0) {
+                    <p class="muted">{{ 'agent.noEvidence' | t }}</p>
+                  } @else {
+                    <div class="table-scroll">
+                      <table class="data-table evidence-table" data-testid="evidence-table">
+                        <thead>
+                          <tr>
+                            @for (column of evidence.columns; track $index) {
+                              <th scope="col">{{ column }}</th>
+                            }
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (row of evidence.rows; track $index) {
+                            <tr>
+                              @for (cell of row; track $index) {
+                                <td>{{ cellText(cell) }}</td>
+                              }
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  }
+                }
+                <h4 class="message__heading">{{ 'agent.citations' | t }}</h4>
+                @if (reply.citations.length === 0) {
+                  <p class="muted">{{ 'agent.noCitations' | t }}</p>
+                } @else {
+                  <ul class="citations" data-testid="citations">
+                    @for (citation of reply.citations; track citation.url) {
+                      <li>
+                        @if (citationLink(citation.url); as link) {
+                          <a [href]="link" target="_blank" rel="noopener noreferrer">{{ citation.title }}</a>
+                        } @else {
+                          <span>{{ citation.title }}</span>
+                        }
+                      </li>
+                    }
+                  </ul>
+                }
+              } @else if (message.role === 'error') {
+                <p class="pre-wrap message__text">{{ 'agent.replyFailed' | t }}</p>
+                @if (message.errorView; as errorView) {
+                  <app-state-view [state]="errorView" (retry)="retryMessage(message)" />
+                }
+              } @else {
+                <p class="pre-wrap message__text">{{ message.text }}</p>
+              }
+            </article>
+          }
+          @if (sending()) {
+            <p class="muted" data-testid="agent-sending">{{ 'agent.sending' | t }}</p>
+          }
+        </div>
+
+        <div class="composer">
+          <ion-textarea
+            class="composer__input"
+            data-testid="agent-input"
+            fill="outline"
+            labelPlacement="stacked"
+            [label]="'agent.inputLabel' | t"
+            [placeholder]="'agent.inputPlaceholder' | t"
+            [maxlength]="maxInputChars"
+            [value]="draft()"
+            (ionInput)="onDraftInput($event.detail.value)"
+          />
+          <div class="composer__footer">
+            <p class="muted" data-testid="agent-character-count">{{ characterCount() }}</p>
+            <button type="button" class="action action--primary" data-testid="agent-send" [disabled]="!canSend()" (click)="sendDraft()">
+              <ion-icon [name]="icons.send" aria-hidden="true" />
+              {{ 'agent.send' | t }}
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</ion-content>

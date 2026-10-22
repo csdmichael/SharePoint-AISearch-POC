@@ -1,0 +1,38 @@
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  height: var(--layout-header-height);
+  min-width: 0;
+  padding: 0 var(--space-lg);
+  background: var(--surface-header);
+  border-bottom: 1px solid var(--surface-border);
+  box-sizing: border-box;
+  color: var(--surface-text);
+}
+
+.app-header__title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.app-header__spacer {
+  flex: 1 1 auto;
+}
+
+.app-header__user {
+  color: var(--surface-muted-text);
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 16rem;
+}
+
+.app-header > app-microsoft-logo,
+.app-header > app-badge {
+  flex: 0 0 auto;
+}

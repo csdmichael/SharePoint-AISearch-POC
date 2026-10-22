@@ -1,0 +1,69 @@
+{
+  "brandColors": {
+    "red": "#F25022",
+    "green": "#7FBA00",
+    "blue": "#00A4EF",
+    "yellow": "#FFB900"
+  },
+  "logoPath": "assets/brand/microsoft-logo.svg",
+  "logoSquareOrder": ["red", "green", "blue", "yellow"],
+  "foundryIconPath": "assets/brand/foundry.svg",
+  "surfaces": {
+    "page": "#F3F2F1",
+    "card": "#FFFFFF",
+    "header": "#FFFFFF",
+    "sidebar": "#FAF9F8",
+    "text": "#201F1E",
+    "mutedText": "#605E5C",
+    "border": "#E1DFDD",
+    "accent": "#0078D4",
+    "accentText": "#FFFFFF",
+    "tableHeader": "#F3F2F1",
+    "selected": "#DEECF9"
+  },
+  "contrast": {
+    "light": "#FFFFFF",
+    "dark": "#201F1E"
+  },
+  "ionicColors": {
+    "primary": "#0078D4",
+    "secondary": "#005A9E",
+    "tertiary": "#8764B8",
+    "success": "#107C10",
+    "warning": "#CA5010",
+    "danger": "#A4262C",
+    "medium": "#605E5C",
+    "light": "#F3F2F1",
+    "dark": "#201F1E"
+  },
+  "trustScoreColors": [
+    { "minScore": 80, "color": "#107C10" },
+    { "minScore": 50, "color": "#CA5010" },
+    { "minScore": 0, "color": "#A4262C" }
+  ],
+  "severityColors": {
+    "low": "#605E5C",
+    "medium": "#CA5010",
+    "high": "#A4262C",
+    "critical": "#750B1C"
+  },
+  "statusColors": {
+    "default": "#605E5C",
+    "draft": "#605E5C",
+    "approved": "#0078D4",
+    "sent": "#107C10",
+    "failed": "#A4262C",
+    "published": "#107C10",
+    "superseded": "#8764B8",
+    "archived": "#605E5C",
+    "expired": "#A4262C",
+    "good": "#107C10",
+    "needsReview": "#CA5010",
+    "conflictingAuthoritative": "#A4262C",
+    "conflictsWithAuthoritative": "#CA5010",
+    "live": "#107C10",
+    "dryRun": "#CA5010",
+    "offline": "#A4262C",
+    "checking": "#605E5C"
+  }
+}

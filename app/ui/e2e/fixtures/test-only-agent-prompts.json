@@ -1,0 +1,22 @@
+{
+  "testOnly": true,
+  "note": "Synthetic prompts response for Playwright route interception. Not used by src/.",
+  "schemaVersion": "1.0",
+  "placeholders": ["userUpn"],
+  "prompts": [
+    {
+      "id": "prompt-1",
+      "issueId": "duplicate-files",
+      "issueLabel": "Duplicate files",
+      "intent": "find_duplicates",
+      "text": "Find duplicate documents across the Contoso finance library for {userUpn}."
+    },
+    {
+      "id": "prompt-2",
+      "issueId": "expired-retention",
+      "issueLabel": "Expired retention",
+      "intent": "check_retention",
+      "text": "Check files past retention in Fabrikam project archive."
+    }
+  ]
+}

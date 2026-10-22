@@ -1,0 +1,6 @@
+{
+  "testOnly": true,
+  "note": "Synthetic health response for Playwright route interception. Not used by src/.",
+  "status": "ok",
+  "mode": "dryRun"
+}

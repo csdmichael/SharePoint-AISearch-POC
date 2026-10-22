@@ -1,0 +1,312 @@
+{
+  "lang": "en",
+  "appName": "SharePoint Knowledge Governance",
+  "header": {
+    "logoAltText": "Microsoft logo",
+    "microsoftWordmark": "Microsoft",
+    "menuButtonLabel": "Open navigation menu",
+    "sidebarLabel": "Main navigation",
+    "tabBarLabel": "Primary navigation",
+    "overlayTitle": "Navigation",
+    "signedInAs": "Signed in as {name}",
+    "authPending": "Checking sign-in"
+  },
+  "modeBadges": {
+    "live": "Live",
+    "dryRun": "Dry run",
+    "offline": "Offline",
+    "checking": "Checking"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "explorer": "Explorer",
+    "access": "Access by user",
+    "cleanup": "Cleanup",
+    "notifications": "Notifications",
+    "agent": "Agent"
+  },
+  "navGroups": {
+    "main": "Knowledge",
+    "governance": "Governance",
+    "assistant": "Assistant"
+  },
+  "pages": {
+    "dashboard": "Dashboard",
+    "explorer": "Explorer",
+    "access": "Access by user",
+    "cleanup": "Cleanup",
+    "notifications": "Notifications",
+    "agent": "Foundry agent",
+    "document": "Document governance",
+    "notFound": "Page not found"
+  },
+  "buttons": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "retry": "Retry",
+    "export": "Export CSV",
+    "draftNotifications": "Draft notifications",
+    "approve": "Approve",
+    "send": "Send",
+    "loadMore": "Load more",
+    "selectAll": "Select all",
+    "clearSelection": "Clear selection",
+    "openDocument": "Open document",
+    "openInSharePoint": "Open in SharePoint",
+    "showMembers": "Show members",
+    "hideMembers": "Hide members",
+    "closeMenu": "Close menu",
+    "openMenu": "Open menu",
+    "clearSearch": "Clear search",
+    "sendPrompt": "Send prompt",
+    "resend": "Send again",
+    "openNotifications": "Open notifications"
+  },
+  "states": {
+    "checking": "Checking the API connection",
+    "loading": "Loading",
+    "empty": "Nothing to show yet.",
+    "notAvailable": "Not available",
+    "notFound": {
+      "title": "Not found",
+      "body": "This item does not exist or you do not have access to it."
+    },
+    "apiUnreachable": {
+      "title": "The API is unreachable",
+      "body": "The governance API did not respond. Check that it is running, then retry."
+    },
+    "requestFailed": {
+      "title": "The request failed",
+      "body": "The API returned an error. Retry in a moment."
+    },
+    "signInRequired": {
+      "title": "Sign in required",
+      "body": "Sign in with your work account to load governance data."
+    },
+    "authNotConfigured": {
+      "title": "Sign-in is not configured",
+      "body": "The Microsoft Entra app registration for this UI has not been created yet."
+    },
+    "authError": {
+      "title": "Sign-in could not start",
+      "body": "The sign-in configuration could not be initialized. Contact your administrator."
+    }
+  },
+  "dashboard": {
+    "kpiHeading": "Hygiene metrics",
+    "findingsHeading": "Hygiene findings",
+    "findingsEmpty": "No hygiene findings were reported.",
+    "findingDocumentCount": "{count} documents",
+    "findingDocumentsHeading": "Affected documents",
+    "findingDocumentsEmpty": "No documents are linked to this finding.",
+    "generatedAt": "Generated {date}"
+  },
+  "explorer": {
+    "librariesHeading": "Libraries",
+    "librariesEmpty": "No document libraries were returned.",
+    "treeHeading": "Folders and files",
+    "treeEmpty": "This library has no items.",
+    "permissionsHeading": "Permissions",
+    "permissionsEmpty": "No permissions were returned for this item.",
+    "permissionsFilteredEmpty": "No permissions match the selected filters.",
+    "detailHeading": "Item details",
+    "detailEmpty": "Select a folder or file to see its details.",
+    "selectItemHint": "Select a folder or file to view its permissions.",
+    "filterGrantedVia": "Granted via",
+    "filterRole": "Role",
+    "filterAll": "All",
+    "memberCount": "{count} members",
+    "noMembers": "No expanded members were returned.",
+    "separator": " · ",
+    "sizeBytes": "{count} bytes",
+    "path": "Path",
+    "kind": "Kind",
+    "modified": "Modified",
+    "size": "Size",
+    "columns": {
+      "principal": "Principal",
+      "type": "Type",
+      "role": "Role",
+      "grantedVia": "Granted via",
+      "inheritedFrom": "Inherited from",
+      "members": "Members"
+    }
+  },
+  "access": {
+    "searchLabel": "Find a user",
+    "searchPlaceholder": "Name or user principal name",
+    "searchHint": "Type at least {count} characters to search.",
+    "resultsHeading": "Users",
+    "resultsEmpty": "No users match this search.",
+    "itemsHeading": "Accessible items",
+    "itemsEmpty": "This user has no item access in the returned data.",
+    "selectUser": "Select a user to see the items they can access.",
+    "rowCount": "{count} items",
+    "columns": {
+      "name": "Name",
+      "path": "Path",
+      "kind": "Kind",
+      "role": "Role",
+      "grantPath": "Grant path"
+    }
+  },
+  "cleanup": {
+    "segmentsLabel": "Cleanup segments",
+    "segments": {
+      "duplicates": "Duplicates",
+      "expiry": "Expiry",
+      "anomalies": "Anomalies",
+      "exposure": "Exposure"
+    },
+    "empty": "No records in this segment.",
+    "separator": " · ",
+    "listSeparator": ", ",
+    "selectedCount": "{count} selected",
+    "draftSummary": "Drafted {count} notifications.",
+    "draftDryRunSummary": "Dry run: {count} notifications were drafted but not saved.",
+    "viewNotifications": "Open the outbox",
+    "clusterTitle": "Duplicate cluster: canonical is {name}",
+    "canonicalOf": "Canonical: {name}",
+    "expiryDetail": "Expires {date}, {count} days past expiry",
+    "anomalyDetail": "Score {score}. Features: {contributions}",
+    "exposureDetail": "Exposure {exposure}, sensitivity {sensitivity}",
+    "selectRow": "Select {name}",
+    "columns": {
+      "document": "Document",
+      "detail": "Detail"
+    }
+  },
+  "notifications": {
+    "statusFilterLabel": "Status",
+    "statuses": {
+      "draft": "Draft",
+      "approved": "Approved",
+      "sent": "Sent",
+      "failed": "Failed"
+    },
+    "outboxHeading": "Outbox",
+    "outboxEmpty": "No notifications have this status.",
+    "previewHeading": "Preview",
+    "previewEmpty": "Select a notification to preview its subject and body.",
+    "subject": "Subject",
+    "recipient": "Recipient",
+    "body": "Body",
+    "createdAt": "Created",
+    "updatedAt": "Updated",
+    "status": "Status",
+    "approveHint": "Approve the draft before it can be sent.",
+    "sentHint": "This notification has already been sent.",
+    "recipientFormat": "{name} ({upn})",
+    "actionFailed": "The notification action could not be completed."
+  },
+  "agent": {
+    "fabLabel": "Open Foundry agent",
+    "transcriptHeading": "Conversation",
+    "transcriptEmpty": "Ask a question or choose a prompt to start.",
+    "promptsHeading": "Prompts",
+    "promptsEmpty": "No prompts are available.",
+    "placeholderLabel": "Value for {name}",
+    "placeholderRequired": "Enter a value for {name} before sending this prompt.",
+    "inputLabel": "Message",
+    "inputPlaceholder": "Ask about governance, access, or evidence",
+    "characterCount": "{count} of {max} characters",
+    "tooLong": "Messages can have at most {max} characters.",
+    "sending": "Waiting for the agent",
+    "you": "You",
+    "assistant": "Foundry agent",
+    "intent": "Intent",
+    "mode": "Mode",
+    "evidence": "Evidence",
+    "noEvidence": "No evidence rows were returned.",
+    "citations": "Citations",
+    "noCitations": "No citations were returned.",
+    "replyFailed": "The agent did not reply.",
+    "foundryIconAlt": "Microsoft Foundry icon",
+    "promptGroupCount": "{count} prompts"
+  },
+  "document": {
+    "heading": "Governance details",
+    "yes": "Yes",
+    "no": "No",
+    "noneListed": "None",
+    "trustScore": "{score} out of 100",
+    "fields": {
+      "name": "File name",
+      "path": "Path",
+      "webLink": "SharePoint location",
+      "documentType": "Document type",
+      "productFamily": "Product family",
+      "processArea": "Process area",
+      "sensitivity": "Sensitivity",
+      "businessUnit": "Business unit",
+      "knowledgeOwner": "Knowledge owner",
+      "ownerDisplayName": "Owner",
+      "lifecycleStatus": "Lifecycle status",
+      "dataQualityStatus": "Data quality",
+      "conflictStatus": "Conflict status",
+      "authoritative": "Authoritative",
+      "aiReady": "AI ready",
+      "effectiveDate": "Effective date",
+      "expirationDate": "Expiration date",
+      "reviewDate": "Review date",
+      "lastValidatedDate": "Last validated",
+      "duplicateOf": "Duplicate of",
+      "conflictWith": "Conflicts with",
+      "supersedesDocument": "Supersedes",
+      "trustScore": "Trust score",
+      "trustReasons": "Trust reasons"
+    }
+  },
+  "values": {
+    "grantedVia": {
+      "direct": "Direct",
+      "inherited": "Inherited",
+      "group": "Group",
+      "sharingLink": "Sharing link",
+      "siteGroup": "Site group"
+    },
+    "principalType": {
+      "user": "User",
+      "group": "Group",
+      "siteGroup": "Site group",
+      "sharingLink": "Sharing link",
+      "other": "Other"
+    },
+    "kind": {
+      "folder": "Folder",
+      "file": "File",
+      "library": "Library",
+      "site": "Site"
+    },
+    "severity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "lifecycleStatus": {
+      "draft": "Draft",
+      "published": "Published",
+      "superseded": "Superseded",
+      "archived": "Archived",
+      "expired": "Expired"
+    },
+    "dataQualityStatus": {
+      "good": "Good",
+      "needsReview": "Needs review"
+    },
+    "conflictStatus": {
+      "none": "None",
+      "conflictingAuthoritative": "Conflicting authoritative",
+      "conflictsWithAuthoritative": "Conflicts with authoritative"
+    }
+  },
+  "a11y": {
+    "mainRegion": "Main content",
+    "expandNode": "Expand {name}",
+    "collapseNode": "Collapse {name}",
+    "selectNode": "Show permissions for {name}",
+    "externalLinkNote": "Opens in a new tab",
+    "stateRegion": "Status"
+  }
+}

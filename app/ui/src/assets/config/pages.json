@@ -1,0 +1,17 @@
+{
+  "homeRoute": "/dashboard",
+  "documentRoute": "/documents/:id",
+  "access": {
+    "minQueryLength": 2,
+    "searchDebounceMs": 300,
+    "grantPathSeparator": " > "
+  },
+  "cleanup": {
+    "defaultSegment": "duplicates",
+    "segments": ["duplicates", "expiry", "anomalies", "exposure"]
+  },
+  "notifications": {
+    "defaultStatus": "draft",
+    "statuses": ["draft", "approved", "sent", "failed"]
+  }
+}

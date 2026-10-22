@@ -1,0 +1,69 @@
+<ion-content>
+  <div class="page-frame" data-testid="page-dashboard">
+    <h1 class="page-title">{{ 'pages.dashboard' | t }}</h1>
+    <app-state-view [state]="view()" (retry)="retry()" />
+    @if (view().kind === 'ready') {
+      @if (generatedAt(); as stamp) {
+        <p class="muted">{{ stamp }}</p>
+      }
+
+      <h2 class="section-title">{{ 'dashboard.kpiHeading' | t }}</h2>
+      <div class="card-grid" data-testid="kpi-grid">
+        @for (metric of metrics(); track metric.key) {
+          <article class="card kpi-card" data-testid="kpi-card" [attr.data-metric]="metric.key">
+            <p class="kpi-card__label">{{ metric.label }}</p>
+            <p class="kpi-card__value" data-testid="kpi-value">{{ formatValue(metric.value) }}</p>
+          </article>
+        }
+      </div>
+
+      <h2 class="section-title">{{ 'dashboard.findingsHeading' | t }}</h2>
+      @if (findings().length === 0) {
+        <p class="muted" data-testid="findings-empty">{{ 'dashboard.findingsEmpty' | t }}</p>
+      }
+      <ul class="finding-list" data-testid="findings-list">
+        @for (finding of findings(); track finding.id) {
+          <li class="card finding" [attr.data-finding-id]="finding.id">
+            <button
+              type="button"
+              class="finding__toggle"
+              data-testid="finding-toggle"
+              [attr.aria-expanded]="isExpanded(finding.id)"
+              (click)="toggleFinding(finding.id)"
+            >
+              <span class="finding__title">{{ finding.title }}</span>
+              <app-badge [text]="severityLabel(finding.severity)" [color]="severityColor(finding.severity)" />
+              @if (finding.count !== null) {
+                <span class="muted">{{ countLabel(finding.count) }}</span>
+              }
+              <ion-icon class="finding__chevron" [name]="isExpanded(finding.id) ? icons.collapse : icons.expand" aria-hidden="true" />
+            </button>
+
+            @if (isExpanded(finding.id)) {
+              <div class="finding__body" data-testid="finding-body">
+                <h3 class="section-title">{{ 'dashboard.findingDocumentsHeading' | t }}</h3>
+                <app-state-view
+                  [state]="findingView(finding.id)"
+                  emptyKey="dashboard.findingDocumentsEmpty"
+                  (retry)="loadFinding(finding.id)"
+                />
+                @if (findingView(finding.id).kind === 'ready') {
+                  <ul class="finding__documents" data-testid="finding-documents">
+                    @for (document of findingDocuments(finding.id); track document.id) {
+                      <li>
+                        <a class="finding__document" [routerLink]="navigation.documentPath(document.id)" data-testid="document-link">
+                          <ion-icon [name]="icons.document" aria-hidden="true" />
+                          <span>{{ document.name }}</span>
+                        </a>
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</ion-content>

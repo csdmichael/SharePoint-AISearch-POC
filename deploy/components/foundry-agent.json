@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "deploy-component/v1",
+  "id": "foundry-agent",
+  "displayName": "Foundry project and governance agent",
+  "kind": "foundryAgent",
+  "sourcePath": "app/api/config",
+  "triggerPaths": [
+    "app/api/config/**",
+    "app/api/app/agent/**",
+    "deploy/settings.json",
+    "deploy/components/foundry-agent.json",
+    "infra/**",
+    "scripts/ci/**",
+    "scripts/deploy/**",
+    ".github/workflows/**"
+  ],
+  "iac": {"tool": "bicep", "supportedTools": ["bicep", "terraform"]},
+  "infra": {
+    "bicepTemplate": "infra/bicep/components/foundry-agent/main.bicep",
+    "terraformRoot": "infra/terraform/components/foundry-agent"
+  },
+  "foundry": {
+    "accountName": "foundry-myaacoub",
+    "projectName": "SharePointGovernance",
+    "location": "westus",
+    "projectDescription": "SharePoint governance agent project for the ACL and cleanup app",
+    "agentName": "sharepoint-governance-agent",
+    "modelDeployment": "gpt-5.2",
+    "instructionsFile": "app/api/config/agent.json",
+    "instructionsProperty": "instructions",
+    "apiAppName": "caldova-aiscr-api",
+    "apiIdentityRole": {
+      "roleName": "Foundry User",
+      "roleDefinitionId": "53ca6127-db72-4b80-b1b0-d745d6d5456d",
+      "grant": true
+    }
+  }
+}

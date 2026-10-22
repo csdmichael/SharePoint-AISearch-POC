@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "deploy-component/v1",
+  "id": "trusted-knowledge",
+  "displayName": "Trusted Knowledge governance pipeline",
+  "kind": "pipeline",
+  "sourcePath": ".",
+  "triggerPaths": [
+    "scripts/trusted_knowledge/**",
+    "tests/**",
+    "config/trusted-knowledge.json",
+    "config/governance-policy.json",
+    "config/governance-vocabulary.json",
+    "deploy/components/trusted-knowledge.json",
+    "scripts/ci/**",
+    ".github/workflows/**"
+  ],
+  "language": {"runtime": "python", "version": "3.13"},
+  "validate": {
+    "install": [],
+    "unitTest": ["python", "-m", "unittest", "tests.test_trusted_knowledge"]
+  },
+  "provision": {
+    "enabled": false,
+    "reason": "Live provisioning (SharePoint library, Search index, Foundry knowledge base) is not built yet. The workflow runs validation only."
+  }
+}

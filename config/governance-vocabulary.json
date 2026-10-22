@@ -1,0 +1,199 @@
+{
+  "schemaVersion": "trusted-knowledge-vocabulary/v1",
+  "description": "Logical keys, display labels, message templates and rule vocabulary shared by the Trusted Knowledge pipeline, the SharePoint API and the UI. Code refers to logical keys and reads every display value from this file.",
+  "columns": {
+    "title": "Title",
+    "fileName": "FileLeafRef",
+    "artifactId": "ArtifactId",
+    "knowledgeCategory": "KnowledgeCategory",
+    "sourceTable": "SourceTable",
+    "sourceSystem": "SourceSystem",
+    "profileGeneratedAt": "ProfileGeneratedAt",
+    "knowledgeOwner": "KnowledgeOwner",
+    "ownerDisplayName": "OwnerDisplayName",
+    "lifecycleStatus": "LifecycleStatus",
+    "authoritative": "Authoritative",
+    "reviewDate": "ReviewDate",
+    "documentType": "DocumentType",
+    "productFamily": "ProductFamily",
+    "processArea": "ProcessArea",
+    "sensitivity": "Sensitivity",
+    "effectiveDate": "EffectiveDate",
+    "expirationDate": "ExpirationDate",
+    "supersedesDocument": "SupersedesDocument",
+    "businessUnit": "BusinessUnit",
+    "aiReady": "AIReady",
+    "trustScore": "TrustScore",
+    "dataQualityStatus": "DataQualityStatus",
+    "conflictStatus": "ConflictStatus",
+    "conflictWith": "ConflictWith",
+    "duplicateOf": "DuplicateOf",
+    "contentHash": "ContentHash",
+    "trustReasons": "TrustReasons",
+    "lastValidatedDate": "LastValidatedDate"
+  },
+  "indexFields": {
+    "lifecycleStatus": "lifecycle_status",
+    "authoritative": "authoritative",
+    "aiReady": "ai_ready",
+    "sensitivity": "sensitivity"
+  },
+  "labels": {
+    "lifecycleStatus": {"draft": "Draft", "published": "Published", "superseded": "Superseded", "archived": "Archived"},
+    "dataQualityStatus": {"good": "Good", "needsReview": "Needs Review", "stale": "Stale", "duplicate": "Duplicate", "conflicting": "Conflicting"},
+    "conflictStatus": {"none": "None", "conflictingAuthoritative": "Conflicting Authoritative", "conflictsWithAuthoritative": "Conflicts With Authoritative"},
+    "sensitivity": {"general": "General", "confidential": "Confidential", "highlyConfidential": "Highly Confidential"},
+    "duplicateKind": {"exact": "Exact duplicate", "near": "Near-duplicate"},
+    "yesNo": {"yes": "Yes", "no": "No"}
+  },
+  "rules": {
+    "authoritativeClaimLifecycleKey": "published",
+    "staleLifecycleKeys": ["superseded", "archived"]
+  },
+  "classification": {
+    "documentType": {
+      "default": "Technical Guide",
+      "rules": [
+        {"keyword": "test report", "value": "Test Report"},
+        {"keyword": "decision record", "value": "Decision Record"},
+        {"keyword": "meeting", "value": "Meeting Summary"},
+        {"keyword": "specification", "value": "Specification"},
+        {"keyword": "procedure", "value": "Procedure"},
+        {"keyword": "policy", "value": "Procedure"}
+      ]
+    },
+    "processArea": {
+      "default": "General Engineering",
+      "rules": [
+        {"keyword": "failure analysis", "value": "Failure Analysis"},
+        {"keyword": "escalation", "value": "Quality Escalation"}
+      ]
+    },
+    "sensitivity": {
+      "default": "General",
+      "rules": [
+        {"keyword": "highly confidential", "value": "Highly Confidential"},
+        {"keyword": "confidential", "value": "Confidential"}
+      ]
+    },
+    "productFamilyMatchesChoices": true,
+    "suggestionDefaults": {"lifecycleStatus": "Draft", "authoritative": false, "requiresOwnerReview": true}
+  },
+  "messages": {
+    "trustReasons": {
+      "authoritative": "Authoritative = Yes",
+      "published": "LifecycleStatus = Published",
+      "reviewCurrent": "ReviewDate {reviewDate} is current",
+      "ownerPresent": "KnowledgeOwner present",
+      "dataQualityGood": "DataQualityStatus = Good",
+      "notDuplicate": "Not a duplicate",
+      "approvedSource": "SourceSystem is approved",
+      "draft": "LifecycleStatus = Draft",
+      "superseded": "LifecycleStatus = Superseded",
+      "archived": "LifecycleStatus = Archived",
+      "expired": "ExpirationDate {expirationDate} has passed",
+      "duplicate": "Duplicate of {canonical}",
+      "missingOwner": "KnowledgeOwner missing",
+      "conflictingAuthoritative": "Conflicts with another authoritative document",
+      "conflictsWithAuthoritative": "Conflicts with an authoritative document",
+      "total": "= {score}/100"
+    },
+    "blockers": {
+      "lifecycleNotRequired": "LifecycleStatus is {value}",
+      "notAuthoritative": "Authoritative = No",
+      "ownerMissing": "KnowledgeOwner missing",
+      "reviewMissing": "ReviewDate missing",
+      "reviewPassed": "ReviewDate {value} has passed",
+      "expirationPassed": "ExpirationDate {value} has passed",
+      "effectiveInFuture": "EffectiveDate {value} is in the future",
+      "duplicateOf": "Duplicate of {value}",
+      "sensitivityNotTrusted": "Sensitivity {value} is not trusted",
+      "sourceNotApproved": "SourceSystem is not approved"
+    },
+    "duplicate": {
+      "exact": "Identical content hash",
+      "near": "Embedding similarity {similarity} with identical numeric facts"
+    },
+    "conflict": {
+      "candidate": "Same product family, process area and document type; similarity {similarity}; numeric facts differ"
+    },
+    "exclusions": {
+      "lifecycle": "LifecycleStatus = {value}",
+      "notAuthoritative": "Authoritative = No",
+      "duplicate": "Duplicate of {value}",
+      "expired": "Expired on {value}",
+      "reviewPassed": "Review date {value} has passed",
+      "conflictsWithAuthoritative": "Conflicts with an authoritative document",
+      "notAiReady": "AIReady = No"
+    }
+  },
+  "hygiene": {
+    "metrics": [
+      {"key": "totalIndexedDocuments", "label": "Total indexed documents"},
+      {"key": "authoritativeDocuments", "label": "Authoritative documents"},
+      {"key": "aiReadyDocuments", "label": "AI-ready documents"},
+      {"key": "draftDocuments", "label": "Draft documents"},
+      {"key": "supersededDocuments", "label": "Superseded documents"},
+      {"key": "expiredDocuments", "label": "Expired documents"},
+      {"key": "documentsMissingOwners", "label": "Documents missing owners"},
+      {"key": "exactDuplicateCandidates", "label": "Exact duplicate candidates"},
+      {"key": "nearDuplicateCandidates", "label": "Near-duplicate candidates"},
+      {"key": "documentsRequiringReview", "label": "Documents requiring review"},
+      {"key": "conflictingAuthoritativeDocuments", "label": "Conflicting authoritative documents"},
+      {"key": "averageTrustScore", "label": "Average TrustScore"}
+    ],
+    "findings": [
+      {"id": "conflicting-authoritative", "title": "Conflicting authoritative documents", "severity": "critical", "rule": "conflictStatus", "value": "conflictingAuthoritative"},
+      {"id": "exact-duplicates", "title": "Exact duplicate candidates", "severity": "high", "rule": "duplicateKind", "value": "exact"},
+      {"id": "near-duplicates", "title": "Near-duplicate candidates", "severity": "high", "rule": "duplicateKind", "value": "near"},
+      {"id": "expired-documents", "title": "Expired documents", "severity": "high", "rule": "expired"},
+      {"id": "missing-owners", "title": "Documents missing owners", "severity": "high", "rule": "missingOwner"},
+      {"id": "superseded-documents", "title": "Superseded documents", "severity": "medium", "rule": "lifecycleStatus", "value": "superseded"},
+      {"id": "draft-documents", "title": "Draft documents", "severity": "medium", "rule": "lifecycleStatus", "value": "draft"},
+      {"id": "conflicts-with-authoritative", "title": "Conflicts with authoritative documents", "severity": "medium", "rule": "conflictStatus", "value": "conflictsWithAuthoritative"},
+      {"id": "requires-review", "title": "Documents requiring review", "severity": "medium", "rule": "dataQualityNot", "value": "good"}
+    ]
+  },
+  "retrieval": {
+    "routing": {
+      "trustedTool": "trusted-knowledge",
+      "governanceTool": "governance-all",
+      "governanceKeywords": ["draft", "superseded", "expired", "expiry", "histor", "latest", "newest", "most recent", "duplicate", "stale", "unowned", "missing owner", "governance", "attention", "conflict", "archive", "previous version", "old version", "outdated", "needs review"]
+    },
+    "filterTemplates": {
+      "equalsText": "{field} eq '{value}'",
+      "equalsBoolean": "{field} eq {value}",
+      "combine": " and ",
+      "anyOf": " or ",
+      "group": "({clauses})"
+    },
+    "statuses": {"trusted": "TRUSTED", "conflict": "CONFLICT_REVIEW_REQUIRED", "noSource": "NO_AUTHORITATIVE_SOURCE"},
+    "banners": {
+      "conflict": "Multiple authoritative sources appear to conflict. Knowledge-owner review is recommended.",
+      "noSource": "NO AUTHORITATIVE SOURCE FOUND"
+    },
+    "cardTitles": {"trusted": "TRUSTED ANSWER", "conflict": "CONFLICT REVIEW REQUIRED"},
+    "cardLabels": {
+      "source": "Source",
+      "status": "Status",
+      "authoritative": "Authoritative",
+      "knowledgeOwner": "Knowledge Owner",
+      "reviewDate": "Review Date",
+      "trustScore": "Trust Score",
+      "whyTrusted": "Why trusted",
+      "citation": "Citation",
+      "missing": "Missing",
+      "notEligible": "Not eligible",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "whyTrustedTokens": {
+      "published": "Published",
+      "authoritative": "Authoritative",
+      "current": "Current",
+      "owned": "Owned",
+      "validated": "Validated",
+      "joiner": " + "
+    }
+  }
+}

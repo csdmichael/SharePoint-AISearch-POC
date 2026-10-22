@@ -1,0 +1,107 @@
+<ion-content>
+  <div class="page-frame" data-testid="page-notifications">
+    <div class="page-header-row">
+      <h1 class="page-title">{{ 'pages.notifications' | t }}</h1>
+      @if (modeBadge(); as badge) {
+        <app-badge data-testid="notifications-mode-badge" [text]="badge.text" [color]="badge.color" />
+      }
+    </div>
+
+    <ion-segment
+      class="segments"
+      data-testid="status-filter"
+      scrollable="true"
+      [value]="status()"
+      [attr.aria-label]="'notifications.statusFilterLabel' | t"
+      (ionChange)="selectStatus(selectValue($event))"
+    >
+      @for (value of statuses; track value) {
+        <ion-segment-button [value]="value" [attr.data-status]="value">
+          <ion-label>{{ statusLabel(value) }}</ion-label>
+        </ion-segment-button>
+      }
+    </ion-segment>
+
+    <div class="panes">
+      <section class="pane pane--master" data-testid="outbox-master">
+        <h2 class="section-title">{{ 'notifications.outboxHeading' | t }}</h2>
+        <app-state-view [state]="view()" emptyKey="notifications.outboxEmpty" (retry)="retry()" />
+        @if (view().kind === 'ready') {
+          <ul class="outbox" data-testid="outbox-list">
+            @for (item of items(); track item.id) {
+              <li>
+                <button
+                  type="button"
+                  class="outbox__item"
+                  data-testid="outbox-item"
+                  [attr.data-notification-id]="item.id"
+                  [class.is-selected]="selectedId() === item.id"
+                  [attr.aria-pressed]="selectedId() === item.id"
+                  (click)="select(item)"
+                >
+                  <span class="outbox__subject">{{ item.subject }}</span>
+                  <app-badge [text]="statusLabel(item.status)" [color]="display.statusColor(item.status)" />
+                  <span class="muted outbox__meta">{{ item.recipient?.displayName ?? ('states.notAvailable' | t) }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+          @if (outbox.nextCursor()) {
+            <button type="button" class="load-more" data-testid="outbox-load-more" [disabled]="outbox.loadingMore()" (click)="outbox.loadMore()">
+              {{ 'buttons.loadMore' | t }}
+            </button>
+          }
+        }
+      </section>
+
+      <section class="pane pane--primary" data-testid="notification-preview">
+        <h2 class="section-title">{{ 'notifications.previewHeading' | t }}</h2>
+        @if (selected(); as item) {
+          <h3 class="preview__subject" data-testid="preview-subject">{{ item.subject }}</h3>
+          <dl class="meta">
+            <dt>{{ 'notifications.recipient' | t }}</dt>
+            <dd>{{ recipientText(item) }}</dd>
+            <dt>{{ 'notifications.createdAt' | t }}</dt>
+            <dd>{{ i18n.date(item.createdAt) }}</dd>
+            <dt>{{ 'notifications.updatedAt' | t }}</dt>
+            <dd>{{ i18n.date(item.updatedAt) }}</dd>
+          </dl>
+          <h4 class="section-title">{{ 'notifications.body' | t }}</h4>
+          <pre class="pre-wrap preview__body" data-testid="preview-body">{{ item.body }}</pre>
+        } @else {
+          <p class="muted" data-testid="preview-empty">{{ 'notifications.previewEmpty' | t }}</p>
+        }
+      </section>
+
+      <section class="pane pane--detail" data-testid="notification-actions">
+        @if (selected(); as item) {
+          <h2 class="section-title">{{ 'notifications.status' | t }}</h2>
+          <app-badge [text]="statusLabel(item.status)" [color]="display.statusColor(item.status)" />
+          <div class="actions">
+            @if (canApprove(item)) {
+              <button type="button" class="action action--primary" data-testid="approve" [disabled]="acting() !== null" (click)="approve(item)">
+                <ion-icon [name]="icons.approve" aria-hidden="true" />
+                {{ 'buttons.approve' | t }}
+              </button>
+              <p class="muted">{{ 'notifications.approveHint' | t }}</p>
+            }
+            @if (canSend(item)) {
+              <button type="button" class="action action--primary" data-testid="send" [disabled]="acting() !== null" (click)="send(item)">
+                <ion-icon [name]="icons.send" aria-hidden="true" />
+                {{ 'buttons.send' | t }}
+              </button>
+            }
+            @if (item.status === 'sent') {
+              <p class="muted" data-testid="sent-hint">{{ 'notifications.sentHint' | t }}</p>
+            }
+          </div>
+          @if (actionErrorView(); as errorView) {
+            <app-state-view [state]="errorView" (retry)="actionError.set(null)" />
+          }
+        } @else {
+          <p class="muted">{{ 'notifications.previewEmpty' | t }}</p>
+        }
+      </section>
+    </div>
+  </div>
+</ion-content>

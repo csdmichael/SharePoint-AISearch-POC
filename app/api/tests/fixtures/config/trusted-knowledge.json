@@ -1,0 +1,20 @@
+{
+  "azure": {
+    "tenantId": "11111111-2222-3333-4444-555555555555",
+    "subscriptionId": "00000000-0000-0000-0000-000000000000",
+    "resourceGroup": "test-resource-group",
+    "location": "westus"
+  },
+  "sharePoint": {
+    "siteDisplayName": "Knowledge Hub",
+    "productionLibraryName": "Trusted Knowledge",
+    "siteUrl": "https://contoso.sharepoint.com/sites/knowledge"
+  },
+  "foundry": {
+    "knowledgeAgent": {
+      "accountName": "foundry-test",
+      "projectName": "proj-test",
+      "agentName": "knowledge-agent-test"
+    }
+  }
+}

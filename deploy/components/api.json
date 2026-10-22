@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "deploy-component/v1",
+  "id": "api",
+  "displayName": "SharePoint governance API (FastAPI)",
+  "kind": "appService",
+  "sourcePath": "app/api",
+  "triggerPaths": [
+    "app/api/**",
+    "config/trusted-knowledge.json",
+    "config/governance-policy.json",
+    "config/governance-vocabulary.json",
+    "deploy/settings.json",
+    "deploy/components/api.json",
+    "infra/**",
+    "scripts/ci/**",
+    "scripts/deploy/**",
+    ".github/workflows/**"
+  ],
+  "language": {"runtime": "python", "version": "3.12"},
+  "validate": {
+    "install": ["python", "-m", "pip", "install", "-r", "requirements.txt", "-r", "requirements-dev.txt"],
+    "unitTest": ["python", "-m", "pytest", "-q"]
+  },
+  "package": {
+    "stage": [
+      {"from": "app/api/app", "to": "app"},
+      {"from": "app/api/config", "to": "config"},
+      {"from": "app/api/requirements.txt", "to": "requirements.txt"},
+      {"from": "config/trusted-knowledge.json", "to": "shared-config/trusted-knowledge.json"},
+      {"from": "config/governance-vocabulary.json", "to": "shared-config/governance-vocabulary.json"},
+      {"from": "config/governance-policy.json", "to": "shared-config/governance-policy.json"}
+    ],
+    "patchJson": []
+  },
+  "iac": {"tool": "bicep", "supportedTools": ["bicep", "terraform"]},
+  "infra": {
+    "bicepTemplate": "infra/bicep/components/app-service/main.bicep",
+    "terraformRoot": "infra/terraform/components/api"
+  },
+  "azure": {
+    "appName": "caldova-aiscr-api",
+    "runtime": "PYTHON|3.12",
+    "startupCommand": "gunicorn -k uvicorn.workers.UvicornWorker app.asgi:app --bind 0.0.0.0:8000 --timeout 120",
+    "healthPath": "/health",
+    "appSettings": {
+      "SCM_DO_BUILD_DURING_DEPLOYMENT": "true",
+      "WEBSITES_PORT": "8000",
+      "API_CONFIG_PATH": "config/api.config.json",
+      "AZURE_TENANT_ID": "12a4b86b-e64c-43f9-af05-d9130a72dfd2",
+      "API_CONFIG__auth__audience": "api://e3d6917e-1001-4f80-82c1-e7f8913dec22",
+      "API_CONFIG__auth__clientId": "e3d6917e-1001-4f80-82c1-e7f8913dec22",
+      "API_CONFIG__cors__allowedOrigins": "https://caldova-aiscr-ui.azurewebsites.net",
+      "API_CONFIG__sharedConfig__deploymentPath": "shared-config/trusted-knowledge.json",
+      "API_CONFIG__sharedConfig__vocabularyPath": "shared-config/governance-vocabulary.json",
+      "API_CONFIG__sharedConfig__policyPath": "shared-config/governance-policy.json",
+      "API_AGENT__foundry__accountName": "foundry-myaacoub",
+      "API_AGENT__foundry__projectName": "SharePointGovernance",
+      "API_AGENT__foundry__agentName": "sharepoint-governance-agent"
+    }
+  }
+}

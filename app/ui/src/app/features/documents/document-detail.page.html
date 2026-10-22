@@ -1,0 +1,42 @@
+<ion-content>
+  <div class="page-frame" data-testid="page-document">
+    <h1 class="page-title">{{ 'pages.document' | t }}</h1>
+    <app-state-view [state]="view()" (retry)="retry()" />
+
+    @if (view().kind === 'ready' && details(); as doc) {
+      <article class="card document" data-testid="document-detail">
+        <h2 class="document__name" data-testid="document-name">{{ doc.name }}</h2>
+        @if (webLink(); as link) {
+          <a class="external-link" [href]="link" target="_blank" rel="noopener noreferrer" data-testid="document-web-link">
+            <ion-icon [name]="icons.externalLink" aria-hidden="true" />
+            {{ 'buttons.openInSharePoint' | t }}
+          </a>
+        }
+
+        <h3 class="section-title">{{ 'document.heading' | t }}</h3>
+        <dl class="fields">
+          @for (field of fields(); track field.key) {
+            <dt>{{ field.labelKey | t }}</dt>
+            <dd [attr.data-field]="field.key">
+              @if (field.badge; as badge) {
+                <app-badge [text]="badge.text" [color]="badge.color" />
+              } @else if (field.list) {
+                @if (field.list.length === 0) {
+                  <span class="muted">{{ field.text }}</span>
+                } @else {
+                  <ul class="field-list">
+                    @for (item of field.list; track $index) {
+                      <li>{{ item }}</li>
+                    }
+                  </ul>
+                }
+              } @else {
+                <span>{{ field.text }}</span>
+              }
+            </dd>
+          }
+        </dl>
+      </article>
+    }
+  </div>
+</ion-content>

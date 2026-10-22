@@ -1,0 +1,42 @@
+{
+  "root": "www",
+  "index": "index.html",
+  "spaFallback": true,
+  "host": "0.0.0.0",
+  "port": 8080,
+  "headers": {
+    "X-Content-Type-Options": "nosniff"
+  },
+  "mimeTypes": {
+    ".html": "text/html; charset=utf-8",
+    ".js": "text/javascript; charset=utf-8",
+    ".mjs": "text/javascript; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".map": "application/json; charset=utf-8",
+    ".txt": "text/plain; charset=utf-8",
+    ".svg": "image/svg+xml",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".ico": "image/x-icon",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+    ".webmanifest": "application/manifest+json"
+  },
+  "defaultMimeType": "application/octet-stream",
+  "defaultCacheControl": "public, max-age=3600",
+  "cacheControl": [
+    {
+      "extensions": [".html", ".json", ".webmanifest"],
+      "value": "no-cache"
+    },
+    {
+      "extensions": [".js", ".mjs", ".css"],
+      "value": "public, max-age=31536000, immutable"
+    },
+    {
+      "extensions": [".svg", ".png", ".jpg", ".ico", ".woff", ".woff2"],
+      "value": "public, max-age=86400"
+    }
+  ]
+}

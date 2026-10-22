@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "deploy-settings/v1",
+  "tenantId": "12a4b86b-e64c-43f9-af05-d9130a72dfd2",
+  "subscriptionId": "cf824570-a8ba-497a-a184-0a52f1830aa9",
+  "resourceGroup": "m365-myaacoub",
+  "location": "westus2",
+  "appServicePlan": "caldova-aiscr-plan",
+  "github": {
+    "owner": "csdmichael",
+    "repository": "SharePoint-AISearch-POC",
+    "defaultBranch": "main",
+    "environment": "production",
+    "gate": "autoDeploy",
+    "repositoryVariables": ["AZURE_CLIENT_ID", "AZURE_TENANT_ID", "AZURE_SUBSCRIPTION_ID"]
+  },
+  "bootstrap": {
+    "bicepTemplate": "infra/bicep/bootstrap/main.bicep",
+    "terraformRoot": "infra/terraform/bootstrap"
+  },
+  "deployIdentity": {
+    "name": "id-spacl-github-deploy",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "audience": "api://AzureADTokenExchange",
+    "subject": "repo:csdmichael/SharePoint-AISearch-POC:environment:production",
+    "grantContributorOnResourceGroup": true,
+    "grantUserAccessAdministratorOnFoundryAccount": true,
+    "roleDefinitionIds": {
+      "contributor": "b24988ac-6180-42a0-ab88-20f7382dd24c",
+      "userAccessAdministrator": "18d7d88d-d35e-4fb5-a5c3-7773c20a72d9",
+      "storageBlobDataContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe"
+    }
+  },
+  "terraformState": {
+    "create": true,
+    "storageAccountName": "stspacltfstate",
+    "skuName": "Standard_LRS",
+    "containerName": "tfstate",
+    "keyPrefix": "sp-acl"
+  },
+  "packaging": {
+    "exclude": ["__pycache__", ".venv", "node_modules", ".pytest_cache", "*.pyc"]
+  },
+  "healthCheck": {
+    "attempts": 12,
+    "delaySeconds": 15
+  }
+}

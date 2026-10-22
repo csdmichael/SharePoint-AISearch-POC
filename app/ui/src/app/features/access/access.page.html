@@ -1,0 +1,106 @@
+<ion-content>
+  <div class="page-frame" data-testid="page-access">
+    <h1 class="page-title">{{ 'pages.access' | t }}</h1>
+
+    <div class="panes">
+      <section class="pane pane--master" data-testid="access-master">
+        <h2 class="section-title">{{ 'access.resultsHeading' | t }}</h2>
+        <ion-searchbar
+          data-testid="user-search"
+          [placeholder]="'access.searchPlaceholder' | t"
+          [attr.aria-label]="'access.searchLabel' | t"
+          (ionInput)="onSearch($event.detail.value)"
+        />
+        @if (!searchActive()) {
+          <p class="muted" data-testid="search-hint">{{ 'access.searchHint' | t: { count: minQueryLength } }}</p>
+        } @else {
+          <app-state-view [state]="searchView()" emptyKey="access.resultsEmpty" (retry)="retrySearch()" />
+          @if (searchView().kind === 'ready') {
+            <ul class="user-list" data-testid="user-list">
+              @for (user of userList(); track user.key) {
+                <li>
+                  <button
+                    type="button"
+                    class="user-list__item"
+                    data-testid="user-item"
+                    [class.is-selected]="isSelected(user)"
+                    [attr.aria-pressed]="isSelected(user)"
+                    (click)="selectUser(user)"
+                  >
+                    <ion-icon [name]="icons.user" aria-hidden="true" />
+                    <span class="user-list__text">
+                      <span>{{ user.displayName }}</span>
+                      <span class="muted user-list__upn">{{ user.upn }}</span>
+                    </span>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        }
+      </section>
+
+      <section class="pane pane--primary" data-testid="access-items">
+        <h2 class="section-title">{{ 'access.itemsHeading' | t }}</h2>
+        @if (!selectedUser()) {
+          <p class="muted" data-testid="access-hint">{{ 'access.selectUser' | t }}</p>
+        } @else {
+          <app-state-view [state]="itemsView()" emptyKey="access.itemsEmpty" (retry)="items.reload()" />
+          @if (itemsView().kind === 'ready') {
+            <div class="table-scroll">
+              <table class="data-table" data-testid="access-table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ 'access.columns.name' | t }}</th>
+                    <th scope="col">{{ 'access.columns.path' | t }}</th>
+                    <th scope="col">{{ 'access.columns.kind' | t }}</th>
+                    <th scope="col">{{ 'access.columns.role' | t }}</th>
+                    <th scope="col">{{ 'access.columns.grantPath' | t }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of items.items(); track item.id) {
+                    <tr data-testid="access-row">
+                      <td>{{ item.name }}</td>
+                      <td>{{ item.path ?? ('states.notAvailable' | t) }}</td>
+                      <td>{{ kindLabel(item.kind) }}</td>
+                      <td>{{ item.role }}</td>
+                      <td>{{ grantPathText(item) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            @if (items.nextCursor()) {
+              <button type="button" class="load-more" data-testid="access-load-more" [disabled]="items.loadingMore()" (click)="items.loadMore()">
+                {{ 'buttons.loadMore' | t }}
+              </button>
+            }
+          }
+        }
+      </section>
+
+      <section class="pane pane--detail" data-testid="access-summary">
+        @if (selectedUser(); as user) {
+          <h2 class="section-title">{{ user.displayName }}</h2>
+          <p class="muted user-upn">{{ user.upn }}</p>
+          @if (itemsView().kind === 'ready') {
+            <p data-testid="access-count">{{ 'access.rowCount' | t: { count: i18n.number(items.items().length) } }}</p>
+          }
+          <button
+            type="button"
+            class="export-button"
+            data-testid="export-csv"
+            [disabled]="items.items().length === 0"
+            (click)="exportCsv()"
+          >
+            <ion-icon [name]="icons.export" aria-hidden="true" />
+            {{ 'buttons.export' | t }}
+          </button>
+        } @else {
+          <p class="muted">{{ 'access.selectUser' | t }}</p>
+        }
+      </section>
+    </div>
+  </div>
+</ion-content>

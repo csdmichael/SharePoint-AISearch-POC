@@ -1,0 +1,15 @@
+<ion-app class="app-shell">
+  <app-header />
+  <div class="app-body">
+    @if (layout.isDesktop()) {
+      <app-sidebar />
+    }
+    <main class="app-main" [id]="mainContentId" [attr.aria-label]="mainLabel" data-testid="main-content">
+      <ion-router-outlet />
+    </main>
+  </div>
+  <app-tab-bar />
+  <app-overlay-menu />
+  <app-agent-fab />
+</ion-app>
+

@@ -1,0 +1,222 @@
+{
+  "tenantId": "11111111-2222-3333-4444-555555555555",
+  "site": {
+    "host": "contoso.sharepoint.com",
+    "path": "/sites/knowledge",
+    "title": "Knowledge Hub",
+    "graphSiteId": "contoso-site-id",
+    "uniqueRoleAssignments": false,
+    "roleAssignments": [
+      {"member": {"Id": 42, "LoginName": "Knowledge Members", "Title": "Knowledge Members", "PrincipalType": 8}, "roles": ["Edit"]},
+      {"member": {"Id": 21, "LoginName": "c:0o.c|federateddirectoryclaimprovider|aaaaaaaa-0000-4000-8000-000000000001", "Title": "Trusted Knowledge Readers", "PrincipalType": 4}, "roles": ["Read"]}
+    ]
+  },
+  "library": {
+    "id": "5f2c6a10-1111-4a2b-9c3d-000000000001",
+    "title": "Trusted Knowledge",
+    "rootPath": "/sites/knowledge/Shared Documents/Trusted Knowledge",
+    "uniqueRoleAssignments": false,
+    "roleAssignments": [],
+    "driveId": "drive-1",
+    "items": [
+      {
+        "key": "engineering",
+        "kind": "folder",
+        "path": "Engineering",
+        "unique": true,
+        "modified": "2025-05-01T09:00:00Z",
+        "roleAssignments": [
+          {"member": {"Id": 31, "LoginName": "c:0(.s|true", "Title": "Everyone", "PrincipalType": 4}, "roles": ["Read"]}
+        ]
+      },
+      {
+        "key": "thermal",
+        "kind": "file",
+        "path": "Engineering/Thermal Notes.xlsx",
+        "unique": false,
+        "modified": "2025-05-02T09:00:00Z",
+        "size": 4120,
+        "content": {"kind": "xlsx", "rows": [["Thermal notes", "Sensor calibration drift tolerance 2 percent"], ["Engineering review", "Thermal sensors checked weekly"]]},
+        "owner": "bob",
+        "gov": {"ArtifactId": "TK-0009", "LifecycleStatus": "Draft", "Authoritative": false, "DocumentType": "Technical Guide", "ProductFamily": "ApexDrive X500", "ProcessArea": "General Engineering", "Sensitivity": "General", "AIReady": false, "TrustScore": 35, "DataQualityStatus": "Needs Review", "ConflictStatus": "None", "KnowledgeCategory": "Engineering", "SourceSystem": "SharePoint Online"}
+      },
+      {
+        "key": "restricted",
+        "kind": "folder",
+        "path": "Restricted",
+        "unique": true,
+        "modified": "2025-06-01T09:00:00Z",
+        "roleAssignments": [
+          {"member": {"Id": 12, "LoginName": "i:0#.f|membership|bob@contoso.com", "Title": "Bob Reviewer", "PrincipalType": 1, "Email": "bob@contoso.com"}, "roles": ["Read"]}
+        ]
+      },
+      {
+        "key": "restricted-spec",
+        "kind": "file",
+        "path": "Restricted/Restricted Spec.docx",
+        "unique": false,
+        "modified": "2025-09-01T09:00:00Z",
+        "size": 3555,
+        "content": {"kind": "docx", "paragraphs": ["Restricted specification for firmware signing key rotation. Keys rotate every 180 days under change control."]},
+        "owner": "alice",
+        "links": [
+          {"id": "perm-specific-1", "link": {"scope": "users", "type": "edit"}, "grantedToIdentitiesV2": [{"user": {"id": "alice-id", "displayName": "Alice Owner"}}]},
+          {"id": "perm-direct-1", "roles": ["write"], "grantedToV2": {"user": {"id": "alice-id", "displayName": "Alice Owner"}}}
+        ],
+        "gov": {"ArtifactId": "TK-0010", "LifecycleStatus": "Draft", "Authoritative": false, "DocumentType": "Specification", "ProductFamily": "ApexDrive X500", "ProcessArea": "General Engineering", "Sensitivity": "Confidential", "AIReady": false, "TrustScore": 40, "DataQualityStatus": "Needs Review", "ConflictStatus": "None", "KnowledgeCategory": "Engineering", "SourceSystem": "SharePoint Online"}
+      },
+      {
+        "key": "archive",
+        "kind": "folder",
+        "path": "Archive",
+        "unique": false,
+        "modified": "2024-11-01T09:00:00Z",
+        "roleAssignments": []
+      },
+      {
+        "key": "old-calibration",
+        "kind": "file",
+        "path": "Archive/Old Calibration Report.docx",
+        "unique": false,
+        "modified": "2024-11-20T09:00:00Z",
+        "size": 2210,
+        "content": {"kind": "docx", "paragraphs": ["Calibration report for bench four. Measured drift 0.4 percent over 90 days."]},
+        "owner": "alice",
+        "gov": {"ArtifactId": "TK-0011", "LifecycleStatus": "Superseded", "Authoritative": false, "ExpirationDate": "2025-06-30T00:00:00Z", "DocumentType": "Test Report", "ProductFamily": "ApexDrive X500", "ProcessArea": "General Engineering", "Sensitivity": "General", "AIReady": false, "TrustScore": 10, "DataQualityStatus": "Stale", "ConflictStatus": "None", "KnowledgeCategory": "Quality", "SourceSystem": "SharePoint Online"}
+      },
+      {
+        "key": "fap",
+        "kind": "file",
+        "path": "Failure Analysis Procedure.docx",
+        "unique": false,
+        "modified": "2025-01-20T09:00:00Z",
+        "size": 5120,
+        "content": {"kind": "docx", "paragraphs": ["Failure analysis procedure for ApexDrive X500. Step 1: isolate the unit within 45 minutes of the alarm. Step 2: capture the thermal log for at least 1200 seconds before power down. Step 3: record the serial number, firmware revision and operator initials on form QA-7. Step 4: escalate any repeat failure above 3 units per shift to the quality lead. The approved review interval for this procedure is twelve months and all deviations must be logged against the controlling record."]},
+        "owner": "alice",
+        "links": [
+          {"id": "perm-org-1", "roles": ["read"], "link": {"scope": "organization", "type": "view", "webUrl": "https://contoso.sharepoint.com/:b:/s/knowledge/SECRET-LINK-TOKEN"}}
+        ],
+        "gov": {"ArtifactId": "TK-0001", "LifecycleStatus": "Published", "Authoritative": true, "ReviewDate": "2027-01-15T00:00:00Z", "EffectiveDate": "2025-01-15T00:00:00Z", "DocumentType": "Procedure", "ProductFamily": "ApexDrive X500", "ProcessArea": "Failure Analysis", "Sensitivity": "General", "AIReady": true, "TrustScore": 92, "DataQualityStatus": "Good", "ConflictStatus": "Conflicting Authoritative", "ConflictWith": "Failure Analysis Limits (2026).docx", "KnowledgeCategory": "Quality", "SourceSystem": "SharePoint Online", "BusinessUnit": "Quality"}
+      },
+      {
+        "key": "fap-copy",
+        "kind": "file",
+        "path": "Failure Analysis Procedure (copy).docx",
+        "unique": false,
+        "modified": "2024-06-02T09:00:00Z",
+        "size": 5118,
+        "content": {"kind": "docx", "paragraphs": ["Failure analysis procedure for ApexDrive X500. Step 1: isolate the unit within 45 minutes of the alarm. Step 2: capture the thermal log for at least 1200 seconds before power down. Step 3: record the serial number, firmware revision and operator initials on form QA-7. Step 4: escalate any repeat failure above 3 units per shift to the quality lead. The approved review interval for this procedure is twelve months and all deviations must be logged against the controlling record."]},
+        "owner": "alice",
+        "gov": {"ArtifactId": "TK-0002", "LifecycleStatus": "Draft", "Authoritative": false, "EffectiveDate": "2024-06-01T00:00:00Z", "DocumentType": "Procedure", "ProductFamily": "ApexDrive X500", "ProcessArea": "Failure Analysis", "Sensitivity": "General", "AIReady": false, "TrustScore": 20, "DataQualityStatus": "Duplicate", "ConflictStatus": "None", "DuplicateOf": "Failure Analysis Procedure.docx", "KnowledgeCategory": "Quality", "SourceSystem": "SharePoint Online"}
+      },
+      {
+        "key": "fap-v2",
+        "kind": "file",
+        "path": "Failure Analysis Procedure (v2).docx",
+        "unique": false,
+        "modified": "2025-03-02T09:00:00Z",
+        "size": 5140,
+        "content": {"kind": "docx", "paragraphs": ["Failure analysis procedure for ApexDrive X500. Step 1: isolate the unit within 45 minutes of the alarm. Step 2: capture the thermal log for at least 1200 seconds before power down. Step 3: record the serial number, firmware revision and operator initials on form QA-7. Step 4: escalate any repeat failure above 3 units per shift to the quality lead. The current review interval for this procedure is twelve months and all deviations must be logged against the controlling record."]},
+        "owner": "bob",
+        "gov": {"ArtifactId": "TK-0003", "LifecycleStatus": "Draft", "Authoritative": false, "EffectiveDate": "2025-03-01T00:00:00Z", "DocumentType": "Procedure", "ProductFamily": "ApexDrive X500", "ProcessArea": "Failure Analysis", "Sensitivity": "General", "AIReady": false, "TrustScore": 25, "DataQualityStatus": "Needs Review", "ConflictStatus": "None", "KnowledgeCategory": "Quality", "SourceSystem": "SharePoint Online"}
+      },
+      {
+        "key": "fal-2026",
+        "kind": "file",
+        "path": "Failure Analysis Limits (2026).docx",
+        "unique": false,
+        "modified": "2026-01-11T09:00:00Z",
+        "size": 5160,
+        "content": {"kind": "docx", "paragraphs": ["Failure analysis procedure for ApexDrive X500. Step 1: isolate the unit within 60 minutes of the alarm. Step 2: capture the thermal log for at least 1500 seconds before power down. Step 3: record the serial number, firmware revision and operator initials on form QA-7. Step 4: escalate any repeat failure above 2 units per shift to the quality lead. The approved review interval for this procedure is twelve months and all deviations must be logged against the controlling record."]},
+        "owner": "alice",
+        "gov": {"ArtifactId": "TK-0004", "LifecycleStatus": "Published", "Authoritative": true, "ReviewDate": "2026-12-31T00:00:00Z", "EffectiveDate": "2026-01-10T00:00:00Z", "DocumentType": "Procedure", "ProductFamily": "ApexDrive X500", "ProcessArea": "Failure Analysis", "Sensitivity": "General", "AIReady": true, "TrustScore": 70, "DataQualityStatus": "Conflicting", "ConflictStatus": "Conflicting Authoritative", "ConflictWith": "Failure Analysis Procedure.docx", "KnowledgeCategory": "Quality", "SourceSystem": "SharePoint Online"}
+      },
+      {
+        "key": "quality-deck",
+        "kind": "file",
+        "path": "Quality Escalation Deck.pptx",
+        "unique": false,
+        "modified": "2025-02-02T09:00:00Z",
+        "size": 6100,
+        "content": {"kind": "pptx", "slides": [["Quality escalation steps"], ["Escalate repeat failures to the quality lead within one shift."], ["Expiration: March 31, 2026"]]},
+        "owner": "alice",
+        "gov": {"ArtifactId": "TK-0005", "LifecycleStatus": "Published", "Authoritative": true, "ReviewDate": "2027-02-01T00:00:00Z", "EffectiveDate": "2025-02-01T00:00:00Z", "DocumentType": "Procedure", "ProductFamily": "ApexDrive X500", "ProcessArea": "Quality Escalation", "Sensitivity": "General", "AIReady": true, "TrustScore": 80, "DataQualityStatus": "Good", "ConflictStatus": "None", "KnowledgeCategory": "Quality", "SourceSystem": "SharePoint Online"}
+      },
+      {
+        "key": "calibration-checklist",
+        "kind": "file",
+        "path": "Calibration Checklist.docx",
+        "unique": false,
+        "modified": "2025-01-31T09:00:00Z",
+        "size": 2400,
+        "content": {"kind": "docx", "paragraphs": ["Calibration checklist for the metrology bench. Verify 99 checkpoints per shift and record the results on form CAL-12 before release."]},
+        "owner": "bob",
+        "gov": {"ArtifactId": "TK-0006", "LifecycleStatus": "Published", "Authoritative": true, "ReviewDate": "2025-01-31T00:00:00Z", "EffectiveDate": "2024-12-01T00:00:00Z", "DocumentType": "Technical Guide", "ProductFamily": "ApexDrive X500", "ProcessArea": "General Engineering", "Sensitivity": "General", "AIReady": false, "TrustScore": 45, "DataQualityStatus": "Stale", "ConflictStatus": "None", "KnowledgeCategory": "Quality", "SourceSystem": "SharePoint Online"}
+      },
+      {
+        "key": "onboarding",
+        "kind": "file",
+        "path": "Onboarding Notes.xlsx",
+        "unique": false,
+        "modified": "2025-04-04T09:00:00Z",
+        "size": 3900,
+        "content": {"kind": "xlsx", "rows": [["Onboarding", "notes"], ["New engineers", "read the quality handbook and complete the safety briefing"]]},
+        "owner": null,
+        "gov": {"ArtifactId": "TK-0007", "LifecycleStatus": "Draft", "Authoritative": false, "DocumentType": "Technical Guide", "ProductFamily": "ApexDrive X500", "ProcessArea": "General Engineering", "Sensitivity": "General", "AIReady": false, "TrustScore": 15, "DataQualityStatus": "Needs Review", "ConflictStatus": "None", "KnowledgeCategory": "Engineering", "SourceSystem": "SharePoint Online"}
+      },
+      {
+        "key": "anomalous-export",
+        "kind": "file",
+        "path": "Anomalous Export.xlsx",
+        "unique": true,
+        "modified": "2019-01-01T09:00:00Z",
+        "size": 1800,
+        "content": {"kind": "xlsx", "rows": [["Export", "test runs"], [1, 2, 3], [4, 5, 6]]},
+        "owner": "bob",
+        "roleAssignments": [
+          {"member": {"Id": 30, "LoginName": "c:0-.f|rolemanager|spo-grid-all-users/11111111-2222-3333-4444-555555555555", "Title": "Everyone except external users", "PrincipalType": 4}, "roles": ["Read"]},
+          {"member": {"Id": 11, "LoginName": "i:0#.f|membership|alice@contoso.com", "Title": "Alice Owner", "PrincipalType": 1, "Email": "alice@contoso.com"}, "roles": ["Full Control"]},
+          {"member": {"Id": 13, "LoginName": "i:0#.f|membership|carol_fabrikam.com#ext#@contoso.onmicrosoft.com", "Title": "Carol Guest", "PrincipalType": 1, "Email": "carol@fabrikam.com"}, "roles": ["Edit"]},
+          {"member": {"Id": 14, "LoginName": "i:0#.f|membership|gone@contoso.com", "Title": "Gone User", "PrincipalType": 1, "Email": "gone@contoso.com"}, "roles": ["Read"]},
+          {"member": {"Id": 40, "LoginName": "SharingLinks.6c7b1f0a.Flexible.9a1f22aa", "Title": "SharingLinks.6c7b1f0a.Flexible.9a1f22aa", "PrincipalType": 8}, "roles": ["Read"]}
+        ],
+        "links": [
+          {"id": "perm-anon-1", "roles": ["read"], "link": {"scope": "anonymous", "type": "view", "webUrl": "https://contoso.sharepoint.com/:x:/s/knowledge/ANON-LINK-TOKEN"}}
+        ],
+        "gov": {"ArtifactId": "TK-0008", "LifecycleStatus": "Draft", "Authoritative": false, "DocumentType": "Test Report", "ProductFamily": "ApexDrive X500", "ProcessArea": "General Engineering", "Sensitivity": "General", "AIReady": false, "TrustScore": 5, "DataQualityStatus": "Needs Review", "ConflictStatus": "None", "KnowledgeCategory": "Quality", "SourceSystem": "SharePoint Online"}
+      }
+    ]
+  },
+  "entraGroups": {
+    "aaaaaaaa-0000-4000-8000-000000000001": {
+      "displayName": "Trusted Knowledge Readers",
+      "members": [
+        {"id": "alice-id", "displayName": "Alice Owner", "userPrincipalName": "alice@contoso.com", "accountEnabled": true},
+        {"id": "dave-id", "displayName": "Dave Former", "userPrincipalName": "dave@contoso.com", "accountEnabled": false}
+      ]
+    }
+  },
+  "siteGroups": {
+    "42": {
+      "title": "Knowledge Members",
+      "users": [
+        {"Id": 11, "LoginName": "i:0#.f|membership|alice@contoso.com", "Title": "Alice Owner", "Email": "alice@contoso.com", "PrincipalType": 1},
+        {"Id": 15, "LoginName": "i:0#.f|membership|eve@contoso.com", "Title": "Eve Leaver", "Email": "eve@contoso.com", "PrincipalType": 1}
+      ]
+    }
+  },
+  "siteUsers": [
+    {"Id": 11, "LoginName": "i:0#.f|membership|alice@contoso.com", "Title": "Alice Owner", "Email": "alice@contoso.com", "UserPrincipalName": "alice@contoso.com", "PrincipalType": 1},
+    {"Id": 12, "LoginName": "i:0#.f|membership|bob@contoso.com", "Title": "Bob Reviewer", "Email": "bob@contoso.com", "UserPrincipalName": "bob@contoso.com", "PrincipalType": 1},
+    {"Id": 13, "LoginName": "i:0#.f|membership|carol_fabrikam.com#ext#@contoso.onmicrosoft.com", "Title": "Carol Guest", "Email": "carol@fabrikam.com", "UserPrincipalName": "carol_fabrikam.com#ext#@contoso.onmicrosoft.com", "PrincipalType": 1},
+    {"Id": 15, "LoginName": "i:0#.f|membership|eve@contoso.com", "Title": "Eve Leaver", "Email": "eve@contoso.com", "UserPrincipalName": "eve@contoso.com", "PrincipalType": 1},
+    {"Id": 16, "LoginName": "SHAREPOINT\\system", "Title": "System Account", "Email": "", "PrincipalType": 1}
+  ],
+  "directory": {
+    "alice@contoso.com": {"id": "alice-id", "displayName": "Alice Owner", "accountEnabled": true},
+    "bob@contoso.com": {"id": "bob-id", "displayName": "Bob Reviewer", "accountEnabled": true},
+    "carol_fabrikam.com#ext#@contoso.onmicrosoft.com": {"id": "carol-id", "displayName": "Carol Guest", "accountEnabled": true},
+    "dave@contoso.com": {"id": "dave-id", "displayName": "Dave Former", "accountEnabled": false},
+    "eve@contoso.com": {"id": "eve-id", "displayName": "Eve Leaver", "accountEnabled": false}
+  }
+}

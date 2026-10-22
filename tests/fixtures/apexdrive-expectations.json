@@ -1,0 +1,450 @@
+{
+  "description": "Expected outcomes for tests/test_trusted_knowledge.py. Aliases name documents in apexdrive-corpus.json. Scenario overrides merge into the declared values of the named document. Mutations edit a deep copy of the configuration before it is loaded.",
+  "repository": {
+    "policy": "config/governance-policy.json",
+    "vocabulary": "config/governance-vocabulary.json"
+  },
+  "asOf": "2026-10-21",
+  "generatedAt": "2026-10-21T17:00:00+00:00",
+  "ownerDisplayName": "Demo Knowledge Owner",
+  "manifestRequiredColumn": "LifecycleStatus",
+  "pairs": [
+    {"kind": "exact", "first": "v3", "second": "copy"},
+    {"kind": "near", "first": "v3", "second": "engineering"},
+    {"kind": "near", "first": "copy", "second": "engineering"},
+    {"kind": "conflict", "first": "v3", "second": "v2"},
+    {"kind": "conflict", "first": "v3", "second": "v4"},
+    {"kind": "conflict", "first": "qe24", "second": "qe26"},
+    {"kind": "conflict", "first": "revA", "second": "revB"}
+  ],
+  "documents": {
+    "v3": {"dataQualityStatus": "Good", "aiReady": true, "trustScore": 100, "conflictStatus": "None", "duplicateOf": null, "duplicateKind": null, "conflictWith": ["v2", "v4"]},
+    "v2": {"dataQualityStatus": "Stale", "aiReady": false, "trustScore": 0, "conflictStatus": "Conflicts With Authoritative", "duplicateOf": null, "duplicateKind": null, "conflictWith": ["v3"]},
+    "v4": {"dataQualityStatus": "Needs Review", "aiReady": false, "trustScore": 5, "conflictStatus": "Conflicts With Authoritative", "duplicateOf": null, "duplicateKind": null, "conflictWith": ["v3"]},
+    "copy": {"dataQualityStatus": "Duplicate", "aiReady": false, "trustScore": 25, "conflictStatus": "None", "duplicateOf": "v3", "duplicateKind": "exact", "conflictWith": []},
+    "engineering": {"dataQualityStatus": "Duplicate", "aiReady": false, "trustScore": 25, "conflictStatus": "None", "duplicateOf": "v3", "duplicateKind": "near", "conflictWith": []},
+    "qe24": {"dataQualityStatus": "Stale", "aiReady": false, "trustScore": 0, "conflictStatus": "Conflicts With Authoritative", "duplicateOf": null, "duplicateKind": null, "conflictWith": ["qe26"]},
+    "qe26": {"dataQualityStatus": "Good", "aiReady": true, "trustScore": 100, "conflictStatus": "None", "duplicateOf": null, "duplicateKind": null, "conflictWith": ["qe24"]},
+    "notes": {"dataQualityStatus": "Needs Review", "aiReady": false, "trustScore": 20, "conflictStatus": "None", "duplicateOf": null, "duplicateKind": null, "conflictWith": []},
+    "revA": {"dataQualityStatus": "Conflicting", "aiReady": true, "trustScore": 65, "conflictStatus": "Conflicting Authoritative", "duplicateOf": null, "duplicateKind": null, "conflictWith": ["revB"]},
+    "revB": {"dataQualityStatus": "Conflicting", "aiReady": true, "trustScore": 65, "conflictStatus": "Conflicting Authoritative", "duplicateOf": null, "duplicateKind": null, "conflictWith": ["revA"]}
+  },
+  "trustReasons": {
+    "v3": [
+      "+35 Authoritative = Yes",
+      "+20 LifecycleStatus = Published",
+      "+15 ReviewDate 2027-07-01 is current",
+      "+10 KnowledgeOwner present",
+      "+10 DataQualityStatus = Good",
+      "+5 Not a duplicate",
+      "+5 SourceSystem is approved",
+      "= 100/100"
+    ],
+    "v2": [
+      "+10 KnowledgeOwner present",
+      "+5 Not a duplicate",
+      "+5 SourceSystem is approved",
+      "-30 LifecycleStatus = Superseded",
+      "-10 Conflicts with an authoritative document",
+      "= 0/100"
+    ],
+    "v4": [
+      "+15 ReviewDate 2027-01-15 is current",
+      "+10 KnowledgeOwner present",
+      "+5 Not a duplicate",
+      "+5 SourceSystem is approved",
+      "-20 LifecycleStatus = Draft",
+      "-10 Conflicts with an authoritative document",
+      "= 5/100"
+    ],
+    "copy": [
+      "+20 LifecycleStatus = Published",
+      "+15 ReviewDate 2027-07-01 is current",
+      "+10 KnowledgeOwner present",
+      "+5 SourceSystem is approved",
+      "-25 Duplicate of ApexDrive-X500-Failure-Analysis-Procedure-v3.docx",
+      "= 25/100"
+    ],
+    "engineering": [
+      "+20 LifecycleStatus = Published",
+      "+15 ReviewDate 2027-07-01 is current",
+      "+10 KnowledgeOwner present",
+      "+5 SourceSystem is approved",
+      "-25 Duplicate of ApexDrive-X500-Failure-Analysis-Procedure-v3.docx",
+      "= 25/100"
+    ],
+    "qe24": [
+      "+20 LifecycleStatus = Published",
+      "+10 KnowledgeOwner present",
+      "+5 Not a duplicate",
+      "+5 SourceSystem is approved",
+      "-30 ExpirationDate 2025-12-31 has passed",
+      "-10 Conflicts with an authoritative document",
+      "= 0/100"
+    ],
+    "qe26": [
+      "+35 Authoritative = Yes",
+      "+20 LifecycleStatus = Published",
+      "+15 ReviewDate 2027-01-01 is current",
+      "+10 KnowledgeOwner present",
+      "+10 DataQualityStatus = Good",
+      "+5 Not a duplicate",
+      "+5 SourceSystem is approved",
+      "= 100/100"
+    ],
+    "notes": [
+      "+20 LifecycleStatus = Published",
+      "+5 Not a duplicate",
+      "+5 SourceSystem is approved",
+      "-10 KnowledgeOwner missing",
+      "= 20/100"
+    ],
+    "revA": [
+      "+35 Authoritative = Yes",
+      "+20 LifecycleStatus = Published",
+      "+15 ReviewDate 2027-03-01 is current",
+      "+10 KnowledgeOwner present",
+      "+5 Not a duplicate",
+      "+5 SourceSystem is approved",
+      "-25 Conflicts with another authoritative document",
+      "= 65/100"
+    ]
+  },
+  "blockers": {
+    "v3": [],
+    "v2": ["LifecycleStatus is Superseded", "Authoritative = No", "ReviewDate 2025-06-01 has passed"],
+    "copy": ["Authoritative = No", "Duplicate of ApexDrive-X500-Failure-Analysis-Procedure-v3.docx"],
+    "notes": ["Authoritative = No", "KnowledgeOwner missing", "ReviewDate missing"],
+    "qe24": ["Authoritative = No", "ReviewDate 2025-12-31 has passed", "ExpirationDate 2025-12-31 has passed"]
+  },
+  "exclusions": {
+    "v3": [],
+    "v2": ["LifecycleStatus = Superseded", "Authoritative = No", "Review date 2025-06-01 has passed", "Conflicts with an authoritative document"],
+    "v4": ["LifecycleStatus = Draft", "Authoritative = No", "Conflicts with an authoritative document"],
+    "copy": ["Authoritative = No", "Duplicate of ApexDrive-X500-Failure-Analysis-Procedure-v3.docx"],
+    "engineering": ["Authoritative = No", "Duplicate of ApexDrive-X500-Failure-Analysis-Procedure-v3.docx"],
+    "qe24": ["Authoritative = No", "Expired on 2025-12-31", "Review date 2025-12-31 has passed", "Conflicts with an authoritative document"],
+    "notes": ["Authoritative = No"]
+  },
+  "trustedAliases": ["v3", "qe26", "revA", "revB"],
+  "scenarios": [
+    {
+      "name": "authoritative claim outranks non-claim duplicates",
+      "overrides": [],
+      "canonical": "v3",
+      "duplicateOf": {"copy": "v3", "engineering": "v3"},
+      "duplicateKind": {"copy": "exact", "engineering": "near"}
+    },
+    {
+      "name": "newest EffectiveDate breaks ties between authoritative claims",
+      "overrides": [
+        {"alias": "copy", "declared": {"Authoritative": true, "EffectiveDate": "2026-02-01"}},
+        {"alias": "v3", "declared": {"EffectiveDate": "2026-01-01"}}
+      ],
+      "canonical": "copy",
+      "duplicateOf": {"v3": "copy", "engineering": "copy"},
+      "duplicateKind": {"v3": "exact", "engineering": "near"}
+    },
+    {
+      "name": "lowest ArtifactId breaks ties when EffectiveDate matches",
+      "overrides": [
+        {"alias": "copy", "declared": {"Authoritative": true, "EffectiveDate": "2026-01-01"}},
+        {"alias": "v3", "declared": {"EffectiveDate": "2026-01-01", "ArtifactId": "APX-X500-900"}}
+      ],
+      "canonical": "copy",
+      "duplicateOf": {"v3": "copy", "engineering": "copy"},
+      "duplicateKind": {"v3": "exact", "engineering": "near"}
+    }
+  ],
+  "routing": [
+    {"question": "What is the approved Failure Analysis procedure for ApexDrive X500?", "tool": "trusted-knowledge"},
+    {"question": "What is the latest Failure Analysis document?", "tool": "governance-all"},
+    {"question": "Show me all draft Failure Analysis procedures.", "tool": "governance-all"},
+    {"question": "What is the current Quality Escalation Policy?", "tool": "trusted-knowledge"},
+    {"question": "Are there duplicate Failure Analysis documents?", "tool": "governance-all"},
+    {"question": "Which documents need governance attention?", "tool": "governance-all"},
+    {"question": "How reliable is this answer?", "tool": "trusted-knowledge"}
+  ],
+  "filters": {
+    "trusted": "lifecycle_status eq 'Published' and authoritative eq true and ai_ready eq true and sensitivity eq 'General'",
+    "governance": "sensitivity eq 'General'"
+  },
+  "cards": [
+    {
+      "name": "approved-fa-procedure",
+      "question": "What is the approved Failure Analysis procedure for ApexDrive X500?",
+      "sources": ["v3", "copy", "engineering", "v4", "v2"],
+      "status": "TRUSTED",
+      "banner": null,
+      "selected": "v3",
+      "conflicts": [],
+      "markdownContains": [
+        "**TRUSTED ANSWER**",
+        "Source: Failure Analysis Procedure v3",
+        "Status: Published",
+        "Authoritative: Yes",
+        "Knowledge Owner: Demo Knowledge Owner",
+        "Review Date: 2027-07-01",
+        "Trust Score: 100/100",
+        "Why trusted: Published + Authoritative + Current + Owned + Validated",
+        "Citation: https://example.test/trusted-knowledge/ApexDrive-X500-Failure-Analysis-Procedure-v3.docx"
+      ]
+    },
+    {
+      "name": "thermal-conflict",
+      "question": "What does the thermal specification say about junction temperature?",
+      "sources": ["revA", "revB"],
+      "status": "CONFLICT_REVIEW_REQUIRED",
+      "banner": "Multiple authoritative sources appear to conflict. Knowledge-owner review is recommended.",
+      "selected": null,
+      "conflicts": ["revA", "revB"],
+      "markdownContains": [
+        "**CONFLICT REVIEW REQUIRED**",
+        "Multiple authoritative sources appear to conflict. Knowledge-owner review is recommended.",
+        "Source: Thermal Specification Rev-A",
+        "Source: Thermal Specification Rev-B"
+      ]
+    },
+    {
+      "name": "drafts-only",
+      "question": "What is the approved Failure Analysis procedure for ApexDrive X500?",
+      "sources": ["v4"],
+      "status": "NO_AUTHORITATIVE_SOURCE",
+      "banner": "NO AUTHORITATIVE SOURCE FOUND",
+      "selected": null,
+      "conflicts": [],
+      "markdownContains": ["**NO AUTHORITATIVE SOURCE FOUND**"]
+    },
+    {
+      "name": "current-quality-policy",
+      "question": "What is the current Quality Escalation Policy?",
+      "sources": ["qe26", "qe24"],
+      "status": "TRUSTED",
+      "banner": null,
+      "selected": "qe26",
+      "conflicts": [],
+      "markdownContains": [
+        "**TRUSTED ANSWER**",
+        "Source: Quality Escalation Policy 2026",
+        "Trust Score: 100/100"
+      ]
+    }
+  ],
+  "computedFields": {
+    "v3": {
+      "values": {
+        "AIReady": true,
+        "TrustScore": 100,
+        "DataQualityStatus": "Good",
+        "ConflictStatus": "None",
+        "DuplicateOf": "",
+        "LastValidatedDate": "2026-10-21",
+        "OwnerDisplayName": "Demo Knowledge Owner"
+      },
+      "conflictWith": ["v2", "v4"],
+      "absent": [],
+      "lastTrustReason": "= 100/100"
+    },
+    "notes": {
+      "values": {
+        "AIReady": false,
+        "TrustScore": 20,
+        "DataQualityStatus": "Needs Review",
+        "ConflictStatus": "None",
+        "DuplicateOf": "",
+        "LastValidatedDate": "2026-10-21"
+      },
+      "conflictWith": [],
+      "absent": ["OwnerDisplayName"],
+      "lastTrustReason": "= 20/100"
+    }
+  },
+  "suggestions": [
+    {
+      "title": "Failure Analysis Procedure for ApexDrive X500",
+      "text": "Capture the failure record within 120 minutes.",
+      "expected": {
+        "DocumentType": "Procedure",
+        "ProcessArea": "Failure Analysis",
+        "ProductFamily": "ApexDrive X500",
+        "Sensitivity": "General",
+        "LifecycleStatus": "Draft",
+        "Authoritative": false,
+        "KnowledgeOwner": null
+      }
+    },
+    {
+      "title": "Quality escalation meeting notes (confidential)",
+      "text": "Escalations reviewed with the owner.",
+      "expected": {
+        "DocumentType": "Meeting Summary",
+        "ProcessArea": "Quality Escalation",
+        "ProductFamily": null,
+        "Sensitivity": "Confidential",
+        "LifecycleStatus": "Draft",
+        "Authoritative": false,
+        "KnowledgeOwner": null
+      }
+    },
+    {
+      "title": "Highly Confidential Test Report",
+      "text": "Bench results for the thermal study.",
+      "expected": {
+        "DocumentType": "Test Report",
+        "ProcessArea": "General Engineering",
+        "ProductFamily": null,
+        "Sensitivity": "Highly Confidential",
+        "LifecycleStatus": "Draft",
+        "Authoritative": false,
+        "KnowledgeOwner": null
+      }
+    }
+  ],
+  "hygiene": {
+    "metrics": {
+      "totalIndexedDocuments": 10,
+      "authoritativeDocuments": 4,
+      "aiReadyDocuments": 4,
+      "draftDocuments": 1,
+      "supersededDocuments": 1,
+      "expiredDocuments": 1,
+      "documentsMissingOwners": 1,
+      "exactDuplicateCandidates": 1,
+      "nearDuplicateCandidates": 1,
+      "documentsRequiringReview": 8,
+      "conflictingAuthoritativeDocuments": 2,
+      "averageTrustScore": 40.5
+    },
+    "findings": {
+      "conflicting-authoritative": ["revA", "revB"],
+      "exact-duplicates": ["copy"],
+      "near-duplicates": ["engineering"],
+      "expired-documents": ["qe24"],
+      "missing-owners": ["notes"],
+      "superseded-documents": ["v2"],
+      "draft-documents": ["v4"],
+      "conflicts-with-authoritative": ["v2", "v4", "qe24"],
+      "requires-review": ["v2", "v4", "copy", "engineering", "qe24", "notes", "revA", "revB"]
+    },
+    "detailsTag": "<details>"
+  },
+  "htmlScenario": {
+    "alias": "revA",
+    "title": "Thermal <Rev-A> & notes",
+    "contains": ["Thermal &lt;Rev-A&gt; &amp; notes", "Conflicting authoritative documents"]
+  },
+  "similarity": {
+    "normalize": {"input": "  Failure   Analysis\n\tProcedure  ", "expected": "Failure Analysis Procedure"},
+    "numericSignature": {"input": "Revision 3.2 cycles 120 and 3.2", "expected": ["120", "3.2", "3.2"]},
+    "hash": {"input": "Failure Analysis Procedure", "algorithm": "sha256"},
+    "cosine": [
+      {"left": [1, 0], "right": [1, 1], "expected": 0.7071067811865476},
+      {"left": [1, 0], "right": [0, 1], "expected": 0.0},
+      {"left": [0, 0], "right": [1, 1], "expected": 0.0}
+    ],
+    "cosineTolerance": 1e-9,
+    "dimensionMismatch": "same dimensions",
+    "invalidPairKind": {"kind": "merged", "message": "Unknown pair kind"},
+    "lineage": {
+      "expectedKinds": [],
+      "signals": [
+        {"key": "new.docx", "contentHash": "hash-a", "numbers": ["1"], "scope": ["A", "B", "C"], "authoritativeClaim": false, "supersedes": "old.docx", "vector": [1, 0]},
+        {"key": "old.docx", "contentHash": "hash-b", "numbers": ["1"], "scope": ["A", "B", "C"], "authoritativeClaim": false, "supersedes": null, "vector": [1, 0]}
+      ]
+    },
+    "control": {
+      "expectedKinds": ["near"],
+      "signals": [
+        {"key": "new.docx", "contentHash": "hash-a", "numbers": ["1"], "scope": ["A", "B", "C"], "authoritativeClaim": false, "supersedes": null, "vector": [1, 0]},
+        {"key": "old.docx", "contentHash": "hash-b", "numbers": ["1"], "scope": ["A", "B", "C"], "authoritativeClaim": false, "supersedes": null, "vector": [1, 0]}
+      ]
+    }
+  },
+  "policyAccessors": {
+    "column": {"fileName": "FileLeafRef", "artifactId": "ArtifactId", "lifecycleStatus": "LifecycleStatus", "ownerDisplayName": "OwnerDisplayName"},
+    "indexField": {"lifecycleStatus": "lifecycle_status", "aiReady": "ai_ready"},
+    "searchField": {"lifecycleStatus": "lifecycle_status", "reviewDate": "review_date", "ownerDisplayName": "knowledge_owner", "trustScore": "trust_score"},
+    "label": {
+      "lifecycleStatus": {"published": "Published", "superseded": "Superseded"},
+      "dataQualityStatus": {"needsReview": "Needs Review"},
+      "conflictStatus": {"conflictingAuthoritative": "Conflicting Authoritative"}
+    },
+    "message": {
+      "trustReasons": {"reviewCurrent": "ReviewDate {reviewDate} is current", "total": "= {score}/100"},
+      "duplicate": {"exact": "Identical content hash"}
+    },
+    "render": {"template": "ReviewDate {reviewDate} is current", "values": {"reviewDate": "2027-07-01"}, "expected": "ReviewDate 2027-07-01 is current"},
+    "choices": {"documentType": ["Procedure", "Specification", "Test Report", "Decision Record", "Meeting Summary", "Technical Guide"]},
+    "trustWeight": {"authoritative": 35},
+    "trustPenalty": {"draft": 20},
+    "trustBounds": [0, 100],
+    "requiredLifecycle": "Published",
+    "requiredAuthoritative": true,
+    "trustedSensitivity": ["General"],
+    "approvedSourceSystems": ["SharePoint Online"],
+    "staleLifecycleLabels": ["Superseded", "Archived"],
+    "authoritativeClaimLabel": "Published",
+    "requiredWhenPublished": ["KnowledgeOwner", "LifecycleStatus", "Authoritative", "ReviewDate"],
+    "nearDuplicateCosine": 0.95,
+    "conflictCandidateCosine": 0.8,
+    "embeddingCharacterLimit": 12000,
+    "hashAlgorithm": "sha256",
+    "numberPattern": "\\d+(?:\\.\\d+)?",
+    "whitespacePattern": "\\s+",
+    "classificationDefault": {"documentType": "Technical Guide", "processArea": "General Engineering", "sensitivity": "General"},
+    "productFamilyMatchesChoices": true,
+    "suggestionDefaults": {"lifecycleStatus": "Draft", "authoritative": false, "requiresOwnerReview": true},
+    "hygieneMetricKeys": [
+      "totalIndexedDocuments", "authoritativeDocuments", "aiReadyDocuments", "draftDocuments",
+      "supersededDocuments", "expiredDocuments", "documentsMissingOwners", "exactDuplicateCandidates",
+      "nearDuplicateCandidates", "documentsRequiringReview", "conflictingAuthoritativeDocuments", "averageTrustScore"
+    ],
+    "hygieneFindingIds": [
+      "conflicting-authoritative", "exact-duplicates", "near-duplicates", "expired-documents", "missing-owners",
+      "superseded-documents", "draft-documents", "conflicts-with-authoritative", "requires-review"
+    ]
+  },
+  "policyValidation": [
+    {
+      "name": "missing vocabulary label",
+      "document": "vocabulary",
+      "mutations": [{"op": "delete", "path": ["labels", "dataQualityStatus", "needsReview"]}],
+      "message": "Vocabulary label labels.dataQualityStatus.needsReview is missing."
+    },
+    {
+      "name": "missing vocabulary message",
+      "document": "vocabulary",
+      "mutations": [{"op": "delete", "path": ["messages", "blockers", "ownerMissing"]}],
+      "message": "Vocabulary message messages.blockers.ownerMissing is missing."
+    },
+    {
+      "name": "trust weight without trustReasons message",
+      "document": "vocabulary",
+      "mutations": [{"op": "delete", "path": ["messages", "trustReasons", "authoritative"]}],
+      "message": "trustScore.weights.authoritative has no messages.trustReasons.authoritative template."
+    },
+    {
+      "name": "projection column missing from sharePointColumns",
+      "document": "policy",
+      "mutations": [{"op": "deleteItem", "path": ["sharePointColumns"], "match": {"name": "ProductFamily"}}],
+      "message": "searchProjection field product_family references column ProductFamily, which is missing from sharePointColumns."
+    },
+    {
+      "name": "conflict threshold above near-duplicate threshold",
+      "document": "policy",
+      "mutations": [{"op": "set", "path": ["similarity", "conflictCandidateCosine"], "value": 0.99}],
+      "message": "similarity.conflictCandidateCosine (0.99) must not exceed similarity.nearDuplicateCosine (0.95)."
+    },
+    {
+      "name": "invalid number pattern",
+      "document": "policy",
+      "mutations": [{"op": "set", "path": ["similarity", "numberPattern"], "value": "\\d+(?:\\.\\d+)?("}],
+      "message": "similarity.numberPattern is not a valid regular expression"
+    }
+  ],
+  "referencedLabelRemoval": {
+    "group": "lifecycleStatus",
+    "key": "superseded",
+    "message": "rules.staleLifecycleKeys references lifecycleStatus.superseded, which is not defined in vocabulary labels."
+  }
+}

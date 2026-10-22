@@ -1,0 +1,78 @@
+.kpi-card__label {
+  margin: 0;
+  color: var(--surface-muted-text);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.kpi-card__value {
+  margin: var(--space-xs) 0 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.finding-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.finding {
+  padding: 0;
+  overflow: hidden;
+}
+
+.finding__toggle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  margin: 0;
+  padding: var(--space-md);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.finding__title {
+  flex: 1 1 12rem;
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.finding__chevron {
+  flex: 0 0 auto;
+  font-size: 1.125rem;
+}
+
+.finding__body {
+  padding: 0 var(--space-md) var(--space-md);
+  border-top: 1px solid var(--surface-border);
+}
+
+.finding__documents {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.finding__document {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  max-width: 100%;
+  color: var(--surface-accent);
+  overflow-wrap: anywhere;
+}

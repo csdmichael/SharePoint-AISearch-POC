@@ -68,6 +68,30 @@ Applications should query `{Search Index Alias}`, not a timestamped physical
 index name. All non-URL placeholders in this document map to
 `config/deployment.json` or generated `.state` evidence.
 
+### Published endpoints
+
+Status checked on 2026-10-21 with the Azure CLI against resource group `m365-myaacoub`.
+Rows marked "Not published" are placeholders. Replace `<ui-host>` and `<api-host>` only
+after the apps are deployed and their hostnames are assigned.
+
+| Endpoint | URL | Status |
+| --- | --- | --- |
+| Azure resource group | [m365-myaacoub](https://portal.azure.com/#@caldova37587778.onmicrosoft.com/resource/subscriptions/cf824570-a8ba-497a-a184-0a52f1830aa9/resourceGroups/m365-myaacoub/overview) | Exists (provisioning state Succeeded) |
+| Ionic web UI | `https://<ui-host>` | Not published. `app/ui` is not created yet. |
+| Agent page in the UI | `https://<ui-host>/agent` | Not published. Planned route for the Foundry agent page. |
+| Python API root | `https://<api-host>/api/v1` | Not published. `app/api` is not created yet. |
+| API Swagger UI | `https://<api-host>/docs` | Not published. FastAPI serves Swagger UI at this path after deployment. |
+| API ReDoc | `https://<api-host>/redoc` | Not published. |
+| OpenAPI document | `https://<api-host>/openapi.json` | Not published. Machine-readable contract for the UI and other clients. |
+| API health check | `https://<api-host>/api/v1/health` | Not published. |
+| Trusted Knowledge library | [Trusted Knowledge](https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub/Trusted%20Knowledge/Forms/AllItems.aspx) | Not provisioned yet. Created from `config/trusted-knowledge.json`. |
+| Trusted Knowledge Foundry agent | Not provisioned yet (`trusted-knowledge-agent`) | Pending `scripts/provision_foundry_agent.ps1`. |
+| Knowledge Hygiene dashboard | `.state/knowledge-hygiene/index.html` (local file) | Generated locally by the dashboard script. Not published. |
+
+Other apps in `m365-myaacoub`, including `caldova-aiscr-ui` and `caldova-aiscr-api`, are not
+linked here. They are not verified as part of this POC. Public requests to the
+`caldova-aiscr-*` hosts timed out during the check.
+
 ## Architecture
 
 ![SharePoint to Azure AI Search to Microsoft Foundry architecture](docs/SharePoint-AISearch-Architecture-Overview.png)

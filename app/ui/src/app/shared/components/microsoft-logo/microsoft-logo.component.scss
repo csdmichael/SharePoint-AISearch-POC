@@ -1,0 +1,40 @@
+.ms-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--surface-text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ms-logo__mark {
+  display: inline-flex;
+  width: 1.5rem;
+  height: 1.5rem;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .sq-red {
+    fill: var(--brand-red);
+  }
+
+  .sq-green {
+    fill: var(--brand-green);
+  }
+
+  .sq-blue {
+    fill: var(--brand-blue);
+  }
+
+  .sq-yellow {
+    fill: var(--brand-yellow);
+  }
+}
+
+.ms-logo__wordmark {
+  font-size: 1rem;
+}

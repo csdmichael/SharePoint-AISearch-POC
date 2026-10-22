@@ -1,0 +1,9 @@
+{
+  "testOnly": true,
+  "note": "Synthetic sign-in settings used only by Playwright route interception. Nobody signs in, and Entra is never contacted (the network guard aborts those requests).",
+  "auth": {
+    "clientId": "00000000-0000-4000-8000-000000000001",
+    "authority": "https://login.microsoftonline.com/00000000-0000-4000-8000-000000000002",
+    "apiScopes": ["api://00000000-0000-4000-8000-000000000003/.default"]
+  }
+}

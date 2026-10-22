@@ -1,0 +1,132 @@
+{
+  "azure": {
+    "tenantId": "12a4b86b-e64c-43f9-af05-d9130a72dfd2",
+    "subscriptionId": "cf824570-a8ba-497a-a184-0a52f1830aa9",
+    "resourceGroup": "m365-myaacoub",
+    "location": "westus"
+  },
+  "sharePoint": {
+    "siteDisplayName": "Semiconductor Knowledge Hub",
+    "mailNickname": "semiconductorknowledgehub",
+    "productionLibraryName": "Trusted Knowledge",
+    "siteUrl": "https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub",
+    "provisioningApplicationName": "Semiconductor SharePoint Provisioner"
+  },
+  "search": {
+    "serviceName": "semiconductor-search-myaacoub",
+    "sku": "basic",
+    "partitionCount": 1,
+    "replicaCount": 1,
+    "resourceNamePrefix": "trusted",
+    "indexNameSuffix": "knowledge-chunks",
+    "dataSourceNameSuffix": "sharepoint-datasource",
+    "skillsetNameSuffix": "chunking-skillset",
+    "indexerNameSuffix": "sharepoint-indexer",
+    "indexAliasName": "trusted-knowledge",
+    "feedbackIndexName": "trusted-search-feedback",
+    "ingestionApplicationName": "Semiconductor SharePoint Search Indexer",
+    "semanticConfigurationName": "trusted-semantic-config",
+    "vectorAlgorithmName": "trusted-hnsw",
+    "vectorProfileName": "trusted-vector-profile",
+    "vectorizerName": "trusted-openai-vectorizer",
+    "embeddingDeployment": "text-embedding-3-small",
+    "embeddingModel": "text-embedding-3-small",
+    "embeddingDimensions": 1536,
+    "chunkUnit": "azureOpenAITokens",
+    "tokenizer": "cl100k_base",
+    "corpusLanguage": "en",
+    "vectorAlgorithmKind": "hnsw",
+    "vectorMetric": "cosine",
+    "hnswM": 4,
+    "hnswEfConstruction": 400,
+    "hnswEfSearch": 500,
+    "chunkSize": 512,
+    "chunkOverlap": 128,
+    "scheduleInterval": "PT1H",
+    "indexerBatchSize": 10
+  },
+  "governance": {
+    "policyPath": "config/governance-policy.json",
+    "knowledgeOwnerUpn": "<knowledge-owner-upn>",
+    "ownerDisplayName": "Michael Yaacoub (Demo Knowledge Owner)"
+  },
+  "embedding": {
+    "tokenScope": "https://cognitiveservices.azure.com/.default",
+    "endpointTemplate": "https://{accountName}.openai.azure.com/openai/deployments/{deployment}/embeddings?api-version={apiVersion}",
+    "batchSize": 16,
+    "requestTimeoutSeconds": 60
+  },
+  "foundry": {
+    "embeddingAccountName": "foundry-myaacoub-private",
+    "knowledgeAgent": {
+      "accountName": "foundry-myaacoub",
+      "projectName": "proj-default",
+      "agentName": "trusted-knowledge-agent",
+      "agentModelDeployment": "gpt-6-astra",
+      "agentReasoningEffort": "low",
+      "knowledgeBaseModelDeployment": "gpt-5.4-mini",
+      "knowledgeSourceName": "trusted-knowledge-ks",
+      "knowledgeBaseName": "trusted-knowledge-kb",
+      "connectionName": "trusted-knowledge-connection",
+      "mcpToolLabel": "trusted-knowledge",
+      "retrievalReasoningEffort": "low",
+      "outputMode": "extractiveData",
+      "baseFilter": "lifecycle_status eq 'Published' and authoritative eq true and ai_ready eq true and sensitivity eq 'General'",
+      "knowledgeSourceDescription": "Governed ApexDrive X500 documents from the Trusted Knowledge SharePoint library. Only Published, Authoritative, AI-ready General documents are visible to this source.",
+      "knowledgeBaseDescription": "Trusted Knowledge base. Returns only authoritative, current, owned documents and their governance metadata.",
+      "retrievalInstructions": "Retrieve passages from the trusted knowledge base for the user's product family, process area, and document type. Preserve title, document_url, knowledge_owner, lifecycle_status, authoritative, review_date, trust_score, trust_reasons, data_quality_status, and conflict_status in every source reference.",
+      "answerInstructions": "Return only information present in the retrieved passages. Do not choose between passages that carry conflict_status Conflicting Authoritative. Preserve governance fields for every source.",
+      "instructionsPath": "config/trusted-knowledge-agent-instructions.md",
+      "smokeTestQuery": "What is the approved Failure Analysis procedure for ApexDrive X500?",
+      "additionalKnowledgeBases": [
+        {
+          "mcpToolLabel": "governance-all",
+          "knowledgeSourceName": "governance-all-ks",
+          "knowledgeBaseName": "governance-all-kb",
+          "connectionName": "governance-all-connection",
+          "baseFilter": "sensitivity eq 'General'",
+          "knowledgeSourceDescription": "Complete governed ApexDrive X500 corpus, including drafts, superseded, expired, duplicate and unowned documents. Use only when the user explicitly asks for drafts, history, latest, duplicates or governance review.",
+          "knowledgeBaseDescription": "Governance review base. Returns every General document with its lifecycle, authority, ownership, duplicate and conflict metadata. Never treat results from this base as authoritative.",
+          "retrievalInstructions": "Retrieve passages from the complete governed corpus when the user asks about drafts, superseded or historical documents, the latest or newest document, duplicates, expired content, unowned content or governance attention. Always preserve title, document_url, lifecycle_status, authoritative, knowledge_owner, review_date, expiration_date, data_quality_status, duplicate_of, conflict_status, conflict_with, and trust_score in every source reference.",
+          "answerInstructions": "Report governance metadata for every document. Never describe a non-authoritative document as authoritative. Keep drafts and superseded documents clearly labelled."
+        }
+      ]
+    }
+  },
+  "corpus": {
+    "author": "Michael Yaacoub @ Microsoft",
+    "sourceSystem": "SharePoint Online",
+    "expectedDocuments": 10,
+    "categories": [
+      "Quality",
+      "Engineering"
+    ],
+    "formats": [
+      "docx"
+    ]
+  },
+  "apiVersions": {
+    "armAuthorization": "2022-04-01",
+    "foundryAccount": "2025-06-01",
+    "foundryAgent": "v1",
+    "foundryConnection": "2025-10-01-preview",
+    "graph": "v1.0",
+    "searchManagement": "2025-05-01",
+    "searchService": "2026-08-01-preview",
+    "openAiEmbeddings": "2024-10-21"
+  },
+  "paths": {
+    "pythonExecutable": ".venv/Scripts/python.exe",
+    "corpus": "corpus-trusted",
+    "manifest": "corpus-trusted/manifest.json",
+    "sharePointState": ".state/trusted-sharepoint.json",
+    "searchState": ".state/trusted-search.json",
+    "candidateSearchState": ".state/trusted-search-candidate.json",
+    "governanceReport": ".state/trusted-governance.json",
+    "evaluationCases": "config/trusted-knowledge-evaluation.cases.json",
+    "evaluationReport": ".state/trusted-evaluation.json",
+    "hygieneDashboard": ".state/knowledge-hygiene/index.html",
+    "hygieneJson": ".state/knowledge-hygiene/knowledge-hygiene.json",
+    "foundryState": ".state/trusted-foundry-agent.json"
+  }
+}

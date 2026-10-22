@@ -1,0 +1,14 @@
+{
+  "fab": {
+    "enabled": true,
+    "icon": "sparkles-outline",
+    "labelKey": "agent.fabLabel",
+    "route": "/agent",
+    "position": "bottom-end",
+    "hideOnRoutes": ["/agent"]
+  },
+  "promptsPath": "/agent/prompts",
+  "messagesPath": "/agent/messages",
+  "maxInputChars": 2000,
+  "placeholderPattern": "\\{([A-Za-z][A-Za-z0-9_]*)\\}"
+}

@@ -1,0 +1,35 @@
+{
+  "apiBaseUrl": "http://127.0.0.1:8000/api/v1",
+  "requestTimeoutMs": 15000,
+  "pageSize": 25,
+  "endpoints": {
+    "health": "/health",
+    "policy": "/policy",
+    "hygiene": "/hygiene",
+    "hygieneFinding": "/hygiene/findings/{id}",
+    "libraries": "/site/libraries",
+    "libraryChildren": "/site/libraries/{id}/children",
+    "itemPermissions": "/items/{id}/permissions",
+    "accessUsers": "/access/users",
+    "accessUserItems": "/access/users/{key}/items",
+    "document": "/documents/{id}",
+    "cleanup": "/cleanup/{segment}",
+    "notifications": "/notifications",
+    "notificationDrafts": "/notifications/drafts",
+    "notificationApprove": "/notifications/{id}/approve",
+    "notificationSend": "/notifications/{id}/send"
+  },
+  "auth": {
+    "clientId": "",
+    "authority": "https://login.microsoftonline.com/12a4b86b-e64c-43f9-af05-d9130a72dfd2",
+    "redirectUri": "http://127.0.0.1:4200",
+    "postLogoutRedirectUri": "http://127.0.0.1:4200",
+    "cacheLocation": "localStorage",
+    "apiScopes": []
+  },
+  "export": {
+    "csvFileName": "access-by-user.csv",
+    "csvDelimiter": ",",
+    "csvIncludeBom": true
+  }
+}

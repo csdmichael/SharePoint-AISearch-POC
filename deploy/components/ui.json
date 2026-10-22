@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "deploy-component/v1",
+  "id": "ui",
+  "displayName": "SharePoint governance UI (Ionic/Angular)",
+  "kind": "appService",
+  "sourcePath": "app/ui",
+  "triggerPaths": [
+    "app/ui/**",
+    "deploy/settings.json",
+    "deploy/components/ui.json",
+    "infra/**",
+    "scripts/ci/**",
+    "scripts/deploy/**",
+    ".github/workflows/**"
+  ],
+  "language": {"runtime": "node", "version": "22"},
+  "validate": {
+    "install": ["npm", "ci"],
+    "unitTest": ["npm", "test", "--", "--browsers=ChromeHeadless"],
+    "build": ["npm", "run", "build", "--", "--configuration", "production"],
+    "e2e": {
+      "install": ["npx", "playwright", "install", "--with-deps", "chromium"],
+      "run": ["npx", "playwright", "test"]
+    }
+  },
+  "package": {
+    "stage": [
+      {"from": "app/ui/www", "to": "www"},
+      {"from": "app/ui/server", "to": "server"}
+    ],
+    "patchJson": [
+      {
+        "file": "www/assets/config/app.config.json",
+        "values": {
+          "apiBaseUrl": "https://caldova-aiscr-api.azurewebsites.net/api/v1",
+          "auth": {
+            "clientId": "587adede-d1a1-44be-92ee-57f05536a0bb",
+            "authority": "https://login.microsoftonline.com/12a4b86b-e64c-43f9-af05-d9130a72dfd2",
+            "redirectUri": "https://caldova-aiscr-ui.azurewebsites.net",
+            "postLogoutRedirectUri": "https://caldova-aiscr-ui.azurewebsites.net",
+            "apiScopes": ["api://e3d6917e-1001-4f80-82c1-e7f8913dec22/access_as_user"]
+          }
+        }
+      }
+    ]
+  },
+  "iac": {"tool": "bicep", "supportedTools": ["bicep", "terraform"]},
+  "infra": {
+    "bicepTemplate": "infra/bicep/components/app-service/main.bicep",
+    "terraformRoot": "infra/terraform/components/ui"
+  },
+  "azure": {
+    "appName": "caldova-aiscr-ui",
+    "runtime": "NODE|22-lts",
+    "startupCommand": "node server/static-server.mjs",
+    "healthPath": "/",
+    "appSettings": {
+      "SCM_DO_BUILD_DURING_DEPLOYMENT": "false",
+      "WEBSITES_PORT": "8080"
+    }
+  }
+}

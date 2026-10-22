@@ -1,0 +1,63 @@
+{
+  "breakpoints": {
+    "tabletMinPx": 768,
+    "desktopMinPx": 1200
+  },
+  "sidebarWidthPx": 248,
+  "headerHeightPx": 56,
+  "tabBarHeightPx": 60,
+  "maxContentWidthPx": 1280,
+  "paneWidths": {
+    "listPercent": 32,
+    "detailPercent": 36
+  },
+  "cardColumns": {
+    "mobile": 1,
+    "tablet": 2,
+    "desktop": 4
+  },
+  "mobileTabIds": ["dashboard", "explorer", "cleanup", "agent"],
+  "overlayMenuId": "main-menu",
+  "mainContentId": "main-content",
+  "spacingPx": {
+    "xxs": 2,
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24
+  },
+  "radiusPx": 8,
+  "fabOffsetPx": 12,
+  "icons": {
+    "menu": "menu-outline",
+    "close": "close-outline",
+    "signIn": "log-in-outline",
+    "signOut": "log-out-outline",
+    "retry": "refresh-outline",
+    "export": "download-outline",
+    "send": "paper-plane-outline",
+    "approve": "checkmark-done-outline",
+    "draft": "create-outline",
+    "expand": "chevron-forward-outline",
+    "collapse": "chevron-down-outline",
+    "folder": "folder-outline",
+    "file": "document-text-outline",
+    "library": "library-outline",
+    "members": "people-outline",
+    "externalLink": "open-outline",
+    "search": "search-outline",
+    "user": "person-outline",
+    "warning": "warning-outline",
+    "info": "information-circle-outline",
+    "empty": "file-tray-outline",
+    "notFound": "search-circle-outline",
+    "checking": "sync-outline",
+    "locked": "lock-closed-outline",
+    "dryRun": "flask-outline",
+    "clear": "close-circle-outline",
+    "document": "document-outline",
+    "trash": "trash-outline",
+    "select": "checkbox-outline"
+  }
+}

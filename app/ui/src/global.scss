@@ -1,0 +1,197 @@
+/*
+ * Global styles. Colours, sizes, and pane widths come from CSS custom properties that ThemeService
+ * writes from theme.json and layout.json at startup. There are no literal colours or breakpoints here.
+ * Layout selection uses the data-layout attribute on <html>, which LayoutService sets.
+ */
+
+@import "@ionic/angular/css/core.css";
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background: var(--surface-page);
+  color: var(--surface-text);
+}
+
+.page-frame {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--layout-max-content-width);
+  margin: 0 auto;
+  padding: var(--space-md) var(--space-lg) calc(var(--space-xl) * 3);
+  min-width: 0;
+}
+
+.page-title {
+  margin: 0 0 var(--space-md);
+  font-size: 1.5rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.section-title {
+  margin: 0 0 var(--space-sm);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.muted {
+  color: var(--surface-muted-text);
+}
+
+.toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--card-columns, 1), minmax(0, 1fr));
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.card {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--space-md);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+}
+
+.pane {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--space-md);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+}
+
+/* Master/detail panes. Mobile stacks them, tablet uses two columns, desktop uses three. */
+.panes {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "master"
+    "primary"
+    "detail";
+}
+
+:root[data-layout='tablet'] .panes {
+  grid-template-columns: var(--pane-list-width) minmax(0, 1fr);
+  grid-template-areas:
+    "master primary"
+    "master detail";
+}
+
+:root[data-layout='desktop'] .panes {
+  grid-template-columns: var(--pane-list-width) minmax(0, 1fr) var(--pane-detail-width);
+  grid-template-areas: "master primary detail";
+}
+
+.panes--two {
+  grid-template-areas:
+    "master"
+    "primary";
+}
+
+:root[data-layout='tablet'] .panes--two {
+  grid-template-columns: var(--pane-list-width) minmax(0, 1fr);
+  grid-template-areas: "master primary";
+}
+
+:root[data-layout='desktop'] .panes--two {
+  grid-template-columns: var(--pane-list-width) minmax(0, 1fr);
+  grid-template-areas: "master primary";
+}
+
+.pane--master {
+  grid-area: master;
+}
+
+.pane--primary {
+  grid-area: primary;
+}
+
+.pane--detail {
+  grid-area: detail;
+}
+
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: var(--space-xs) var(--space-sm);
+  border-bottom: 1px solid var(--surface-border);
+  text-align: start;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.data-table th {
+  background: var(--surface-table-header);
+  font-weight: 600;
+}
+
+.data-table tr.is-selected td {
+  background: var(--surface-selected);
+}
+
+.pre-wrap {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+}
+
+.inline-note {
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius);
+  background: var(--surface-selected);
+  font-size: 0.875rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

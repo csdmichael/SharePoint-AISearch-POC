@@ -1,0 +1,113 @@
+<ion-content>
+  <div class="page-frame" data-testid="page-cleanup">
+    <h1 class="page-title">{{ 'pages.cleanup' | t }}</h1>
+
+    <ion-segment
+      class="segments"
+      data-testid="cleanup-segments"
+      scrollable="true"
+      [value]="segment()"
+      [attr.aria-label]="'cleanup.segmentsLabel' | t"
+      (ionChange)="selectSegment(selectValue($event))"
+    >
+      @for (id of segments; track id) {
+        <ion-segment-button [value]="id" [attr.data-segment]="id">
+          <ion-label>{{ segmentLabel(id) }}</ion-label>
+        </ion-segment-button>
+      }
+    </ion-segment>
+
+    <div class="toolbar-row cleanup-toolbar">
+      <button type="button" class="action" data-testid="select-all" [disabled]="view().kind !== 'ready'" (click)="selectAll()">
+        {{ 'buttons.selectAll' | t }}
+      </button>
+      <button type="button" class="action" data-testid="clear-selection" [disabled]="selectedCount() === 0" (click)="clearSelection()">
+        {{ 'buttons.clearSelection' | t }}
+      </button>
+      <span class="muted" data-testid="selected-count">{{ 'cleanup.selectedCount' | t: { count: i18n.number(selectedCount()) } }}</span>
+      <button
+        type="button"
+        class="action action--primary"
+        data-testid="draft-notifications"
+        [disabled]="selectedCount() === 0 || drafting()"
+        (click)="draftNotifications()"
+      >
+        <ion-icon [name]="icons.draft" aria-hidden="true" />
+        {{ 'buttons.draftNotifications' | t }}
+      </button>
+    </div>
+
+    @if (draftSummary(); as summary) {
+      <div class="inline-note draft-result" role="status" data-testid="draft-result">
+        @if (draftBadge(); as badge) {
+          <app-badge data-testid="draft-mode-badge" [text]="badge.text" [color]="badge.color" />
+        }
+        <span>{{ draftText() }}</span>
+        <a [routerLink]="notificationsRoute()" data-testid="open-outbox">{{ 'cleanup.viewNotifications' | t }}</a>
+      </div>
+    }
+    @if (draftErrorView(); as errorView) {
+      <app-state-view [state]="errorView" (retry)="draftNotifications()" />
+    }
+
+    <app-state-view [state]="view()" emptyKey="cleanup.empty" (retry)="retry()" />
+
+    @if (view().kind === 'ready') {
+      <div class="table-scroll">
+        <table class="data-table" data-testid="cleanup-table">
+          <thead>
+            <tr>
+              <th scope="col" class="select-column"><span class="sr-only">{{ 'buttons.selectAll' | t }}</span></th>
+              <th scope="col">{{ 'cleanup.columns.document' | t }}</th>
+              <th scope="col">{{ 'cleanup.columns.detail' | t }}</th>
+            </tr>
+          </thead>
+          @for (record of records.items(); track record.id) {
+            @if (record.segment === 'duplicates') {
+              <tbody class="cluster" data-testid="duplicate-cluster">
+                <tr class="cluster__header">
+                  <th scope="rowgroup" colspan="3">{{ clusterTitle(record.canonical) }}</th>
+                </tr>
+                @for (member of record.members; track member.id) {
+                  <tr [class.is-selected]="isSelected(member.id)" data-testid="cleanup-row" [attr.data-document-id]="member.id">
+                    <td class="select-column">
+                      <input type="checkbox" [checked]="isSelected(member.id)" [attr.aria-label]="selectLabel(member)" (change)="toggle(member.id)" />
+                    </td>
+                    <td>
+                      <span>{{ member.name }}</span>
+                      <a class="row-link" [routerLink]="documentPath(member.id)">{{ 'buttons.openDocument' | t }}</a>
+                    </td>
+                    <td>{{ canonicalOf(record.canonical) }}</td>
+                  </tr>
+                }
+              </tbody>
+            } @else {
+              <tbody>
+                <tr [class.is-selected]="isSelected(record.document.id)" data-testid="cleanup-row" [attr.data-document-id]="record.document.id">
+                  <td class="select-column">
+                    <input
+                      type="checkbox"
+                      [checked]="isSelected(record.document.id)"
+                      [attr.aria-label]="selectLabel(record.document)"
+                      (change)="toggle(record.document.id)"
+                    />
+                  </td>
+                  <td>
+                    <span>{{ record.document.name }}</span>
+                    <a class="row-link" [routerLink]="documentPath(record.document.id)">{{ 'buttons.openDocument' | t }}</a>
+                  </td>
+                  <td>{{ recordDetail(record) }}</td>
+                </tr>
+              </tbody>
+            }
+          }
+        </table>
+      </div>
+      @if (records.nextCursor()) {
+        <button type="button" class="load-more" data-testid="cleanup-load-more" [disabled]="records.loadingMore()" (click)="records.loadMore()">
+          {{ 'buttons.loadMore' | t }}
+        </button>
+      }
+    }
+  </div>
+</ion-content>

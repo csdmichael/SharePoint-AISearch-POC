@@ -1,0 +1,235 @@
+{
+  "schemaVersion": "trusted-knowledge-policy/v1",
+  "description": "Governance policy for the Trusted Knowledge track. SharePoint owns ownership, publication and access; the trust score is advisory and never overrides explicit lifecycle or authority metadata.",
+  "publishRequirements": {
+    "requiredWhenPublished": ["KnowledgeOwner", "LifecycleStatus", "Authoritative", "ReviewDate"]
+  },
+  "eligibility": {
+    "lifecycleStatus": "Published",
+    "authoritative": true,
+    "trustedSensitivity": ["General"],
+    "approvedSourceSystems": ["SharePoint Online"]
+  },
+  "similarity": {
+    "nearDuplicateCosine": 0.95,
+    "conflictCandidateCosine": 0.8,
+    "embeddingCharacterLimit": 12000,
+    "hashAlgorithm": "sha256",
+    "numberPattern": "\\d+(?:\\.\\d+)?",
+    "whitespacePattern": "\\s+",
+    "note": "Near-duplicate requires cosine >= nearDuplicateCosine AND an identical numeric fingerprint. Same scope with divergent numbers is a conflict candidate, not a duplicate. Duplicate members resolve to one canonical per cluster."
+  },
+  "trustScore": {
+    "minScore": 0,
+    "maxScore": 100,
+    "weights": {
+      "authoritative": 35,
+      "published": 20,
+      "reviewCurrent": 15,
+      "ownerPresent": 10,
+      "dataQualityGood": 10,
+      "notDuplicate": 5,
+      "approvedSource": 5
+    },
+    "penalties": {
+      "draft": 20,
+      "superseded": 30,
+      "archived": 40,
+      "expired": 30,
+      "duplicate": 25,
+      "missingOwner": 10,
+      "conflictingAuthoritative": 25,
+      "conflictsWithAuthoritative": 10
+    },
+    "range": [0, 100]
+  },
+  "sharePointColumns": [
+    {
+      "name": "ArtifactId", "displayName": "Artifact ID", "indexed": true, "enforceUniqueValues": true,
+      "description": "Stable generated artifact identifier.",
+      "text": { "allowMultipleLines": false, "appendChangesToExistingText": false, "linesForEditing": 1, "maxLength": 64 }
+    },
+    {
+      "name": "KnowledgeCategory", "displayName": "Knowledge Category", "indexed": true, "enforceUniqueValues": false,
+      "description": "Logical retrieval category.",
+      "choice": { "allowTextEntry": false, "choices": ["Quality", "Engineering"], "displayAs": "dropDownMenu" }
+    },
+    {
+      "name": "SourceTable", "displayName": "Source Table", "indexed": true, "enforceUniqueValues": false,
+      "description": "Lineage reference. Not applicable to authored content.",
+      "text": { "allowMultipleLines": false, "appendChangesToExistingText": false, "linesForEditing": 1, "maxLength": 255 }
+    },
+    {
+      "name": "SourceSystem", "displayName": "Source System", "indexed": false, "enforceUniqueValues": false,
+      "description": "System of record for the document.",
+      "text": { "allowMultipleLines": false, "appendChangesToExistingText": false, "linesForEditing": 1, "maxLength": 255 }
+    },
+    {
+      "name": "ProfileGeneratedAt", "displayName": "Profile Generated At", "indexed": false, "enforceUniqueValues": false,
+      "description": "UTC timestamp of the source snapshot.",
+      "dateTime": { "displayAs": "default", "format": "dateTime" }
+    },
+    {
+      "name": "KnowledgeOwner", "displayName": "Knowledge Owner", "indexed": false, "enforceUniqueValues": false,
+      "description": "Required when published. Accountable owner who approves the document.",
+      "personOrGroup": { "allowMultipleSelection": false, "chooseFromType": "peopleAndGroups", "displayAs": "account" }
+    },
+    {
+      "name": "LifecycleStatus", "displayName": "Lifecycle Status", "indexed": true, "enforceUniqueValues": false,
+      "description": "Required when published. Only Published documents can become authoritative knowledge.",
+      "choice": { "allowTextEntry": false, "choices": ["Draft", "Published", "Superseded", "Archived"], "displayAs": "dropDownMenu" }
+    },
+    {
+      "name": "Authoritative", "displayName": "Authoritative", "indexed": true, "enforceUniqueValues": false,
+      "description": "Required when published. Set by the knowledge owner, never by the AI.",
+      "boolean": {}
+    },
+    {
+      "name": "ReviewDate", "displayName": "Review Date", "indexed": true, "enforceUniqueValues": false,
+      "description": "Required when published. Content past this date is treated as stale.",
+      "dateTime": { "displayAs": "default", "format": "dateOnly" }
+    },
+    {
+      "name": "DocumentType", "displayName": "Document Type", "indexed": true, "enforceUniqueValues": false,
+      "description": "Document class used to scope conflict detection.",
+      "choice": { "allowTextEntry": false, "choices": ["Procedure", "Specification", "Test Report", "Decision Record", "Meeting Summary", "Technical Guide"], "displayAs": "dropDownMenu" }
+    },
+    {
+      "name": "ProductFamily", "displayName": "Product Family", "indexed": true, "enforceUniqueValues": false,
+      "description": "Product family (Choice for this POC; managed metadata in production).",
+      "choice": { "allowTextEntry": false, "choices": ["ApexDrive X500"], "displayAs": "dropDownMenu" }
+    },
+    {
+      "name": "ProcessArea", "displayName": "Process Area", "indexed": true, "enforceUniqueValues": false,
+      "description": "Process area used to scope conflict detection.",
+      "choice": { "allowTextEntry": false, "choices": ["Failure Analysis", "Quality Escalation", "General Engineering"], "displayAs": "dropDownMenu" }
+    },
+    {
+      "name": "Sensitivity", "displayName": "Content Sensitivity", "indexed": true, "enforceUniqueValues": false,
+      "description": "Only General content may be served by the trusted agent.",
+      "choice": { "allowTextEntry": false, "choices": ["General", "Confidential", "Highly Confidential"], "displayAs": "dropDownMenu" }
+    },
+    {
+      "name": "EffectiveDate", "displayName": "Effective Date", "indexed": false, "enforceUniqueValues": false,
+      "description": "Date the document became effective.",
+      "dateTime": { "displayAs": "default", "format": "dateOnly" }
+    },
+    {
+      "name": "ExpirationDate", "displayName": "Expiration Date", "indexed": false, "enforceUniqueValues": false,
+      "description": "Date after which the document must not be used as authoritative knowledge.",
+      "dateTime": { "displayAs": "default", "format": "dateOnly" }
+    },
+    {
+      "name": "SupersedesDocument", "displayName": "Supersedes Document", "indexed": false, "enforceUniqueValues": false,
+      "description": "File name of the document this version replaces. Lineage links are not treated as duplicates.",
+      "text": { "allowMultipleLines": false, "appendChangesToExistingText": false, "linesForEditing": 1, "maxLength": 255 }
+    },
+    {
+      "name": "BusinessUnit", "displayName": "Business Unit", "indexed": false, "enforceUniqueValues": false,
+      "description": "Owning business unit.",
+      "text": { "allowMultipleLines": false, "appendChangesToExistingText": false, "linesForEditing": 1, "maxLength": 255 }
+    },
+    {
+      "name": "OwnerDisplayName", "displayName": "Owner Display Name", "indexed": false, "enforceUniqueValues": false,
+      "description": "System-populated display name of KnowledgeOwner, so the indexer can carry it to search.",
+      "text": { "allowMultipleLines": false, "appendChangesToExistingText": false, "linesForEditing": 1, "maxLength": 255 }
+    },
+    {
+      "name": "AIReady", "displayName": "AI Ready", "indexed": true, "enforceUniqueValues": false,
+      "description": "System-computed by the governance sync. Yes only when the document meets every trusted-retrieval rule.",
+      "boolean": {}
+    },
+    {
+      "name": "TrustScore", "displayName": "Trust Score", "indexed": false, "enforceUniqueValues": false,
+      "description": "System-computed explainable score from 0 to 100. Advisory only.",
+      "number": { "decimalPlaces": "none", "displayAs": "number", "maximum": 100, "minimum": 0 }
+    },
+    {
+      "name": "DataQualityStatus", "displayName": "Data Quality Status", "indexed": true, "enforceUniqueValues": false,
+      "description": "System-computed governance state.",
+      "choice": { "allowTextEntry": false, "choices": ["Good", "Needs Review", "Stale", "Duplicate", "Conflicting"], "displayAs": "dropDownMenu" }
+    },
+    {
+      "name": "ConflictStatus", "displayName": "Conflict Status", "indexed": true, "enforceUniqueValues": false,
+      "description": "System-computed conflict finding for this document.",
+      "choice": { "allowTextEntry": false, "choices": ["None", "Conflicting Authoritative", "Conflicts With Authoritative"], "displayAs": "dropDownMenu" }
+    },
+    {
+      "name": "ConflictWith", "displayName": "Conflict With", "indexed": false, "enforceUniqueValues": false,
+      "description": "System-computed list of conflicting file names.",
+      "text": { "allowMultipleLines": false, "appendChangesToExistingText": false, "linesForEditing": 1, "maxLength": 255 }
+    },
+    {
+      "name": "DuplicateOf", "displayName": "Duplicate Of", "indexed": false, "enforceUniqueValues": false,
+      "description": "System-computed canonical file name for exact or near-duplicate candidates.",
+      "text": { "allowMultipleLines": false, "appendChangesToExistingText": false, "linesForEditing": 1, "maxLength": 255 }
+    },
+    {
+      "name": "ContentHash", "displayName": "Content Hash", "indexed": false, "enforceUniqueValues": false,
+      "description": "System-computed SHA-256 of normalized document text.",
+      "text": { "allowMultipleLines": false, "appendChangesToExistingText": false, "linesForEditing": 1, "maxLength": 64 }
+    },
+    {
+      "name": "TrustReasons", "displayName": "Trust Reasons", "indexed": false, "enforceUniqueValues": false,
+      "description": "System-computed explanation of every trust score component.",
+      "text": { "allowMultipleLines": true, "appendChangesToExistingText": false, "linesForEditing": 6, "maxLength": 2000 }
+    },
+    {
+      "name": "LastValidatedDate", "displayName": "Last Validated Date", "indexed": false, "enforceUniqueValues": false,
+      "description": "Date of the most recent governance validation run.",
+      "dateTime": { "displayAs": "default", "format": "dateOnly" }
+    }
+  ],
+  "searchIndexFields": [
+    { "name": "knowledge_owner", "type": "Edm.String", "searchable": true, "filterable": true, "retrievable": true },
+    { "name": "lifecycle_status", "type": "Edm.String", "filterable": true, "facetable": true, "retrievable": true },
+    { "name": "authoritative", "type": "Edm.Boolean", "filterable": true, "facetable": true, "retrievable": true },
+    { "name": "ai_ready", "type": "Edm.Boolean", "filterable": true, "facetable": true, "retrievable": true },
+    { "name": "review_date", "type": "Edm.DateTimeOffset", "filterable": true, "sortable": true, "retrievable": true },
+    { "name": "effective_date", "type": "Edm.DateTimeOffset", "filterable": true, "sortable": true, "retrievable": true },
+    { "name": "expiration_date", "type": "Edm.DateTimeOffset", "filterable": true, "sortable": true, "retrievable": true },
+    { "name": "document_type", "type": "Edm.String", "searchable": true, "filterable": true, "facetable": true, "retrievable": true },
+    { "name": "product_family", "type": "Edm.String", "filterable": true, "facetable": true, "retrievable": true },
+    { "name": "process_area", "type": "Edm.String", "searchable": true, "filterable": true, "facetable": true, "retrievable": true },
+    { "name": "sensitivity", "type": "Edm.String", "filterable": true, "facetable": true, "retrievable": true },
+    { "name": "business_unit", "type": "Edm.String", "filterable": true, "facetable": true, "retrievable": true },
+    { "name": "supersedes_document", "type": "Edm.String", "retrievable": true },
+    { "name": "trust_score", "type": "Edm.Int32", "filterable": true, "sortable": true, "facetable": true, "retrievable": true },
+    { "name": "trust_reasons", "type": "Edm.String", "retrievable": true },
+    { "name": "data_quality_status", "type": "Edm.String", "filterable": true, "facetable": true, "retrievable": true },
+    { "name": "conflict_status", "type": "Edm.String", "filterable": true, "facetable": true, "retrievable": true },
+    { "name": "conflict_with", "type": "Edm.String", "retrievable": true },
+    { "name": "duplicate_of", "type": "Edm.String", "filterable": true, "retrievable": true },
+    { "name": "content_hash", "type": "Edm.String", "filterable": true, "retrievable": true },
+    { "name": "last_validated_date", "type": "Edm.DateTimeOffset", "filterable": true, "sortable": true, "retrievable": true }
+  ],
+  "searchProjection": [
+    { "name": "knowledge_owner", "column": "OwnerDisplayName" },
+    { "name": "lifecycle_status", "column": "LifecycleStatus" },
+    { "name": "authoritative", "column": "Authoritative" },
+    { "name": "ai_ready", "column": "AIReady" },
+    { "name": "review_date", "column": "ReviewDate" },
+    { "name": "effective_date", "column": "EffectiveDate" },
+    { "name": "expiration_date", "column": "ExpirationDate" },
+    { "name": "document_type", "column": "DocumentType" },
+    { "name": "product_family", "column": "ProductFamily" },
+    { "name": "process_area", "column": "ProcessArea" },
+    { "name": "sensitivity", "column": "Sensitivity" },
+    { "name": "business_unit", "column": "BusinessUnit" },
+    { "name": "supersedes_document", "column": "SupersedesDocument" },
+    { "name": "trust_score", "column": "TrustScore" },
+    { "name": "trust_reasons", "column": "TrustReasons" },
+    { "name": "data_quality_status", "column": "DataQualityStatus" },
+    { "name": "conflict_status", "column": "ConflictStatus" },
+    { "name": "conflict_with", "column": "ConflictWith" },
+    { "name": "duplicate_of", "column": "DuplicateOf" },
+    { "name": "content_hash", "column": "ContentHash" },
+    { "name": "last_validated_date", "column": "LastValidatedDate" }
+  ],
+  "knowledgeSourceDataFields": [
+    "knowledge_owner", "lifecycle_status", "authoritative", "ai_ready", "review_date", "effective_date",
+    "expiration_date", "document_type", "product_family", "process_area", "sensitivity", "business_unit",
+    "supersedes_document", "trust_score", "trust_reasons", "data_quality_status", "conflict_status",
+    "conflict_with", "duplicate_of", "content_hash", "last_validated_date"
+  ]
+}
