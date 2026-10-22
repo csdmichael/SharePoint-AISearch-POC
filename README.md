@@ -296,6 +296,12 @@ credentials and MFA only on the Microsoft sign-in page.
 
 ### 6. Provision SharePoint and upload the corpus
 
+For reusable, empty libraries that site owners create from **From your
+organization**, use the [Governed Knowledge library template](docs/knowledge-library-template.md).
+It includes all 27 additional governance metadata columns and a one-time
+administrator publishing script. This is separate from the corpus provisioning
+command below.
+
 ```powershell
 .\scripts\provision_sharepoint.ps1
 ```

@@ -1,0 +1,215 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/sp/site-design-script-actions.schema.json",
+  "actions": [
+    {
+      "verb": "createSPList",
+      "listName": "Governed Knowledge",
+      "templateType": 101,
+      "subactions": [
+        {
+          "verb": "setDescription",
+          "description": "Knowledge documents with ownership, lifecycle, classification, lineage and governance metadata."
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{ecdc62ec-1d3c-a4d6-4769-be3770bc8ad4}\" Name=\"ArtifactId\" StaticName=\"ArtifactId\" DisplayName=\"Artifact ID\" Description=\"Stable generated artifact identifier.\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"TRUE\" Type=\"Text\" MaxLength=\"64\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{f4ba0745-494d-35f9-d95e-4397f57ce36d}\" Name=\"KnowledgeCategory\" StaticName=\"KnowledgeCategory\" DisplayName=\"Knowledge Category\" Description=\"Logical retrieval category.\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"Choice\" Format=\"Dropdown\" FillInChoice=\"FALSE\"><CHOICES><CHOICE>Quality</CHOICE><CHOICE>Engineering</CHOICE></CHOICES></Field>",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{66963a4e-7182-de1c-299a-df6d0309fa7a}\" Name=\"SourceTable\" StaticName=\"SourceTable\" DisplayName=\"Source Table\" Description=\"Lineage reference. Not applicable to authored content.\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"Text\" MaxLength=\"255\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{aa4cbcd0-f4bb-7cd9-f866-a2a0c421123a}\" Name=\"SourceSystem\" StaticName=\"SourceSystem\" DisplayName=\"Source System\" Description=\"System of record for the document.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"Text\" MaxLength=\"255\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{a7248222-95f3-ca42-e2e5-0c8119b885ba}\" Name=\"ProfileGeneratedAt\" StaticName=\"ProfileGeneratedAt\" DisplayName=\"Profile Generated At\" Description=\"UTC timestamp of the source snapshot.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"DateTime\" Format=\"DateTime\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{c3ed802f-9136-428a-13db-066ebf14d7d1}\" Name=\"KnowledgeOwner\" StaticName=\"KnowledgeOwner\" DisplayName=\"Knowledge Owner\" Description=\"Required when published. Accountable owner who approves the document.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"User\" List=\"UserInfo\" ShowField=\"ImnName\" UserSelectionMode=\"PeopleAndGroups\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{b7eaa0b7-59ec-3f59-0b03-39ca7a0167e6}\" Name=\"LifecycleStatus\" StaticName=\"LifecycleStatus\" DisplayName=\"Lifecycle Status\" Description=\"Required when published. Only Published documents can become authoritative knowledge.\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"Choice\" Format=\"Dropdown\" FillInChoice=\"FALSE\"><CHOICES><CHOICE>Draft</CHOICE><CHOICE>Published</CHOICE><CHOICE>Superseded</CHOICE><CHOICE>Archived</CHOICE></CHOICES><Default>Draft</Default></Field>",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{253aa91d-46c0-8496-8296-c7ae7ad70718}\" Name=\"Authoritative\" StaticName=\"Authoritative\" DisplayName=\"Authoritative\" Description=\"Required when published. Set by the knowledge owner, never by the AI.\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"Boolean\"><Default>0</Default></Field>",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{e7cfec70-da56-e2bb-d299-73ca6c5fd931}\" Name=\"ReviewDate\" StaticName=\"ReviewDate\" DisplayName=\"Review Date\" Description=\"Required when published. Content past this date is treated as stale.\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"DateTime\" Format=\"DateOnly\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{bf9c0411-6fcf-77af-e73f-a238cfbb0c8a}\" Name=\"DocumentType\" StaticName=\"DocumentType\" DisplayName=\"Document Type\" Description=\"Document class used to scope conflict detection.\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"Choice\" Format=\"Dropdown\" FillInChoice=\"FALSE\"><CHOICES><CHOICE>Procedure</CHOICE><CHOICE>Specification</CHOICE><CHOICE>Test Report</CHOICE><CHOICE>Decision Record</CHOICE><CHOICE>Meeting Summary</CHOICE><CHOICE>Technical Guide</CHOICE></CHOICES></Field>",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{a71219ae-0f6c-1dc6-3049-dbcea8e6815e}\" Name=\"ProductFamily\" StaticName=\"ProductFamily\" DisplayName=\"Product Family\" Description=\"Product family (Choice for this POC; managed metadata in production).\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"Choice\" Format=\"Dropdown\" FillInChoice=\"FALSE\"><CHOICES><CHOICE>ApexDrive X500</CHOICE></CHOICES></Field>",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{35839706-0571-f3a0-9910-3ec50bbb9c67}\" Name=\"ProcessArea\" StaticName=\"ProcessArea\" DisplayName=\"Process Area\" Description=\"Process area used to scope conflict detection.\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"Choice\" Format=\"Dropdown\" FillInChoice=\"FALSE\"><CHOICES><CHOICE>Failure Analysis</CHOICE><CHOICE>Quality Escalation</CHOICE><CHOICE>General Engineering</CHOICE></CHOICES></Field>",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{27d11003-14fc-b127-e0bf-2a60c6608e78}\" Name=\"Sensitivity\" StaticName=\"Sensitivity\" DisplayName=\"Content Sensitivity\" Description=\"Only General content may be served by the trusted agent.\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"Choice\" Format=\"Dropdown\" FillInChoice=\"FALSE\"><CHOICES><CHOICE>General</CHOICE><CHOICE>Confidential</CHOICE><CHOICE>Highly Confidential</CHOICE></CHOICES></Field>",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{8db4fda1-3bee-569f-e6a3-120b2d2c2786}\" Name=\"EffectiveDate\" StaticName=\"EffectiveDate\" DisplayName=\"Effective Date\" Description=\"Date the document became effective.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"DateTime\" Format=\"DateOnly\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{32ec0646-6418-15cd-e6f1-c7007b3641a6}\" Name=\"ExpirationDate\" StaticName=\"ExpirationDate\" DisplayName=\"Expiration Date\" Description=\"Date after which the document must not be used as authoritative knowledge.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"DateTime\" Format=\"DateOnly\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{749f7297-9c05-01d4-d67f-283b619fe88d}\" Name=\"SupersedesDocument\" StaticName=\"SupersedesDocument\" DisplayName=\"Supersedes Document\" Description=\"File name of the document this version replaces. Lineage links are not treated as duplicates.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"Text\" MaxLength=\"255\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{3e169d28-d57f-9b33-e1dc-ace8c8e3fe05}\" Name=\"BusinessUnit\" StaticName=\"BusinessUnit\" DisplayName=\"Business Unit\" Description=\"Owning business unit.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"Text\" MaxLength=\"255\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{4c8e3163-1a18-5853-6c75-73cf56fecc0f}\" Name=\"OwnerDisplayName\" StaticName=\"OwnerDisplayName\" DisplayName=\"Owner Display Name\" Description=\"System-populated display name of KnowledgeOwner, so the indexer can carry it to search.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"Text\" MaxLength=\"255\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{6b1f4523-9231-a0a2-05fe-b8c648c3a51a}\" Name=\"AIReady\" StaticName=\"AIReady\" DisplayName=\"AI Ready\" Description=\"System-computed by the governance sync. Yes only when the document meets every trusted-retrieval rule.\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"Boolean\"><Default>0</Default></Field>",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{9d1b6673-d199-04f2-e15e-a4b58687ae35}\" Name=\"TrustScore\" StaticName=\"TrustScore\" DisplayName=\"Trust Score\" Description=\"System-computed explainable score from 0 to 100. Advisory only.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"Number\" Min=\"0\" Max=\"100\" Decimals=\"0\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{c6f6a104-a513-37fa-c3a3-98ec8a48d8c4}\" Name=\"DataQualityStatus\" StaticName=\"DataQualityStatus\" DisplayName=\"Data Quality Status\" Description=\"System-computed governance state.\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"Choice\" Format=\"Dropdown\" FillInChoice=\"FALSE\"><CHOICES><CHOICE>Good</CHOICE><CHOICE>Needs Review</CHOICE><CHOICE>Stale</CHOICE><CHOICE>Duplicate</CHOICE><CHOICE>Conflicting</CHOICE></CHOICES></Field>",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{6b8fdeb3-24bd-de4b-47a4-4d87ad3fe563}\" Name=\"ConflictStatus\" StaticName=\"ConflictStatus\" DisplayName=\"Conflict Status\" Description=\"System-computed conflict finding for this document.\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"Choice\" Format=\"Dropdown\" FillInChoice=\"FALSE\"><CHOICES><CHOICE>None</CHOICE><CHOICE>Conflicting Authoritative</CHOICE><CHOICE>Conflicts With Authoritative</CHOICE></CHOICES></Field>",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{4a57a1ae-e587-29bc-7250-9e5f2ff0d9f4}\" Name=\"ConflictWith\" StaticName=\"ConflictWith\" DisplayName=\"Conflict With\" Description=\"System-computed list of conflicting file names.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"Text\" MaxLength=\"255\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{39de5c5b-30f2-6b6f-b436-3e26f4e897fc}\" Name=\"DuplicateOf\" StaticName=\"DuplicateOf\" DisplayName=\"Duplicate Of\" Description=\"System-computed canonical file name for exact or near-duplicate candidates.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"Text\" MaxLength=\"255\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{fb8587d0-d471-20fa-fa1c-a7096721ba40}\" Name=\"ContentHash\" StaticName=\"ContentHash\" DisplayName=\"Content Hash\" Description=\"System-computed SHA-256 of normalized document text.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"Text\" MaxLength=\"64\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{c416b1cf-8d42-7b25-c17c-72ba1172389e}\" Name=\"TrustReasons\" StaticName=\"TrustReasons\" DisplayName=\"Trust Reasons\" Description=\"System-computed explanation of every trust score component.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"Note\" NumLines=\"6\" RichText=\"FALSE\" AppendOnly=\"FALSE\" UnlimitedLengthInDocumentLibrary=\"TRUE\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{96bd9a3e-d608-f73c-4b38-3900131106ef}\" Name=\"LastValidatedDate\" StaticName=\"LastValidatedDate\" DisplayName=\"Last Validated Date\" Description=\"Date of the most recent governance validation run.\" Required=\"FALSE\" Indexed=\"FALSE\" EnforceUniqueValues=\"FALSE\" Type=\"DateTime\" Format=\"DateOnly\" />",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPView",
+          "name": "Knowledge Documents",
+          "viewFields": [
+            "DocIcon",
+            "LinkFilename",
+            "KnowledgeOwner",
+            "LifecycleStatus",
+            "Authoritative",
+            "ReviewDate",
+            "DocumentType",
+            "ProductFamily",
+            "ProcessArea",
+            "Sensitivity",
+            "AIReady",
+            "Modified",
+            "Editor"
+          ],
+          "query": "",
+          "rowLimit": 30,
+          "isPaged": true,
+          "makeDefault": true
+        },
+        {
+          "verb": "addSPView",
+          "name": "All Metadata",
+          "viewFields": [
+            "DocIcon",
+            "LinkFilename",
+            "ArtifactId",
+            "KnowledgeCategory",
+            "SourceTable",
+            "SourceSystem",
+            "ProfileGeneratedAt",
+            "KnowledgeOwner",
+            "LifecycleStatus",
+            "Authoritative",
+            "ReviewDate",
+            "DocumentType",
+            "ProductFamily",
+            "ProcessArea",
+            "Sensitivity",
+            "EffectiveDate",
+            "ExpirationDate",
+            "SupersedesDocument",
+            "BusinessUnit",
+            "OwnerDisplayName",
+            "AIReady",
+            "TrustScore",
+            "DataQualityStatus",
+            "ConflictStatus",
+            "ConflictWith",
+            "DuplicateOf",
+            "ContentHash",
+            "TrustReasons",
+            "LastValidatedDate",
+            "Modified",
+            "Editor"
+          ],
+          "query": "",
+          "rowLimit": 30,
+          "isPaged": true,
+          "makeDefault": false
+        }
+      ]
+    }
+  ]
+}
