@@ -164,7 +164,7 @@ jobs:
           APP_NAME: "${{ steps.info.outputs.appName }}"
         run: |
           set -euo pipefail
-          az webapp deploy --resource-group "$RESOURCE_GROUP" --name "$APP_NAME" --src-path "$RUNNER_TEMP/deploy/$COMPONENT/$COMPONENT.zip" --type zip --clean true --restart true
+          az webapp deploy --resource-group "$RESOURCE_GROUP" --name "$APP_NAME" --src-path "$RUNNER_TEMP/deploy/$COMPONENT/$COMPONENT.zip" --type zip --clean true --restart true --async true
 
       - name: Health check
         if: steps.info.outputs.kind == 'appService'

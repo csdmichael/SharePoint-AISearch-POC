@@ -41,7 +41,7 @@
     "exclude": ["__pycache__", ".venv", "node_modules", ".pytest_cache", "*.pyc"]
   },
   "healthCheck": {
-    "attempts": 12,
-    "delaySeconds": 15
+    "attempts": 40,
+    "delaySeconds": 20
   }
 }
