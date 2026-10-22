@@ -14,22 +14,23 @@ SharePoint Online remains the document system of record.
 
 1. [Solution status](#solution-status)
 2. [Deployed URLs](#deployed-urls)
-3. [Architecture](#architecture)
-4. [Data and corpus](#data-and-corpus)
-5. [Repository layout](#repository-layout)
-6. [Configuration](#configuration)
-7. [Prerequisites](#prerequisites)
-8. [Deploy the solution](#deploy-the-solution)
-9. [Azure AI Search design](#azure-ai-search-design)
-10. [Security model](#security-model)
-11. [Operations and validation](#operations-and-validation)
-12. [Relevance evaluation and feedback](#relevance-evaluation-and-feedback)
-13. [Foundry agent integration](#foundry-agent-integration)
-14. [Sample prompts](#sample-prompts)
-15. [Preview limitations](#preview-limitations)
-16. [Cost and production scaling](#cost-and-production-scaling)
-17. [Additional references](#additional-references)
-18. [License](#license)
+3. [Solution guide](#solution-guide)
+4. [Architecture](#architecture)
+5. [Data and corpus](#data-and-corpus)
+6. [Repository layout](#repository-layout)
+7. [Configuration](#configuration)
+8. [Prerequisites](#prerequisites)
+9. [Deploy the solution](#deploy-the-solution)
+10. [Azure AI Search design](#azure-ai-search-design)
+11. [Security model](#security-model)
+12. [Operations and validation](#operations-and-validation)
+13. [Relevance evaluation and feedback](#relevance-evaluation-and-feedback)
+14. [Foundry agent integration](#foundry-agent-integration)
+15. [Sample prompts](#sample-prompts)
+16. [Preview limitations](#preview-limitations)
+17. [Cost and production scaling](#cost-and-production-scaling)
+18. [Additional references](#additional-references)
+19. [License](#license)
 
 ## Solution status
 
@@ -70,27 +71,33 @@ index name. All non-URL placeholders in this document map to
 
 ### Published endpoints
 
-Status checked on 2026-10-21 with the Azure CLI against resource group `m365-myaacoub`.
-Rows marked "Not published" are placeholders. Replace `<ui-host>` and `<api-host>` only
-after the apps are deployed and their hostnames are assigned.
+Status checked on 2026-10-22 against the live hosts. The UI and API run in the
+`caldova-aiscr-ui` and `caldova-aiscr-api` App Service apps, deployed by the GitHub
+workflows described in [deploy/README.md](deploy/README.md).
 
 | Endpoint | URL | Status |
 | --- | --- | --- |
 | Azure resource group | [m365-myaacoub](https://portal.azure.com/#@caldova37587778.onmicrosoft.com/resource/subscriptions/cf824570-a8ba-497a-a184-0a52f1830aa9/resourceGroups/m365-myaacoub/overview) | Exists (provisioning state Succeeded) |
-| Ionic web UI | `https://<ui-host>` | Not published. `app/ui` is not created yet. |
-| Agent page in the UI | `https://<ui-host>/agent` | Not published. Planned route for the Foundry agent page. |
-| Python API root | `https://<api-host>/api/v1` | Not published. `app/api` is not created yet. |
-| API Swagger UI | `https://<api-host>/docs` | Not published. FastAPI serves Swagger UI at this path after deployment. |
-| API ReDoc | `https://<api-host>/redoc` | Not published. |
-| OpenAPI document | `https://<api-host>/openapi.json` | Not published. Machine-readable contract for the UI and other clients. |
-| API health check | `https://<api-host>/api/v1/health` | Not published. |
+| Ionic web UI | [caldova-aiscr-ui.azurewebsites.net](https://caldova-aiscr-ui.azurewebsites.net/) | Live. Governance UI with the Microsoft logo, the agent button on every page and responsive navigation. |
+| Agent page in the UI | [/agent](https://caldova-aiscr-ui.azurewebsites.net/agent) | Live. Foundry agent page with sample prompts grouped by issue. |
+| Python API root | `https://caldova-aiscr-api.azurewebsites.net/api/v1` | Live. Requires a bearer token with the `Auditor` app role. |
+| API Swagger UI | [/docs](https://caldova-aiscr-api.azurewebsites.net/docs) | Live. |
+| API ReDoc | [/redoc](https://caldova-aiscr-api.azurewebsites.net/redoc) | Live. |
+| OpenAPI document | [/openapi.json](https://caldova-aiscr-api.azurewebsites.net/openapi.json) | Live. Machine-readable contract for the UI and other clients. |
+| API health check | [/api/v1/health](https://caldova-aiscr-api.azurewebsites.net/api/v1/health) | Live. Returns status, service name and version. |
 | Trusted Knowledge library | [Trusted Knowledge](https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub/Trusted%20Knowledge/Forms/AllItems.aspx) | Not provisioned yet. Created from `config/trusted-knowledge.json`. |
 | Trusted Knowledge Foundry agent | Not provisioned yet (`trusted-knowledge-agent`) | Pending `scripts/provision_foundry_agent.ps1`. |
 | Knowledge Hygiene dashboard | `.state/knowledge-hygiene/index.html` (local file) | Generated locally by the dashboard script. Not published. |
 
-Other apps in `m365-myaacoub`, including `caldova-aiscr-ui` and `caldova-aiscr-api`, are not
-linked here. They are not verified as part of this POC. Public requests to the
-`caldova-aiscr-*` hosts timed out during the check.
+The `caldova-aiscr-ui` and `caldova-aiscr-api` apps now run this solution. The approved
+deployment replaced their earlier code and app settings.
+
+## Solution guide
+
+The [solution guide](docs/SOLUTION-README.md) explains the Seagate problem statement, shows
+the architecture that addresses each of the three issues, and describes each solution in
+depth with links to the code, configuration and tests. It also states which capabilities
+are built, partly built or not built yet.
 
 ## Architecture
 
