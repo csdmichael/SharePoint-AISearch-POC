@@ -139,7 +139,7 @@ Column IDs are deterministic by internal name, and XML values are escaped.
 The publisher always regenerates from policy rather than trusting a stale export.
 It supports `-Title` for a versioned picker entry and `-PolicyPath` for a reviewed
 alternative policy.
-Custom descriptions must be between 1 and 128 characters, matching the
+Custom descriptions must be between 1 and 64 characters, matching the
 SharePoint site script registration limit.
 
 Microsoft documents list designs as immutable. Prefer publishing a new

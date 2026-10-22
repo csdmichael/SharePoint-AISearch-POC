@@ -2,7 +2,7 @@
 param(
     [Parameter(Mandatory)][uri]$AdminUrl,
     [ValidateNotNullOrEmpty()][string]$Title = 'Governed Knowledge',
-    [ValidateLength(1, 128)][string]$Description = 'Document library with 27 ownership, lifecycle, classification, lineage and governance metadata columns.',
+    [ValidateLength(1, 64)][string]$Description = 'Knowledge library with all 27 governance metadata columns.',
     [string]$PolicyPath = (Join-Path $PSScriptRoot '..\config\governance-policy.json')
 )
 

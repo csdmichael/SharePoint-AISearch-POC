@@ -134,7 +134,7 @@ function Get-SPOListDesign { $testState.ExistingDesigns }
 function Add-SPOSiteScript {
     param($Title, $Description, $Content)
     $testState.Calls.Add('AddSiteScript')
-    Assert-True ($Description.Length -le 128) 'Site script description fits the SharePoint limit'
+    Assert-True ($Description.Length -le 64) 'Site script description fits the SharePoint limit'
     Assert-True (($Content | ConvertFrom-Json).actions[0].templateType -eq 101) 'Publisher registers library schema'
     [pscustomobject]@{ Id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' }
 }
@@ -148,7 +148,7 @@ function Add-SPOListDesign {
 & $publisher -AdminUrl https://contoso-admin.sharepoint.com -WhatIf
 Assert-True ($testState.Calls.Count -eq 0) 'WhatIf performs no authentication or tenant changes'
 Assert-Throws { & $publisher -AdminUrl https://contoso.sharepoint.com } 'administration URL'
-Assert-Throws { & $publisher -AdminUrl https://contoso-admin.sharepoint.com -Description ('x' * 129) } 'Description'
+Assert-Throws { & $publisher -AdminUrl https://contoso-admin.sharepoint.com -Description ('x' * 65) } 'Description'
 $result = & $publisher -AdminUrl https://contoso-admin.sharepoint.com -Confirm:$false
 Assert-True ($result.ListDesignId -eq 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb' -and
     $result.SiteScriptId -eq 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa') 'Publisher returns management IDs'
