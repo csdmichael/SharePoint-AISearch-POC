@@ -1,0 +1,179 @@
+# Reusable per-component pipeline. Commands, runtimes and Azure names come from
+# deploy/components/<id>.json via scripts/deploy/deploy_tool.py; callers pass the component id.
+name: Component pipeline
+
+on:
+  workflow_call:
+    inputs:
+      component:
+        description: Component id under deploy/components, for example ui.
+        type: string
+        required: true
+      mode:
+        description: validate or deploy.
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    if: inputs.mode == 'validate'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read component metadata
+        id: info
+        run: |
+          set -euo pipefail
+          kind="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field kind)"
+          language="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field language.runtime || true)"
+          languageVersion="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field language.version || true)"
+          {
+            echo "kind=$kind"
+            echo "language=$language"
+            echo "languageVersion=$languageVersion"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node.js
+        if: steps.info.outputs.language == 'node'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "${{ steps.info.outputs.languageVersion }}"
+
+      - name: Set up Python
+        if: steps.info.outputs.language == 'python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "${{ steps.info.outputs.languageVersion }}"
+
+      - name: Install
+        run: |
+          set -euo pipefail
+          python3 scripts/deploy/deploy_tool.py run --component "${{ inputs.component }}" --phase install
+
+      - name: Unit test
+        run: |
+          set -euo pipefail
+          python3 scripts/deploy/deploy_tool.py run --component "${{ inputs.component }}" --phase unitTest
+
+      - name: Build
+        run: |
+          set -euo pipefail
+          python3 scripts/deploy/deploy_tool.py run --component "${{ inputs.component }}" --phase build
+
+      - name: End-to-end test
+        run: |
+          set -euo pipefail
+          python3 scripts/deploy/deploy_tool.py run --component "${{ inputs.component }}" --phase e2e
+
+  deploy:
+    if: inputs.mode == 'deploy'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: "deploy-${{ inputs.component }}"
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read component and deployment settings
+        id: info
+        run: |
+          set -euo pipefail
+          kind="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field kind)"
+          language="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field language.runtime || true)"
+          languageVersion="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field language.version || true)"
+          appName="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field azure.appName || true)"
+          bicepTemplate="$(python3 scripts/deploy/deploy_tool.py info --component "${{ inputs.component }}" --field infra.bicepTemplate)"
+          resourceGroup="$(python3 scripts/deploy/deploy_tool.py setting --field resourceGroup)"
+          location="$(python3 scripts/deploy/deploy_tool.py setting --field location)"
+          {
+            echo "kind=$kind"
+            echo "language=$language"
+            echo "languageVersion=$languageVersion"
+            echo "appName=$appName"
+            echo "bicepTemplate=$bicepTemplate"
+            echo "resourceGroup=$resourceGroup"
+            echo "location=$location"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node.js
+        if: steps.info.outputs.language == 'node'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "${{ steps.info.outputs.languageVersion }}"
+
+      - name: Install (node)
+        if: steps.info.outputs.language == 'node'
+        run: |
+          set -euo pipefail
+          python3 scripts/deploy/deploy_tool.py run --component "${{ inputs.component }}" --phase install
+
+      - name: Build (node)
+        if: steps.info.outputs.language == 'node'
+        run: |
+          set -euo pipefail
+          python3 scripts/deploy/deploy_tool.py run --component "${{ inputs.component }}" --phase build
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: "${{ vars.AZURE_CLIENT_ID }}"
+          tenant-id: "${{ vars.AZURE_TENANT_ID }}"
+          subscription-id: "${{ vars.AZURE_SUBSCRIPTION_ID }}"
+
+      - name: Render Bicep parameters
+        if: steps.info.outputs.kind == 'appService' || steps.info.outputs.kind == 'foundryAgent'
+        run: |
+          set -euo pipefail
+          python3 scripts/deploy/deploy_tool.py render --component "${{ inputs.component }}" --out "$RUNNER_TEMP/deploy/${{ inputs.component }}" --tool bicep
+
+      - name: Deploy Bicep template
+        if: steps.info.outputs.kind == 'appService' || steps.info.outputs.kind == 'foundryAgent'
+        env:
+          COMPONENT: "${{ inputs.component }}"
+          RESOURCE_GROUP: "${{ steps.info.outputs.resourceGroup }}"
+          TEMPLATE: "${{ steps.info.outputs.bicepTemplate }}"
+        run: |
+          set -euo pipefail
+          az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "${COMPONENT}-${{ github.run_number }}" \
+            --template-file "$TEMPLATE" \
+            --parameters "@$RUNNER_TEMP/deploy/$COMPONENT/bicep-params.json"
+
+      - name: Package app
+        if: steps.info.outputs.kind == 'appService'
+        run: |
+          set -euo pipefail
+          python3 scripts/deploy/deploy_tool.py package --component "${{ inputs.component }}" --out "$RUNNER_TEMP/deploy/${{ inputs.component }}"
+
+      - name: Deploy web app
+        if: steps.info.outputs.kind == 'appService'
+        env:
+          COMPONENT: "${{ inputs.component }}"
+          RESOURCE_GROUP: "${{ steps.info.outputs.resourceGroup }}"
+          APP_NAME: "${{ steps.info.outputs.appName }}"
+        run: |
+          set -euo pipefail
+          az webapp deploy --resource-group "$RESOURCE_GROUP" --name "$APP_NAME" --src-path "$RUNNER_TEMP/deploy/$COMPONENT/$COMPONENT.zip" --type zip --clean true --restart true
+
+      - name: Health check
+        if: steps.info.outputs.kind == 'appService'
+        run: |
+          set -euo pipefail
+          python3 scripts/deploy/deploy_tool.py health --component "${{ inputs.component }}"
+
+      - name: Upsert Foundry agent
+        if: steps.info.outputs.kind == 'foundryAgent'
+        run: |
+          set -euo pipefail
+          python3 scripts/deploy/deploy_tool.py upsert-foundry --component "${{ inputs.component }}"

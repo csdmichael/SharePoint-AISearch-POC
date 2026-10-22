@@ -16,7 +16,7 @@
   ],
   "language": {"runtime": "python", "version": "3.13"},
   "validate": {
-    "install": [],
+    "install": ["python", "-m", "pip", "install", "python-docx"],
     "unitTest": ["python", "-m", "unittest", "tests.test_trusted_knowledge"]
   },
   "provision": {

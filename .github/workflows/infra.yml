@@ -1,0 +1,38 @@
+name: Infrastructure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - infra/**
+      - deploy/settings.json
+      - scripts/deploy/**
+      - .github/workflows/**
+  pull_request:
+    paths:
+      - infra/**
+      - deploy/settings.json
+      - scripts/deploy/**
+      - .github/workflows/**
+
+permissions:
+  contents: read
+
+jobs:
+  validate-iac:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bicep CLI
+        run: |
+          set -euo pipefail
+          az bicep install || true
+
+      - name: Validate IaC
+        run: |
+          set -euo pipefail
+          python3 scripts/deploy/deploy_tool.py validate-iac

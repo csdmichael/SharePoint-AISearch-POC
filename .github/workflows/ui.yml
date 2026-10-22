@@ -1,0 +1,42 @@
+name: UI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - app/ui/**
+      - deploy/settings.json
+      - deploy/components/ui.json
+      - infra/**
+      - scripts/ci/**
+      - scripts/deploy/**
+      - .github/workflows/**
+  pull_request:
+    paths:
+      - app/ui/**
+      - deploy/settings.json
+      - deploy/components/ui.json
+      - infra/**
+      - scripts/ci/**
+      - scripts/deploy/**
+      - .github/workflows/**
+
+jobs:
+  validate:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/_component.yml
+    with:
+      component: ui
+      mode: validate
+
+  deploy:
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.AZURE_CLIENT_ID != ''
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/_component.yml
+    with:
+      component: ui
+      mode: deploy

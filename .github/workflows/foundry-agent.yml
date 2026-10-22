@@ -1,0 +1,44 @@
+name: Foundry agent
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - app/api/config/**
+      - app/api/app/agent/**
+      - deploy/settings.json
+      - deploy/components/foundry-agent.json
+      - infra/**
+      - scripts/ci/**
+      - scripts/deploy/**
+      - .github/workflows/**
+  pull_request:
+    paths:
+      - app/api/config/**
+      - app/api/app/agent/**
+      - deploy/settings.json
+      - deploy/components/foundry-agent.json
+      - infra/**
+      - scripts/ci/**
+      - scripts/deploy/**
+      - .github/workflows/**
+
+jobs:
+  validate:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/_component.yml
+    with:
+      component: foundry-agent
+      mode: validate
+
+  deploy:
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.AZURE_CLIENT_ID != ''
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/_component.yml
+    with:
+      component: foundry-agent
+      mode: deploy

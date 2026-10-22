@@ -1,0 +1,48 @@
+name: API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - app/api/**
+      - config/trusted-knowledge.json
+      - config/governance-policy.json
+      - config/governance-vocabulary.json
+      - deploy/settings.json
+      - deploy/components/api.json
+      - infra/**
+      - scripts/ci/**
+      - scripts/deploy/**
+      - .github/workflows/**
+  pull_request:
+    paths:
+      - app/api/**
+      - config/trusted-knowledge.json
+      - config/governance-policy.json
+      - config/governance-vocabulary.json
+      - deploy/settings.json
+      - deploy/components/api.json
+      - infra/**
+      - scripts/ci/**
+      - scripts/deploy/**
+      - .github/workflows/**
+
+jobs:
+  validate:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/_component.yml
+    with:
+      component: api
+      mode: validate
+
+  deploy:
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.AZURE_CLIENT_ID != ''
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/_component.yml
+    with:
+      component: api
+      mode: deploy

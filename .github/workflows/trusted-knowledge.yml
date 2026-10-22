@@ -1,0 +1,33 @@
+name: Trusted Knowledge
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/trusted_knowledge/**
+      - tests/**
+      - config/trusted-knowledge.json
+      - config/governance-policy.json
+      - config/governance-vocabulary.json
+      - deploy/components/trusted-knowledge.json
+      - scripts/ci/**
+      - .github/workflows/**
+  pull_request:
+    paths:
+      - scripts/trusted_knowledge/**
+      - tests/**
+      - config/trusted-knowledge.json
+      - config/governance-policy.json
+      - config/governance-vocabulary.json
+      - deploy/components/trusted-knowledge.json
+      - scripts/ci/**
+      - .github/workflows/**
+
+jobs:
+  validate:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/_component.yml
+    with:
+      component: trusted-knowledge
+      mode: validate
