@@ -30,7 +30,8 @@ $template = .\scripts\Publish-KnowledgeLibraryTemplate.ps1 `
 $template
 ```
 
-Interactive authentication is handled by `Connect-SPOService`. The script
+Interactive authentication is handled by `Connect-SPOService` using modern
+authentication in the system browser, avoiding native Windows broker dependencies. The script
 generates the definition directly from the current policy, registers it with
 `Add-SPOSiteScript`, then exposes it using `Add-SPOListDesign`. Template type
 **101** makes it a document library template. The template is available
@@ -138,6 +139,8 @@ Column IDs are deterministic by internal name, and XML values are escaped.
 The publisher always regenerates from policy rather than trusting a stale export.
 It supports `-Title` for a versioned picker entry and `-PolicyPath` for a reviewed
 alternative policy.
+Custom descriptions must be between 1 and 128 characters, matching the
+SharePoint site script registration limit.
 
 Microsoft documents list designs as immutable. Prefer publishing a new
 versioned title; after migration, remove the old picker entry with

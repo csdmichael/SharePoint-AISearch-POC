@@ -2,7 +2,7 @@
 param(
     [Parameter(Mandatory)][uri]$AdminUrl,
     [ValidateNotNullOrEmpty()][string]$Title = 'Governed Knowledge',
-    [string]$Description = 'Document library with all 27 knowledge ownership, lifecycle, classification, lineage and governance columns.',
+    [ValidateLength(1, 128)][string]$Description = 'Document library with 27 ownership, lifecycle, classification, lineage and governance metadata columns.',
     [string]$PolicyPath = (Join-Path $PSScriptRoot '..\config\governance-policy.json')
 )
 
@@ -18,7 +18,7 @@ if (-not $PSCmdlet.ShouldProcess($AdminUrl, "Publish document library template '
 }
 
 Import-Module Microsoft.Online.SharePoint.PowerShell -ErrorAction Stop
-Connect-SPOService -Url $AdminUrl.AbsoluteUri
+Connect-SPOService -Url $AdminUrl.AbsoluteUri -ModernAuth $true -UseSystemBrowser $true
 $existing = @(Get-SPOListDesign | Where-Object { $_.Title -eq $Title })
 if ($existing.Count) {
     throw "A template named '$Title' already exists. Use a versioned title or follow the documented replacement steps."
