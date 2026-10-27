@@ -45,7 +45,7 @@ export class SessionService {
     this.healthCheck?.unsubscribe();
     this.healthCheck = this.api.health().subscribe({
       next: (health) => {
-        this.mode.set(health.mode);
+        this.mode.set(health.mode ?? null);
         this.apiStatus.set('reachable');
       },
       error: () => {

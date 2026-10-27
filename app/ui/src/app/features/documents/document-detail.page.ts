@@ -30,6 +30,7 @@ const FIELD_DEFINITIONS: FieldDefinition[] = [
   { key: 'processArea', kind: 'text' },
   { key: 'sensitivity', kind: 'text' },
   { key: 'businessUnit', kind: 'text' },
+  { key: 'knowledgeCategory', kind: 'text' },
   { key: 'knowledgeOwner', kind: 'text' },
   { key: 'ownerDisplayName', kind: 'text' },
   { key: 'lifecycleStatus', kind: 'status', group: 'lifecycleStatus' },
@@ -116,7 +117,8 @@ export class DocumentDetailPage {
       case 'boolean':
         return { ...base, text: this.i18n.text(value === true ? 'document.yes' : value === false ? 'document.no' : 'states.notAvailable') };
       case 'list': {
-        const items = Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+        const listed: unknown = value;
+        const items = Array.isArray(listed) ? listed.filter((item): item is string => typeof item === 'string') : [];
         return { ...base, text: items.length === 0 ? this.i18n.text('document.noneListed') : '', list: items };
       }
       case 'status': {

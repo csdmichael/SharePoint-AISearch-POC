@@ -3,7 +3,7 @@ import { IonContent, IonIcon, IonLabel, IonSegment, IonSegmentButton } from '@io
 import { Observable } from 'rxjs';
 import { ApiError, toApiError } from '../../core/api/api-error';
 import { ApiService } from '../../core/api/api.service';
-import { NotificationItem, NotificationPage, NotificationResult, ResponseMode } from '../../core/api/models/api.models';
+import { NotificationItem, NotificationPage, ResponseMode } from '../../core/api/models/api.models';
 import { ConfigService } from '../../core/config/config.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { SessionService, ViewState, resolveViewState } from '../../core/session/session.service';
@@ -35,7 +35,7 @@ export class NotificationsPage {
   readonly status = signal(this.config.pages.notifications.defaultStatus);
   readonly outbox = new CursorList<NotificationItem, NotificationPage>({
     key: () => (this.session.gate() === 'ready' ? this.status() : undefined),
-    fetch: (key, cursor) => this.api.notifications(key, cursor),
+    fetch: (key) => this.api.notifications(key),
   });
 
   readonly view = computed<ViewState>(() =>
@@ -90,9 +90,15 @@ export class NotificationsPage {
   }
 
   recipientText(item: NotificationItem): string {
-    return item.recipient
-      ? this.i18n.text('notifications.recipientFormat', { name: item.recipient.displayName, upn: item.recipient.upn })
-      : this.i18n.text('states.notAvailable');
+    if (item.ownerName && item.ownerUpn) {
+      return this.i18n.text('notifications.recipientFormat', { name: item.ownerName, upn: item.ownerUpn });
+    }
+    return item.to.join(', ') || this.i18n.text('states.notAvailable');
+  }
+
+  /** The most recent change to a notification: sent, else approved, else created. */
+  lastChangedAt(item: NotificationItem): string | null {
+    return item.sentAt ?? item.approvedAt ?? item.createdAt;
   }
 
   select(item: NotificationItem): void {
@@ -120,16 +126,16 @@ export class NotificationsPage {
     this.outbox.reload();
   }
 
-  private runAction(id: string, call: () => Observable<NotificationResult>): void {
+  private runAction(id: string, call: () => Observable<NotificationItem>): void {
     if (this.acting()) {
       return;
     }
     this.acting.set(id);
     this.actionError.set(null);
     call().subscribe({
-      next: (result) => {
-        this.overrides.update((current) => ({ ...current, [result.notification.id]: result.notification }));
-        this.actionMode.set(result.mode);
+      next: (notification) => {
+        this.overrides.update((current) => ({ ...current, [notification.id]: notification }));
+        this.actionMode.set(notification.mode);
         this.acting.set(null);
       },
       error: (error: unknown) => {

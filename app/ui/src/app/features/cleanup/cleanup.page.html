@@ -37,6 +37,8 @@
       </button>
     </div>
 
+    <p class="muted draft-hint">{{ 'cleanup.draftHint' | t }}</p>
+
     @if (draftSummary(); as summary) {
       <div class="inline-note draft-result" role="status" data-testid="draft-result">
         @if (draftBadge(); as badge) {
@@ -71,7 +73,13 @@
                 @for (member of record.members; track member.id) {
                   <tr [class.is-selected]="isSelected(member.id)" data-testid="cleanup-row" [attr.data-document-id]="member.id">
                     <td class="select-column">
-                      <input type="checkbox" [checked]="isSelected(member.id)" [attr.aria-label]="selectLabel(member)" (change)="toggle(member.id)" />
+                      <input
+                        type="checkbox"
+                        [checked]="isSelected(member.id)"
+                        [disabled]="!isDraftable(record, member.id)"
+                        [attr.aria-label]="selectLabel(member)"
+                        (change)="toggle(member.id)"
+                      />
                     </td>
                     <td>
                       <span>{{ member.name }}</span>
@@ -88,6 +96,7 @@
                     <input
                       type="checkbox"
                       [checked]="isSelected(record.document.id)"
+                      [disabled]="!isDraftable(record, record.document.id)"
                       [attr.aria-label]="selectLabel(record.document)"
                       (change)="toggle(record.document.id)"
                     />

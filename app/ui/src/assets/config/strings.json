@@ -20,6 +20,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "explorer": "Explorer",
+    "documents": "Documents",
     "access": "Access by user",
     "cleanup": "Cleanup",
     "notifications": "Notifications",
@@ -33,6 +34,7 @@
   "pages": {
     "dashboard": "Dashboard",
     "explorer": "Explorer",
+    "documents": "Documents",
     "access": "Access by user",
     "cleanup": "Cleanup",
     "notifications": "Notifications",
@@ -112,6 +114,11 @@
     "detailHeading": "Item details",
     "detailEmpty": "Select a folder or file to see its details.",
     "selectItemHint": "Select a folder or file to view its permissions.",
+    "treeTruncated": "SharePoint returned only the first items of this folder, so the list is incomplete.",
+    "uniquePermissions": "Unique permissions",
+    "inheritsFrom": "Inherits permissions from {path}",
+    "accountDisabled": "Account disabled",
+    "detailPermissions": "Permissions",
     "filterGrantedVia": "Granted via",
     "filterRole": "Role",
     "filterAll": "All",
@@ -142,6 +149,8 @@
     "itemsEmpty": "This user has no item access in the returned data.",
     "selectUser": "Select a user to see the items they can access.",
     "rowCount": "{count} items",
+    "external": "External",
+    "inheritedFrom": "Inherited from {path}",
     "columns": {
       "name": "Name",
       "path": "Path",
@@ -165,11 +174,13 @@
     "draftSummary": "Drafted {count} notifications.",
     "draftDryRunSummary": "Dry run: {count} notifications were drafted but not saved.",
     "viewNotifications": "Open the outbox",
+    "draftHint": "Notifications can be drafted for duplicate copies and for expired or review-overdue documents.",
     "clusterTitle": "Duplicate cluster: canonical is {name}",
     "canonicalOf": "Canonical: {name}",
-    "expiryDetail": "Expires {date}, {count} days past expiry",
+    "expiryDetail": "Expired {date}, {count} days past expiry",
+    "reviewOverdueDetail": "Review due {date}, {count} days overdue",
     "anomalyDetail": "Score {score}. Features: {contributions}",
-    "exposureDetail": "Exposure {exposure}, sensitivity {sensitivity}",
+    "exposureDetail": "{detail} (severity {severity})",
     "selectRow": "Select {name}",
     "columns": {
       "document": "Document",
@@ -181,6 +192,7 @@
     "statuses": {
       "draft": "Draft",
       "approved": "Approved",
+      "dryRunRecorded": "Dry run recorded",
       "sent": "Sent",
       "failed": "Failed"
     },
@@ -212,6 +224,7 @@
     "characterCount": "{count} of {max} characters",
     "tooLong": "Messages can have at most {max} characters.",
     "sending": "Waiting for the agent",
+    "send": "Send",
     "you": "You",
     "assistant": "Foundry agent",
     "intent": "Intent",
@@ -239,6 +252,7 @@
       "processArea": "Process area",
       "sensitivity": "Sensitivity",
       "businessUnit": "Business unit",
+      "knowledgeCategory": "Knowledge category",
       "knowledgeOwner": "Knowledge owner",
       "ownerDisplayName": "Owner",
       "lifecycleStatus": "Lifecycle status",
@@ -257,18 +271,35 @@
       "trustReasons": "Trust reasons"
     }
   },
+  "documents": {
+    "categoryLabel": "Knowledge category",
+    "allCategories": "All categories",
+    "countText": "{count} documents",
+    "empty": "No documents are in this category.",
+    "columns": {
+      "title": "Title",
+      "category": "Knowledge category",
+      "artifactId": "Artifact ID",
+      "lifecycle": "Lifecycle",
+      "trustScore": "Trust score",
+      "owner": "Owner",
+      "library": "Library"
+    }
+  },
   "values": {
     "grantedVia": {
       "direct": "Direct",
       "inherited": "Inherited",
-      "group": "Group",
+      "entraGroup": "Entra group",
+      "sharePointGroup": "Site group",
       "sharingLink": "Sharing link",
-      "siteGroup": "Site group"
+      "everyone": "Everyone"
     },
     "principalType": {
       "user": "User",
-      "group": "Group",
-      "siteGroup": "Site group",
+      "entraGroup": "Entra group",
+      "sharePointGroup": "Site group",
+      "claims": "Everyone (claims)",
       "sharingLink": "Sharing link",
       "other": "Other"
     },

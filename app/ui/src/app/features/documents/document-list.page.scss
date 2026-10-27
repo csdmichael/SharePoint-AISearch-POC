@@ -1,0 +1,32 @@
+.filters {
+  margin-bottom: var(--space-sm);
+}
+
+.filter {
+  flex: 1 1 10rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.row-link {
+  color: var(--surface-accent);
+}
+
+.load-more {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--surface-accent);
+  border-radius: var(--radius);
+  background: var(--surface-card);
+  color: var(--surface-accent);
+  font: inherit;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}

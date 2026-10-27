@@ -1,30 +1,49 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, throwError, timeout } from 'rxjs';
+import { Observable, catchError, map, of, throwError, timeout } from 'rxjs';
 import { ConfigService } from '../config/config.service';
 import { EndpointKey } from '../config/config.models';
 import { SKIP_AUTH } from '../auth/auth.interceptor';
 import { toApiError } from './api-error';
 import {
+  agentReply,
+  anomalyRecords,
+  cursorPage,
+  duplicateRecords,
+  exposureRecords,
+  expiryRecords,
+  unpaged,
+} from './api.mappers';
+import {
   AgentMessageRequest,
+  AgentMessageResponse,
   AgentPrompt,
   AgentPromptsResponse,
   AgentReply,
+  AnomaliesResponse,
+  ChildrenResponse,
   CleanupRecord,
   DocumentDetail,
+  DocumentListResponse,
+  DocumentPage,
   DraftRequest,
   DraftResult,
-  DriveItem,
+  DuplicatesResponse,
+  ExpiryResponse,
+  ExposureResponse,
   HealthResponse,
   HygieneFindingDetail,
   HygieneSummary,
-  Library,
+  LibraryList,
+  NotificationItem,
+  NotificationListResponse,
   NotificationPage,
-  NotificationResult,
   Page,
-  PermissionEntry,
+  PermissionsResponse,
   PolicyResponse,
-  UserAccessItem,
+  UserAccessRecord,
+  UserItemsResponse,
+  UserSearchResponse,
   UserSearchResult,
 } from './models/api.models';
 
@@ -56,69 +75,96 @@ export class ApiService {
     return this.send<HygieneFindingDetail>('GET', this.endpoint('hygieneFinding', { id }));
   }
 
-  libraries(cursor: string | null = null): Observable<Page<Library>> {
-    return this.send<Page<Library>>('GET', this.endpoint('libraries'), { params: this.paging(cursor) });
+  libraries(): Observable<LibraryList> {
+    return this.send<LibraryList>('GET', this.endpoint('libraries'));
   }
 
-  libraryChildren(libraryId: string, parentId: string | null, cursor: string | null = null): Observable<Page<DriveItem>> {
-    const params = { ...this.paging(cursor) };
-    if (parentId) {
-      params['parentId'] = parentId;
-    }
-    return this.send<Page<DriveItem>>('GET', this.endpoint('libraryChildren', { id: libraryId }), { params });
+  /** Children of a library, or of one folder when folderId is set (the API names it folderId). */
+  libraryChildren(libraryId: string, folderId: string | null): Observable<ChildrenResponse> {
+    const params = folderId ? { folderId } : undefined;
+    return this.send<ChildrenResponse>('GET', this.endpoint('libraryChildren', { id: libraryId }), { params });
   }
 
-  itemPermissions(itemId: string): Observable<PermissionEntry[]> {
-    return this.send<PermissionEntry[]>('GET', this.endpoint('itemPermissions', { id: itemId }));
+  itemPermissions(itemId: string): Observable<PermissionsResponse> {
+    return this.send<PermissionsResponse>('GET', this.endpoint('itemPermissions', { id: itemId }));
   }
 
   searchUsers(query: string): Observable<UserSearchResult[]> {
-    return this.send<UserSearchResult[]>('GET', this.endpoint('accessUsers'), { params: { query } });
+    return this.send<UserSearchResponse>('GET', this.endpoint('accessUsers'), { params: { query } }).pipe(
+      map((response) => response.users),
+    );
   }
 
-  userItems(userKey: string, cursor: string | null = null): Observable<Page<UserAccessItem>> {
-    return this.send<Page<UserAccessItem>>('GET', this.endpoint('accessUserItems', { key: userKey }), {
-      params: this.paging(cursor),
-    });
+  userItems(userKey: string, cursor: string | null = null): Observable<Page<UserAccessRecord>> {
+    return this.send<UserItemsResponse>('GET', this.endpoint('accessUserItems', { key: userKey }), {
+      params: this.pageParams(cursor),
+    }).pipe(map((response) => cursorPage(response)));
+  }
+
+  /** Governance documents in one knowledge category ("" lists all), page by page. */
+  documents(category: string, cursor: string | null = null): Observable<DocumentPage> {
+    const params: Record<string, string> = { ...this.pageParams(cursor) };
+    if (category) {
+      params['knowledgeCategory'] = category;
+    }
+    return this.send<DocumentListResponse>('GET', this.endpoint('documents'), { params }).pipe(
+      map((response) => ({
+        ...cursorPage(response),
+        total: response.total,
+        knowledgeCategories: response.knowledgeCategories,
+      })),
+    );
   }
 
   document(id: string): Observable<DocumentDetail> {
     return this.send<DocumentDetail>('GET', this.endpoint('document', { id }));
   }
 
-  cleanup(segment: string, cursor: string | null = null): Observable<Page<CleanupRecord>> {
-    return this.send<Page<CleanupRecord>>('GET', this.endpoint('cleanup', { segment }), { params: this.paging(cursor) });
-  }
-
-  notifications(status: string | null, cursor: string | null = null): Observable<NotificationPage> {
-    const params = { ...this.paging(cursor) };
-    if (status) {
-      params['status'] = status;
+  /** One cleanup segment. Each analytics route has its own shape, so every segment becomes one record list. */
+  cleanup(segment: string): Observable<Page<CleanupRecord>> {
+    const url = this.endpoint('cleanup', { segment });
+    switch (segment) {
+      case 'duplicates':
+        return this.send<DuplicatesResponse>('GET', url).pipe(map((response) => unpaged(duplicateRecords(response))));
+      case 'expiry':
+        return this.send<ExpiryResponse>('GET', url).pipe(map((response) => unpaged(expiryRecords(response))));
+      case 'anomalies':
+        return this.send<AnomaliesResponse>('GET', url).pipe(map((response) => unpaged(anomalyRecords(response))));
+      case 'exposure':
+        return this.send<ExposureResponse>('GET', url).pipe(map((response) => unpaged(exposureRecords(response))));
+      default:
+        return of(unpaged<CleanupRecord>([]));
     }
-    return this.send<NotificationPage>('GET', this.endpoint('notifications'), { params });
   }
 
-  createDrafts(request: DraftRequest): Observable<DraftResult> {
+  notifications(status: string | null): Observable<NotificationPage> {
+    return this.send<NotificationListResponse>('GET', this.endpoint('notifications'), {
+      params: status ? { status } : undefined,
+    }).pipe(map((response) => ({ ...unpaged(response.items), total: response.total, mode: response.mode })));
+  }
+
+  createDrafts(templateId: string, documentIds: string[]): Observable<DraftResult> {
+    const request: DraftRequest = { templateId, documentIds };
     return this.send<DraftResult>('POST', this.endpoint('notificationDrafts'), { body: request });
   }
 
-  approveNotification(id: string): Observable<NotificationResult> {
-    return this.send<NotificationResult>('POST', this.endpoint('notificationApprove', { id }));
+  approveNotification(id: string): Observable<NotificationItem> {
+    return this.send<NotificationItem>('POST', this.endpoint('notificationApprove', { id }));
   }
 
-  sendNotification(id: string): Observable<NotificationResult> {
-    return this.send<NotificationResult>('POST', this.endpoint('notificationSend', { id }));
+  sendNotification(id: string): Observable<NotificationItem> {
+    return this.send<NotificationItem>('POST', this.endpoint('notificationSend', { id }));
   }
 
   agentPrompts(): Observable<AgentPromptsResponse> {
     return this.send<AgentPromptsResponse>('GET', this.config.app.apiBaseUrl.replace(/\/+$/, '') + this.config.agent.promptsPath);
   }
 
-  agentMessage(message: string): Observable<AgentReply> {
-    const request: AgentMessageRequest = { message };
-    return this.send<AgentReply>('POST', this.config.app.apiBaseUrl.replace(/\/+$/, '') + this.config.agent.messagesPath, {
+  agentMessage(prompt: string): Observable<AgentReply> {
+    const request: AgentMessageRequest = { prompt };
+    return this.send<AgentMessageResponse>('POST', this.config.app.apiBaseUrl.replace(/\/+$/, '') + this.config.agent.messagesPath, {
       body: request,
-    });
+    }).pipe(map((response) => agentReply(response)));
   }
 
   private endpoint(key: EndpointKey, values: Record<string, string> = {}): string {
@@ -133,12 +179,9 @@ export class ApiService {
     return this.config.app.apiBaseUrl.replace(/\/+$/, '') + path;
   }
 
-  private paging(cursor: string | null): Record<string, string> {
-    const params: Record<string, string> = { pageSize: String(this.config.app.pageSize) };
-    if (cursor) {
-      params['cursor'] = cursor;
-    }
-    return params;
+  /** Page parameters for routes that page by number. The first page is page 1. */
+  private pageParams(cursor: string | null): Record<string, string> {
+    return { pageSize: String(this.config.app.pageSize), page: cursor ?? '1' };
   }
 
   private send<T>(method: 'GET' | 'POST', url: string, options: SendOptions = {}): Observable<T> {

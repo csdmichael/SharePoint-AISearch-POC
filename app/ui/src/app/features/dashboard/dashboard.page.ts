@@ -70,13 +70,13 @@ export class DashboardPage {
     return data.policy.hygiene.metrics.map((metric) => ({
       key: metric.key,
       label: metric.label,
-      value: data.hygiene.metrics[metric.key] ?? null,
+      value: data.hygiene.metrics.find((entry) => entry.key === metric.key)?.value ?? null,
     }));
   });
 
   readonly findings = computed<HygieneFinding[]>(() => this.summary.value()?.hygiene.findings ?? []);
   readonly generatedAt = computed(() => {
-    const value = this.summary.value()?.hygiene.generatedAt;
+    const value = this.summary.value()?.hygiene.asOfDate;
     return value ? this.i18n.text('dashboard.generatedAt', { date: this.i18n.date(value) }) : null;
   });
 

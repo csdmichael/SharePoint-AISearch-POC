@@ -7,6 +7,7 @@
   "items": [
     { "id": "dashboard", "route": "/dashboard", "labelKey": "nav.dashboard", "icon": "speedometer-outline", "group": "main" },
     { "id": "explorer", "route": "/explorer", "labelKey": "nav.explorer", "icon": "folder-open-outline", "group": "main" },
+    { "id": "documents", "route": "/documents", "labelKey": "nav.documents", "icon": "documents-outline", "group": "main" },
     { "id": "access", "route": "/access/by-user", "labelKey": "nav.access", "icon": "key-outline", "group": "governance" },
     { "id": "cleanup", "route": "/cleanup", "labelKey": "nav.cleanup", "icon": "trash-bin-outline", "group": "governance" },
     { "id": "notifications", "route": "/notifications", "labelKey": "nav.notifications", "icon": "notifications-outline", "group": "governance" },

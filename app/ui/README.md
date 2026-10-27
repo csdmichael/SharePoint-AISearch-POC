@@ -1,6 +1,6 @@
 # SharePoint Knowledge Governance UI
 
-Ionic and Angular web application for the SharePoint Knowledge Governance POC, providing an access and permission explorer, hygiene cleanup, and Microsoft Foundry agent assistance.
+Ionic and Angular web application for the SharePoint Knowledge Governance POC, providing an access and permission explorer, a document list filtered by knowledge category, hygiene cleanup, and Microsoft Foundry agent assistance.
 
 ## Local Development
 

@@ -3,7 +3,7 @@ import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IonContent, IonIcon, IonSelect, IonSelectOption } from '@ionic/angular';
 import { ApiError, asApiError, toApiError } from '../../core/api/api-error';
 import { ApiService } from '../../core/api/api.service';
-import { DriveItem, Library, PermissionEntry, PermissionMember } from '../../core/api/models/api.models';
+import { DriveItem, Library, MemberView, PermissionEntry, PermissionWarning } from '../../core/api/models/api.models';
 import { ConfigService } from '../../core/config/config.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { LayoutService } from '../../core/layout/layout.service';
@@ -15,14 +15,18 @@ import { safeHttpUrl } from '../../shared/util/url';
 
 interface TreeBranch {
   items: DriveItem[];
-  nextCursor: string | null;
+  truncated: boolean;
   loading: boolean;
   error: ApiError | null;
 }
 
-type TreeRow =
-  | { type: 'item'; item: DriveItem; depth: number }
-  | { type: 'more'; parentKey: string; depth: number };
+interface TreeRow {
+  item: DriveItem;
+  depth: number;
+}
+
+/** A permission entry with the row key used for selection. The API does not number its entries. */
+type PermissionRow = PermissionEntry & { id: string };
 
 const ROOT_KEY = '';
 
@@ -75,13 +79,10 @@ export class ExplorerPage {
         return;
       }
       for (const item of branch.items) {
-        rows.push({ type: 'item', item, depth });
+        rows.push({ item, depth });
         if (item.kind === 'folder' && expanded.has(item.id)) {
           walk(item.id, depth + 1);
         }
-      }
-      if (branch.nextCursor) {
-        rows.push({ type: 'more', parentKey, depth });
       }
     };
     walk(ROOT_KEY, 0);
@@ -108,33 +109,38 @@ export class ExplorerPage {
   readonly selectedPermissionId = signal<string | null>(null);
   readonly expandedPrincipals = signal<ReadonlySet<string>>(new Set());
 
-  readonly grantedViaOptions = computed(() => distinct((this.permissions.value() ?? []).map((entry) => entry.grantedVia)));
-  readonly roleOptions = computed(() => distinct((this.permissions.value() ?? []).map((entry) => entry.role)));
-  readonly filteredPermissions = computed<PermissionEntry[]>(() => {
+  readonly entries = computed<PermissionRow[]>(() =>
+    (this.permissions.value()?.entries ?? []).map((entry, index) => ({ ...entry, id: String(index) })),
+  );
+  readonly permissionWarnings = computed<PermissionWarning[]>(() => this.permissions.value()?.warnings ?? []);
+  readonly grantedViaOptions = computed(() => distinct(this.entries().map((entry) => entry.grantedVia)));
+  readonly roleOptions = computed(() => distinct(this.entries().map((entry) => entry.role)));
+  readonly filteredPermissions = computed<PermissionRow[]>(() => {
     const grantedVia = this.grantedViaFilter();
     const role = this.roleFilter();
-    return (this.permissions.value() ?? []).filter(
+    return this.entries().filter(
       (entry) => (grantedVia === '' || entry.grantedVia === grantedVia) && (role === '' || entry.role === role),
     );
   });
   readonly permissionView = computed<ViewState>(() => {
-    const total = this.permissions.value()?.length ?? 0;
+    const total = this.entries().length;
     return resolveViewState(this.session.gate(), {
       loading: this.permissions.isLoading(),
       error: asApiError(this.permissions.error()),
       empty: this.selectedItem() !== null && total === 0,
     });
   });
-  readonly selectedPermission = computed<PermissionEntry | null>(
-    () => this.permissions.value()?.find((entry) => entry.id === this.selectedPermissionId()) ?? null,
+  readonly selectedPermission = computed<PermissionRow | null>(
+    () => this.entries().find((entry) => entry.id === this.selectedPermissionId()) ?? null,
   );
+  readonly treeTruncated = computed(() => Object.values(this.branches()).some((branch) => branch.truncated));
 
   selectLibrary(library: Library): void {
     this.selectedLibrary.set(library);
     this.branches.set({});
     this.expandedFolders.set(new Set());
     this.selectedItem.set(null);
-    this.loadBranch(ROOT_KEY, null, null);
+    this.loadBranch(ROOT_KEY, null);
   }
 
   reloadLibraries(): void {
@@ -145,7 +151,7 @@ export class ExplorerPage {
   retryRoot(): void {
     const library = this.selectedLibrary();
     if (library) {
-      this.loadBranch(ROOT_KEY, null, null);
+      this.loadBranch(ROOT_KEY, null);
     }
   }
 
@@ -154,7 +160,7 @@ export class ExplorerPage {
       this.retryRoot();
       return;
     }
-    this.loadBranch(key, key, null);
+    this.loadBranch(key, key);
   }
 
   selectValue(event: { detail: { value?: unknown } }): string {
@@ -163,7 +169,7 @@ export class ExplorerPage {
   }
 
   rowKey(row: TreeRow): string {
-    return row.type === 'item' ? `item:${row.item.id}` : `more:${row.parentKey}`;
+    return row.item.id;
   }
 
   toggleFolder(item: DriveItem): void {
@@ -176,16 +182,8 @@ export class ExplorerPage {
     next.add(item.id);
     this.expandedFolders.set(next);
     if (!this.branches()[item.id]) {
-      this.loadBranch(item.id, item.id, null);
+      this.loadBranch(item.id, item.id);
     }
-  }
-
-  loadMore(parentKey: string): void {
-    const branch = this.branches()[parentKey];
-    if (!branch?.nextCursor) {
-      return;
-    }
-    this.loadBranch(parentKey, parentKey === ROOT_KEY ? null : parentKey, branch.nextCursor);
   }
 
   selectItem(item: DriveItem): void {
@@ -194,11 +192,11 @@ export class ExplorerPage {
     this.expandedPrincipals.set(new Set());
   }
 
-  selectPermission(entry: PermissionEntry): void {
+  selectPermission(entry: PermissionRow): void {
     this.selectedPermissionId.set(entry.id);
   }
 
-  togglePrincipal(entry: PermissionEntry): void {
+  togglePrincipal(entry: PermissionRow): void {
     const next = new Set(this.expandedPrincipals());
     if (next.has(entry.id)) {
       next.delete(entry.id);
@@ -216,7 +214,7 @@ export class ExplorerPage {
     return this.selectedItem()?.id === item.id;
   }
 
-  isPrincipalExpanded(entry: PermissionEntry): boolean {
+  isPrincipalExpanded(entry: PermissionRow): boolean {
     return this.expandedPrincipals().has(entry.id);
   }
 
@@ -236,8 +234,12 @@ export class ExplorerPage {
     return this.display.label('principalType', value);
   }
 
-  memberLine(member: PermissionMember): string {
-    const parts = [member.displayName, this.permissionTypeLabel(member.principalType), member.upn ?? ''].filter((part) => part !== '');
+  memberLine(member: MemberView): string {
+    const parts = [
+      member.displayName,
+      member.userPrincipalName ?? '',
+      member.accountEnabled === false ? this.i18n.text('explorer.accountDisabled') : '',
+    ].filter((part) => part !== '');
     return parts.join(this.i18n.text('explorer.separator'));
   }
 
@@ -253,28 +255,36 @@ export class ExplorerPage {
     return bytes === null ? this.i18n.text('states.notAvailable') : this.i18n.text('explorer.sizeBytes', { count: this.i18n.number(bytes) });
   }
 
-  private loadBranch(key: string, parentId: string | null, cursor: string | null): void {
+  /** Whether the selected item has its own permissions or inherits them, and from which item. */
+  scopeText(): string {
+    const inheritance = this.permissions.value()?.inheritance;
+    if (inheritance?.hasUniquePermissions) {
+      return this.i18n.text('explorer.uniquePermissions');
+    }
+    if (inheritance?.source) {
+      return this.i18n.text('explorer.inheritsFrom', { path: inheritance.source.path });
+    }
+    return this.i18n.text('states.notAvailable');
+  }
+
+  /** Loads one level of a library (folderId null is the library root). The API does not page this list. */
+  private loadBranch(key: string, folderId: string | null): void {
     const library = this.selectedLibrary();
     if (!library) {
       return;
     }
-    this.updateBranch(key, (current) => ({
-      items: cursor ? current?.items ?? [] : [],
-      nextCursor: cursor ? current?.nextCursor ?? null : null,
-      loading: true,
-      error: null,
-    }));
+    this.updateBranch(key, () => ({ items: [], truncated: false, loading: true, error: null }));
     this.api
-      .libraryChildren(library.id, parentId, cursor)
+      .libraryChildren(library.id, folderId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (page) => {
+        next: (response) => {
           if (this.selectedLibrary()?.id !== library.id) {
             return;
           }
-          this.updateBranch(key, (current) => ({
-            items: [...(current?.items ?? []), ...page.items],
-            nextCursor: page.nextCursor,
+          this.updateBranch(key, () => ({
+            items: response.items,
+            truncated: response.truncated,
             loading: false,
             error: null,
           }));
@@ -285,7 +295,7 @@ export class ExplorerPage {
           }
           this.updateBranch(key, (current) => ({
             items: current?.items ?? [],
-            nextCursor: current?.nextCursor ?? null,
+            truncated: current?.truncated ?? false,
             loading: false,
             error: toApiError(error),
           }));

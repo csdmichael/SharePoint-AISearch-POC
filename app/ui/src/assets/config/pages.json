@@ -8,10 +8,16 @@
   },
   "cleanup": {
     "defaultSegment": "duplicates",
-    "segments": ["duplicates", "expiry", "anomalies", "exposure"]
+    "segments": ["duplicates", "expiry", "anomalies", "exposure"],
+    "draftTemplates": {
+      "exact": "exact-duplicates",
+      "near": "near-duplicates",
+      "expired": "expired-documents",
+      "reviewOverdue": "requires-review"
+    }
   },
   "notifications": {
     "defaultStatus": "draft",
-    "statuses": ["draft", "approved", "sent", "failed"]
+    "statuses": ["draft", "approved", "dryRunRecorded", "sent", "failed"]
   }
 }

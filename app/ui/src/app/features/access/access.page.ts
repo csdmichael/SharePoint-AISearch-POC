@@ -5,7 +5,7 @@ import { IonContent, IonIcon, IonSearchbar } from '@ionic/angular';
 import { Subject, debounceTime, distinctUntilChanged, map } from 'rxjs';
 import { asApiError } from '../../core/api/api-error';
 import { ApiService } from '../../core/api/api.service';
-import { UserAccessItem, UserSearchResult } from '../../core/api/models/api.models';
+import { UserAccessRecord, UserSearchResult } from '../../core/api/models/api.models';
 import { ConfigService } from '../../core/config/config.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { LayoutService } from '../../core/layout/layout.service';
@@ -62,8 +62,8 @@ export class AccessPage {
   readonly userList = computed<UserSearchResult[]>(() => this.users.value() ?? []);
 
   readonly selectedUser = signal<UserSearchResult | null>(null);
-  readonly items = new CursorList<UserAccessItem>({
-    key: () => (this.session.gate() === 'ready' ? this.selectedUser()?.key : undefined),
+  readonly items = new CursorList<UserAccessRecord>({
+    key: () => (this.session.gate() === 'ready' ? this.selectedUser()?.userKey : undefined),
     fetch: (key, cursor) => this.api.userItems(key, cursor),
   });
   readonly itemsView = computed<ViewState>(() =>
@@ -83,7 +83,7 @@ export class AccessPage {
   }
 
   isSelected(user: UserSearchResult): boolean {
-    return this.selectedUser()?.key === user.key;
+    return this.selectedUser()?.userKey === user.userKey;
   }
 
   retrySearch(): void {
@@ -95,8 +95,20 @@ export class AccessPage {
     return this.display.label('kind', kind);
   }
 
-  grantPathText(item: UserAccessItem): string {
-    return item.grantPath.join(this.config.pages.access.grantPathSeparator);
+  /** Groups the access came through, then how the role was granted: the item it was inherited from, or the grant type. */
+  grantPath(record: UserAccessRecord): string[] {
+    const how = record.inheritedFrom
+      ? this.i18n.text('access.inheritedFrom', { path: record.inheritedFrom.path })
+      : this.display.label('grantedVia', record.grantedVia);
+    return [...record.via, how];
+  }
+
+  grantPathText(record: UserAccessRecord): string {
+    return this.grantPath(record).join(this.config.pages.access.grantPathSeparator);
+  }
+
+  recordKey(record: UserAccessRecord): string {
+    return [record.item.id, record.role, record.grantedVia, record.via.join('>'), record.inheritedFrom?.path ?? ''].join('|');
   }
 
   exportCsv(): void {
@@ -108,12 +120,12 @@ export class AccessPage {
       this.i18n.text('access.columns.role'),
       this.i18n.text('access.columns.grantPath'),
     ];
-    const rows = this.items.items().map((item) => [
-      item.name,
-      item.path ?? '',
-      item.kind,
-      item.role,
-      item.grantPath.join(this.config.pages.access.grantPathSeparator),
+    const rows = this.items.items().map((record) => [
+      record.item.name,
+      record.item.path ?? '',
+      record.item.kind,
+      record.role,
+      this.grantPathText(record),
     ]);
     const content = toCsv(headers, rows, exportConfig.csvDelimiter, exportConfig.csvIncludeBom);
     downloadText(this.document, exportConfig.csvFileName, content, 'text/csv;charset=utf-8');

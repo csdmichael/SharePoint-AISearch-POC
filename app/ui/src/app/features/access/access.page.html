@@ -17,7 +17,7 @@
           <app-state-view [state]="searchView()" emptyKey="access.resultsEmpty" (retry)="retrySearch()" />
           @if (searchView().kind === 'ready') {
             <ul class="user-list" data-testid="user-list">
-              @for (user of userList(); track user.key) {
+              @for (user of userList(); track user.userKey) {
                 <li>
                   <button
                     type="button"
@@ -30,7 +30,12 @@
                     <ion-icon [name]="icons.user" aria-hidden="true" />
                     <span class="user-list__text">
                       <span>{{ user.displayName }}</span>
-                      <span class="muted user-list__upn">{{ user.upn }}</span>
+                      <span class="muted user-list__upn">
+                        {{ user.userPrincipalName ?? user.loginName }}
+                        @if (user.external) {
+                          · {{ 'access.external' | t }}
+                        }
+                      </span>
                     </span>
                   </button>
                 </li>
@@ -59,13 +64,13 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (item of items.items(); track item.id) {
+                  @for (record of items.items(); track recordKey(record)) {
                     <tr data-testid="access-row">
-                      <td>{{ item.name }}</td>
-                      <td>{{ item.path ?? ('states.notAvailable' | t) }}</td>
-                      <td>{{ kindLabel(item.kind) }}</td>
-                      <td>{{ item.role }}</td>
-                      <td>{{ grantPathText(item) }}</td>
+                      <td>{{ record.item.name }}</td>
+                      <td>{{ record.item.path ?? ('states.notAvailable' | t) }}</td>
+                      <td>{{ kindLabel(record.item.kind) }}</td>
+                      <td>{{ record.role }}</td>
+                      <td>{{ grantPathText(record) }}</td>
                     </tr>
                   }
                 </tbody>
@@ -83,7 +88,7 @@
       <section class="pane pane--detail" data-testid="access-summary">
         @if (selectedUser(); as user) {
           <h2 class="section-title">{{ user.displayName }}</h2>
-          <p class="muted user-upn">{{ user.upn }}</p>
+          <p class="muted user-upn">{{ user.userPrincipalName ?? user.loginName }}</p>
           @if (itemsView().kind === 'ready') {
             <p data-testid="access-count">{{ 'access.rowCount' | t: { count: i18n.number(items.items().length) } }}</p>
           }

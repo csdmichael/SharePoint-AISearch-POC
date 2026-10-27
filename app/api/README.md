@@ -86,7 +86,7 @@ Paths are relative to `/api/v1`. Every row needs a token with the Auditor role e
 | `GET /items/{itemId}/permissions` | Permission entries for a library, folder or file. |
 | `GET /access/users` | Search site users by name, UPN, email or login. |
 | `GET /access/users/{userKey}/items` | Every item a user can reach, with role and grant path. |
-| `GET /documents` | Governance list of documents, filtered and paged. |
+| `GET /documents` | Governance list of documents, filtered by lifecycle, data quality, authoritative flag and knowledge category (`knowledgeCategory`), and paged. Returns `knowledgeCategories`, the categories in the library, for the category filter. |
 | `GET /documents/{itemId}` | One document with trust reasons, conflicts and duplicate status. |
 | `GET /analytics/duplicates` | Exact and near-duplicate clusters with canonical copies. |
 | `GET /analytics/expiry` | Expired and review-overdue documents from metadata and text dates. |

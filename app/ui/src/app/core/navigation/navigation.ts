@@ -48,6 +48,7 @@ export function toRoutePath(route: string): string {
 const PAGE_LOADERS: Record<string, () => Promise<Type<unknown>>> = {
   dashboard: () => import('../../features/dashboard/dashboard.page').then((m) => m.DashboardPage),
   explorer: () => import('../../features/explorer/explorer.page').then((m) => m.ExplorerPage),
+  documents: () => import('../../features/documents/document-list.page').then((m) => m.DocumentListPage),
   access: () => import('../../features/access/access.page').then((m) => m.AccessPage),
   cleanup: () => import('../../features/cleanup/cleanup.page').then((m) => m.CleanupPage),
   notifications: () => import('../../features/notifications/notifications.page').then((m) => m.NotificationsPage),

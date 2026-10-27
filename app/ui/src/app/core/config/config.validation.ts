@@ -440,6 +440,14 @@ function validatePages(c: Collector, raw: Obj, strings: StringTable): PagesConfi
     }
   }
 
+  const draftTemplates = objectAt(c, cleanup['draftTemplates'], 'pages.json.cleanup.draftTemplates');
+  const draftTemplateIds = {
+    exact: stringAt(c, draftTemplates, 'exact', 'pages.json.cleanup.draftTemplates'),
+    near: stringAt(c, draftTemplates, 'near', 'pages.json.cleanup.draftTemplates'),
+    expired: stringAt(c, draftTemplates, 'expired', 'pages.json.cleanup.draftTemplates'),
+    reviewOverdue: stringAt(c, draftTemplates, 'reviewOverdue', 'pages.json.cleanup.draftTemplates'),
+  };
+
   const statuses = stringArrayAt(c, notifications, 'statuses', 'pages.json.notifications', 1);
   const defaultStatus = stringAt(c, notifications, 'defaultStatus', 'pages.json.notifications');
   if (defaultStatus && !statuses.includes(defaultStatus)) {
@@ -459,7 +467,7 @@ function validatePages(c: Collector, raw: Obj, strings: StringTable): PagesConfi
       searchDebounceMs: numberAt(c, access, 'searchDebounceMs', 'pages.json.access', { min: 0 }),
       grantPathSeparator: stringAt(c, access, 'grantPathSeparator', 'pages.json.access', true),
     },
-    cleanup: { defaultSegment, segments },
+    cleanup: { defaultSegment, segments, draftTemplates: draftTemplateIds },
     notifications: { defaultStatus, statuses },
   };
 }

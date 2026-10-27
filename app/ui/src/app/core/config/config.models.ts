@@ -10,6 +10,7 @@ export const ENDPOINT_KEYS = [
   'itemPermissions',
   'accessUsers',
   'accessUserItems',
+  'documents',
   'document',
   'cleanup',
   'notifications',
@@ -159,7 +160,12 @@ export interface PagesConfig {
   homeRoute: string;
   documentRoute: string;
   access: { minQueryLength: number; searchDebounceMs: number; grantPathSeparator: string };
-  cleanup: { defaultSegment: string; segments: string[] };
+  cleanup: {
+    defaultSegment: string;
+    segments: string[];
+    /** Notification template per cleanup case, as named in the API's notifications.json. */
+    draftTemplates: Record<'exact' | 'near' | 'expired' | 'reviewOverdue', string>;
+  };
   notifications: { defaultStatus: string; statuses: string[] };
 }
 

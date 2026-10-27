@@ -25,6 +25,12 @@ def label_matches(governance: Governance, group: str, stored: str | None, wanted
     return key is not None and normalize_token(key) == target
 
 
+def category_matches(stored: str | None, wanted: str) -> bool:
+    """Knowledge categories have no vocabulary keys, so "Supply Chain" and "supply-chain" both match."""
+
+    return stored is not None and normalize_token(stored) == normalize_token(wanted)
+
+
 def expiry_view(finding: ExpiryFinding | None) -> dict[str, Any] | None:
     if finding is None:
         return None
@@ -52,6 +58,7 @@ def document_summary(corpus: LibraryCorpus, item: ItemRecord) -> dict[str, Any]:
         "title": fields.get("title") or item.name,
         "size": item.size,
         "artifactId": fields.get("artifactId"),
+        "knowledgeCategory": fields.get("knowledgeCategory"),
         "lifecycleStatus": fields.get("lifecycleStatus"),
         "authoritative": fields.get("authoritative"),
         "aiReady": fields.get("aiReady"),
@@ -113,6 +120,7 @@ class DocumentService:
         lifecycle: str | None,
         data_quality: str | None,
         authoritative: bool | None,
+        category: str | None,
         sort: str,
         order: str,
         page: int,
@@ -121,8 +129,13 @@ class DocumentService:
         if sort not in self._settings.api.api.sortableFields:
             raise BadRequestError(f"sort must be one of {', '.join(self._settings.api.api.sortableFields)}.")
         documents: list[dict[str, Any]] = []
+        categories: set[str] = set()
         for corpus, item in self._all():
             fields = item.fields
+            if fields.get("knowledgeCategory"):
+                categories.add(str(fields["knowledgeCategory"]))
+            if category and not category_matches(fields.get("knowledgeCategory"), category):
+                continue
             if lifecycle and not label_matches(self._governance, "lifecycleStatus", fields.get("lifecycleStatus"),
                                                lifecycle):
                 continue
@@ -148,6 +161,7 @@ class DocumentService:
             "totalPages": max(1, -(-total // page_size)),
             "sort": sort,
             "order": order,
+            "knowledgeCategories": sorted(categories, key=str.lower),
         }
 
     def detail(self, item_id: str) -> dict[str, Any]:
@@ -159,7 +173,6 @@ class DocumentService:
         summary.update({
             "businessUnit": fields.get("businessUnit"),
             "sourceSystem": fields.get("sourceSystem"),
-            "knowledgeCategory": fields.get("knowledgeCategory"),
             "supersedesDocument": fields.get("supersedesDocument"),
             "trustReasons": fields.get("trustReasons") or [],
             "conflictWith": fields.get("conflictWith") or [],

@@ -49,6 +49,18 @@ def test_document_list_filters_by_lifecycle_status(client: TestClient, auth_head
     assert "Onboarding Notes.xlsx" in [item["name"] for item in body["items"]]
 
 
+def test_document_list_filters_by_knowledge_category(client: TestClient, auth_headers: dict[str, str]) -> None:
+    everything = get(client, auth_headers, "/documents?pageSize=50")
+    assert everything["total"] == len(everything["items"])
+    assert everything["knowledgeCategories"] == ["Engineering", "Quality"]
+    quality = get(client, auth_headers, "/documents?knowledgeCategory=Quality&pageSize=50")
+    assert quality["items"], "the fixture tenant has Quality documents"
+    assert {item["knowledgeCategory"] for item in quality["items"]} == {"Quality"}
+    assert quality["total"] == sum(1 for item in everything["items"] if item["knowledgeCategory"] == "Quality")
+    assert get(client, auth_headers, "/documents?knowledgeCategory=quality&pageSize=50")["total"] == quality["total"]
+    assert get(client, auth_headers, "/documents?knowledgeCategory=Sales&pageSize=50")["total"] == 0
+
+
 def test_document_list_rejects_an_unknown_sort_field(client: TestClient, auth_headers: dict[str, str]) -> None:
     response = client.get("/api/v1/documents?sort=nonsense", headers=auth_headers)
     assert response.status_code == 400

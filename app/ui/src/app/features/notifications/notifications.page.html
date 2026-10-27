@@ -41,7 +41,7 @@
                 >
                   <span class="outbox__subject">{{ item.subject }}</span>
                   <app-badge [text]="statusLabel(item.status)" [color]="display.statusColor(item.status)" />
-                  <span class="muted outbox__meta">{{ item.recipient?.displayName ?? ('states.notAvailable' | t) }}</span>
+                  <span class="muted outbox__meta">{{ item.ownerName ?? ('states.notAvailable' | t) }}</span>
                 </button>
               </li>
             }
@@ -64,7 +64,7 @@
             <dt>{{ 'notifications.createdAt' | t }}</dt>
             <dd>{{ i18n.date(item.createdAt) }}</dd>
             <dt>{{ 'notifications.updatedAt' | t }}</dt>
-            <dd>{{ i18n.date(item.updatedAt) }}</dd>
+            <dd>{{ i18n.date(lastChangedAt(item)) }}</dd>
           </dl>
           <h4 class="section-title">{{ 'notifications.body' | t }}</h4>
           <pre class="pre-wrap preview__body" data-testid="preview-body">{{ item.body }}</pre>

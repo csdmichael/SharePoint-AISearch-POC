@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonIcon, IonLabel, IonSegment, IonSegmentButton } from '@ionic/angular';
+import { forkJoin } from 'rxjs';
 import { ApiError, toApiError } from '../../core/api/api-error';
 import { ApiService } from '../../core/api/api.service';
-import { CleanupRecord, DocumentRef, ResponseMode } from '../../core/api/models/api.models';
+import { draftTemplateId } from '../../core/api/api.mappers';
+import { CleanupDraftTemplates, CleanupRecord, DocumentRef, ResponseMode } from '../../core/api/models/api.models';
 import { ConfigService } from '../../core/config/config.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { NavigationService } from '../../core/navigation/navigation';
@@ -42,7 +44,7 @@ export class CleanupPage {
   readonly segment = signal(this.config.pages.cleanup.defaultSegment);
   readonly records = new CursorList<CleanupRecord>({
     key: () => (this.session.gate() === 'ready' ? this.segment() : undefined),
-    fetch: (key, cursor) => this.api.cleanup(key, cursor),
+    fetch: (key) => this.api.cleanup(key),
   });
 
   readonly view = computed<ViewState>(() =>
@@ -55,7 +57,8 @@ export class CleanupPage {
 
   readonly selectedIds = signal<ReadonlySet<string>>(new Set());
   readonly selectedCount = computed(() => this.selectedIds().size);
-  readonly visibleIds = computed(() => this.records.items().flatMap((record) => recordIds(record)));
+  readonly templates: CleanupDraftTemplates = this.config.pages.cleanup.draftTemplates;
+  readonly visibleIds = computed(() => this.records.items().flatMap((record) => draftableIds(record, this.templates)));
 
   readonly drafting = signal(false);
   readonly draftError = signal<ApiError | null>(null);
@@ -139,11 +142,13 @@ export class CleanupPage {
   /** One line of detail per non-duplicate segment, built from the record's fields. */
   recordDetail(record: CleanupRecord): string {
     switch (record.segment) {
-      case 'expiry':
-        return this.i18n.text('cleanup.expiryDetail', {
-          date: this.i18n.date(record.expirationDate),
-          count: this.i18n.number(record.daysPastExpiry),
-        });
+      case 'expiry': {
+        const date = this.i18n.date(record.date);
+        const count = record.days === null ? this.i18n.text('states.notAvailable') : this.i18n.number(record.days);
+        return record.reason === 'expired'
+          ? this.i18n.text('cleanup.expiryDetail', { date, count })
+          : this.i18n.text('cleanup.reviewOverdueDetail', { date, count });
+      }
       case 'anomalies':
         return this.i18n.text('cleanup.anomalyDetail', {
           score: this.i18n.number(record.score),
@@ -153,8 +158,8 @@ export class CleanupPage {
         });
       case 'exposure':
         return this.i18n.text('cleanup.exposureDetail', {
-          exposure: record.exposure,
-          sensitivity: record.sensitivity ?? this.i18n.text('states.notAvailable'),
+          detail: record.detail,
+          severity: this.display.label('severity', record.severity),
         });
       default:
         return '';
@@ -165,17 +170,21 @@ export class CleanupPage {
     return this.navigation.documentPath(id);
   }
 
+  /** Selected documents, grouped by the notification template each one needs. One request per template. */
   draftNotifications(): void {
-    const documentIds = [...this.selectedIds()];
-    if (documentIds.length === 0 || this.drafting()) {
+    const groups = this.draftGroups();
+    if (groups.size === 0 || this.drafting()) {
       return;
     }
     this.drafting.set(true);
     this.draftError.set(null);
     this.draftSummary.set(null);
-    this.api.createDrafts({ segment: this.segment(), documentIds }).subscribe({
-      next: (result) => {
-        this.draftSummary.set({ mode: result.mode, count: result.items.length });
+    forkJoin([...groups].map(([templateId, documentIds]) => this.api.createDrafts(templateId, documentIds))).subscribe({
+      next: (results) => {
+        this.draftSummary.set({
+          mode: results[0].mode,
+          count: results.reduce((total, result) => total + result.created.length, 0),
+        });
         this.selectedIds.set(new Set());
         this.drafting.set(false);
       },
@@ -184,6 +193,24 @@ export class CleanupPage {
         this.drafting.set(false);
       },
     });
+  }
+
+  isDraftable(record: CleanupRecord, documentId: string): boolean {
+    return draftTemplateId(record, documentId, this.templates) !== null;
+  }
+
+  private draftGroups(): Map<string, string[]> {
+    const groups = new Map<string, string[]>();
+    for (const documentId of this.selectedIds()) {
+      for (const record of this.records.items()) {
+        const templateId = draftTemplateId(record, documentId, this.templates);
+        if (templateId !== null) {
+          groups.set(templateId, [...(groups.get(templateId) ?? []), documentId]);
+          break;
+        }
+      }
+    }
+    return groups;
   }
 
   retry(): void {
@@ -196,7 +223,8 @@ export class CleanupPage {
   }
 }
 
-/** Selectable ids of a record: each duplicate member, or the single document for other segments. */
-export function recordIds(record: CleanupRecord): string[] {
-  return record.segment === 'duplicates' ? record.members.map((member) => member.id) : [record.document.id];
+/** Document ids in a record that have a notification template. Only those rows can be selected for drafting. */
+export function draftableIds(record: CleanupRecord, templates: CleanupDraftTemplates): string[] {
+  const ids = record.segment === 'duplicates' ? record.members.map((member) => member.id) : [record.document.id];
+  return ids.filter((id) => draftTemplateId(record, id, templates) !== null);
 }

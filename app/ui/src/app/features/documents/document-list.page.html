@@ -1,0 +1,63 @@
+<ion-content>
+  <div class="page-frame" data-testid="page-documents">
+    <h1 class="page-title">{{ 'pages.documents' | t }}</h1>
+
+    <div class="toolbar-row filters">
+      <ion-select
+        class="filter"
+        data-testid="filter-category"
+        [label]="'documents.categoryLabel' | t"
+        labelPlacement="stacked"
+        interface="popover"
+        [value]="category()"
+        (ionChange)="selectCategory(selectValue($event))"
+      >
+        <ion-select-option value="">{{ 'documents.allCategories' | t }}</ion-select-option>
+        @for (value of categories(); track value) {
+          <ion-select-option [value]="value">{{ value }}</ion-select-option>
+        }
+      </ion-select>
+      <span class="muted" data-testid="document-count">{{ countText() }}</span>
+    </div>
+
+    <app-state-view [state]="view()" emptyKey="documents.empty" (retry)="retry()" />
+
+    @if (view().kind === 'ready') {
+      <div class="table-scroll">
+        <table class="data-table" data-testid="documents-table">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'documents.columns.title' | t }}</th>
+              <th scope="col">{{ 'documents.columns.category' | t }}</th>
+              <th scope="col">{{ 'documents.columns.artifactId' | t }}</th>
+              <th scope="col">{{ 'documents.columns.lifecycle' | t }}</th>
+              <th scope="col">{{ 'documents.columns.trustScore' | t }}</th>
+              <th scope="col">{{ 'documents.columns.owner' | t }}</th>
+              <th scope="col">{{ 'documents.columns.library' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (doc of documents.items(); track doc.id) {
+              <tr data-testid="document-row" [attr.data-document-id]="doc.id">
+                <td>
+                  <a class="row-link" [routerLink]="documentPath(doc.id)" data-testid="document-link">{{ doc.title }}</a>
+                </td>
+                <td>{{ doc.knowledgeCategory ?? ('states.notAvailable' | t) }}</td>
+                <td>{{ doc.artifactId ?? ('states.notAvailable' | t) }}</td>
+                <td>{{ lifecycleLabel(doc.lifecycleStatus) }}</td>
+                <td>{{ trustLabel(doc.trustScore) }}</td>
+                <td>{{ ownerLabel(doc) }}</td>
+                <td>{{ doc.libraryTitle ?? ('states.notAvailable' | t) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (documents.nextCursor()) {
+        <button type="button" class="load-more" data-testid="documents-load-more" [disabled]="documents.loadingMore()" (click)="documents.loadMore()">
+          {{ 'buttons.loadMore' | t }}
+        </button>
+      }
+    }
+  </div>
+</ion-content>
