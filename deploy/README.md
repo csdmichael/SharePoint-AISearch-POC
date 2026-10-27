@@ -85,6 +85,7 @@ Never store a client secret. The identity signs in with OpenID Connect.
 
 - App settings are replaced on every App Service deploy. The Bicep template PUTs the whole `appsettings` collection, so any setting missing from the descriptor's `azure.appSettings` is removed. List every setting the app needs. Values must be strings.
 - `ui` and `api` set `SCM_DO_BUILD_DURING_DEPLOYMENT` to `false`. CI builds the UI. The API's dependencies are vendored at package time (`package.vendorPython`), and `PYTHONPATH` points at `.python_packages/lib/site-packages`. The earlier setting made App Service run an Oryx build on the server, which took 15 to 40 minutes.
+- `api` also sets `WEBSITE_RUN_FROM_PACKAGE`, so App Service mounts the zip instead of copying about 4,000 files into `/home`, which took about 10 minutes. The mounted folder is read-only. The only runtime write is the notification outbox, so `package.patchJson` points the packaged `outboxPath` at `/home/data/notifications/outbox.json`. The repository keeps the `.state/...` default for local runs.
 - `render` writes the parameter file to `--out`. In CI that folder is under `$RUNNER_TEMP`, so the checkout stays clean.
 
 ## 8. Limits
