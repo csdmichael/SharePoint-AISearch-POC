@@ -35,7 +35,8 @@
       "requirements": "app/api/requirements.txt",
       "target": ".python_packages/lib/site-packages",
       "platforms": ["manylinux_2_28_x86_64", "manylinux_2_27_x86_64", "manylinux_2_17_x86_64", "manylinux2014_x86_64"],
-      "pythonVersion": "3.12"
+      "pythonVersion": "3.12",
+      "removeDirectories": ["tests", "test"]
     }
   },
   "iac": {"tool": "bicep", "supportedTools": ["bicep", "terraform"]},

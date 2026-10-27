@@ -301,15 +301,30 @@ def cmd_package(args: argparse.Namespace) -> int:
     return 0
 
 
+def strip_directories(target: Path, names: list[str]) -> int:
+    """Remove directories with these names (test suites) from the vendored packages.
+
+    They are never imported, and App Service copies every file, so fewer files means a faster deploy.
+    """
+    removed = 0
+    for name in names:
+        for path in list(target.rglob(name)):
+            if path.is_dir():
+                shutil.rmtree(path)
+                removed += 1
+    return removed
+
+
 def vendor_python(component: Doc, stage: Path, vendor: dict[str, Any]) -> None:
     """Install the Linux wheels for the Python requirements into the stage, so App Service runs no build.
 
     The wheels match the App Service platform (cp312, manylinux), and the smoke test starts the same files.
     """
     entry = Doc(f"{component.label} package.vendorPython", vendor)
+    target = stage / entry.get("target", str)
     command = [
         sys.executable, "-m", "pip", "install",
-        "--target", str(stage / entry.get("target", str)),
+        "--target", str(target),
         *[option for platform in entry.get("platforms", list) for option in ("--platform", str(platform))],
         "--implementation", "cp",
         "--python-version", entry.get("pythonVersion", str),
@@ -320,6 +335,8 @@ def vendor_python(component: Doc, stage: Path, vendor: dict[str, Any]) -> None:
     ]
     if subprocess.run(command, cwd=ROOT).returncode != 0:
         raise ConfigError(f"could not vendor the Python dependencies of {component.label}")
+    names = [str(name) for name in entry.get("removeDirectories", list, required=False) or []]
+    print(f"removed {strip_directories(target, names)} directories from the vendored packages")
 
 
 def fetch_status(url: str) -> tuple[int | None, str]:

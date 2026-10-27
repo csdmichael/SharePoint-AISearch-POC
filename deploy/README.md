@@ -45,7 +45,7 @@ Deploy, in order:
 
 1. Read component and settings fields with `info` and `setting`.
 2. Node components: install and build in CI. Python components: set up Python from `language.version`.
-3. `appService` only: `package` stages the source and writes `<id>.zip`. For `ui`, it also patches `www/assets/config/app.config.json` with the API URL and sign-in values. For `api`, `package.vendorPython` installs the Linux wheels (cp312, manylinux) of `requirements.txt` into `.python_packages`, so App Service runs no build.
+3. `appService` only: `package` stages the source and writes `<id>.zip`. For `ui`, it also patches `www/assets/config/app.config.json` with the API URL and sign-in values. For `api`, `package.vendorPython` installs the Linux wheels (cp312, manylinux) of `requirements.txt` into `.python_packages`, removes the test directories from them, and App Service runs no build.
 4. `appService` only: `smoke` starts the packaged app with `azure.startupCommand` and `azure.appSettings` (the App Service folder is replaced by the extracted zip) and checks `azure.healthPath`. A failure stops the deploy before Bicep, so the running app keeps its current settings.
 5. Sign in to Azure with OpenID Connect (`azure/login@v2`, `id-token: write`). No client secret is used.
 6. Render `bicep-params.json` with `render` (`appService` and `foundryAgent` kinds). Bicep sets `appCommandLine` and the complete `appSettings` collection.
