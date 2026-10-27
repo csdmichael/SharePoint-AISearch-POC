@@ -110,7 +110,7 @@ Paths are relative to `/api/v1`. Every row needs a token with the Auditor role e
 
 ## Deploy
 
-- The API component is defined in `..\..\deploy\components\api.json`. Its startup command is `gunicorn -k uvicorn.workers.UvicornWorker app.asgi:app --bind 0.0.0.0:8000 --timeout 120`.
+- The API component is defined in `..\..\deploy\components\api.json`. Its startup command is `python -m gunicorn -k uvicorn.workers.UvicornWorker app.asgi:app --bind 0.0.0.0:8000 --timeout 120`. Dependencies are vendored into `.python_packages` at package time, so App Service runs no build (see `..\..\deploy\README.md`).
 - See `..\..\deploy\README.md` for the workflows and Bicep.
 - The API deploys to App Service only through the `api` workflow (`..\..\.github\workflows\api.yml`), on pushes to `main`. Pull requests run only its validate job. The deploy job also requires the `AZURE_CLIENT_ID` variable to be set.
 

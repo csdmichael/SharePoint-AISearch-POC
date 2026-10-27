@@ -44,16 +44,17 @@ Validate runs the `install`, `unitTest`, `build` and `e2e` phases that the descr
 Deploy, in order:
 
 1. Read component and settings fields with `info` and `setting`.
-2. Node components only: install and build in CI.
-3. Sign in to Azure with OpenID Connect (`azure/login@v2`, `id-token: write`). No client secret is used.
-4. Render `bicep-params.json` with `render` (`appService` and `foundryAgent` kinds).
-5. Run `az deployment group create` with the component's Bicep template.
-6. `appService` only: `package` stages the source and writes `<id>.zip`. For `ui`, it also patches `www/assets/config/app.config.json` with the API URL and sign-in values.
-7. `appService` only: `az webapp deploy --type zip --clean true --restart true --async true`. The API is built on the server (Oryx), which can take 15 to 40 minutes.
-8. `appService` only: `Wait for App Service deployment` polls the Kudu deployment list until the latest deployment completes with status 4. It fails on any other final status. A restart while the build runs stops the deployment, so the restart waits for this step.
-9. `appService` only: `az webapp restart`.
-10. `appService` only: `health` polls `https://<appName>.azurewebsites.net<healthPath>` up to `healthCheck.attempts` times, `healthCheck.delaySeconds` apart (`deploy/settings.json`). Any HTTP status from 200 to 399 passes.
-11. `foundryAgent` only: `upsert-foundry`.
+2. Node components: install and build in CI. Python components: set up Python from `language.version`.
+3. `appService` only: `package` stages the source and writes `<id>.zip`. For `ui`, it also patches `www/assets/config/app.config.json` with the API URL and sign-in values. For `api`, `package.vendorPython` installs the Linux wheels (cp312, manylinux) of `requirements.txt` into `.python_packages`, so App Service runs no build.
+4. `appService` only: `smoke` starts the packaged app with `azure.startupCommand` and `azure.appSettings` (the App Service folder is replaced by the extracted zip) and checks `azure.healthPath`. A failure stops the deploy before Bicep, so the running app keeps its current settings.
+5. Sign in to Azure with OpenID Connect (`azure/login@v2`, `id-token: write`). No client secret is used.
+6. Render `bicep-params.json` with `render` (`appService` and `foundryAgent` kinds). Bicep sets `appCommandLine` and the complete `appSettings` collection.
+7. Run `az deployment group create` with the component's Bicep template.
+8. `appService` only: `az webapp deploy --type zip --clean true --restart true --async true`.
+9. `appService` only: `Wait for App Service deployment` polls the Kudu deployment list until the latest deployment completes with status 4 (up to 45 checks, 20 seconds apart). It fails on any other final status. A restart while Kudu is still unpacking the app stops the deployment, so the restart waits for this step.
+10. `appService` only: `az webapp restart`.
+11. `appService` only: `health` polls `https://<appName>.azurewebsites.net<healthPath>` up to `healthCheck.attempts` times, `healthCheck.delaySeconds` apart (`deploy/settings.json`). Any HTTP status from 200 to 399 passes.
+12. `foundryAgent` only: `upsert-foundry`.
 
 `upsert-foundry` reads the agent from the Foundry project. It creates the agent when it is missing. If the latest version already has the same instructions and model, it reports "up to date" and posts nothing. Otherwise it posts a new agent version. Instructions come from the `instructions` property of `app/api/config/agent.json`. The model is `foundry.modelDeployment`.
 
@@ -83,7 +84,7 @@ Never store a client secret. The identity signs in with OpenID Connect.
 ## 7. Important behaviour
 
 - App settings are replaced on every App Service deploy. The Bicep template PUTs the whole `appsettings` collection, so any setting missing from the descriptor's `azure.appSettings` is removed. List every setting the app needs. Values must be strings.
-- `ui` sets `SCM_DO_BUILD_DURING_DEPLOYMENT` to `false`, since CI builds the UI and ships the output. `api` sets it to `true`, so App Service installs `requirements.txt` during the zip deploy.
+- `ui` and `api` set `SCM_DO_BUILD_DURING_DEPLOYMENT` to `false`. CI builds the UI. The API's dependencies are vendored at package time (`package.vendorPython`), and `PYTHONPATH` points at `.python_packages/lib/site-packages`. The earlier setting made App Service run an Oryx build on the server, which took 15 to 40 minutes.
 - `render` writes the parameter file to `--out`. In CI that folder is under `$RUNNER_TEMP`, so the checkout stays clean.
 
 ## 8. Limits

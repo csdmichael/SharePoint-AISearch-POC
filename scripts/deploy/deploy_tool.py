@@ -12,9 +12,12 @@ import argparse
 import fnmatch
 import http.client
 import json
+import os
+import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -36,6 +39,9 @@ PARAMS_SCHEMA = "https://schema.management.azure.com/schemas/2019-04-01/deployme
 STAGE_DIR = "stage"
 APP_SERVICE_HOST = ".azurewebsites.net"
 REQUEST_TIMEOUT_SECONDS = 30
+APP_SERVICE_WWWROOT = "/home/site/wwwroot"
+SMOKE_ATTEMPTS = 30
+SMOKE_DELAY_SECONDS = 2
 
 
 class ConfigError(Exception):
@@ -282,6 +288,10 @@ def cmd_package(args: argparse.Namespace) -> int:
             raise ConfigError(f"cannot patch {target}: it does not contain a JSON object")
         write_json(target, deep_merge(current, patch.get("values", dict)))
 
+    vendor = component.get("package.vendorPython", dict, required=False)
+    if vendor is not None:
+        vendor_python(component, stage, vendor)
+
     zip_path = out_dir / f"{args.component}.zip"
     files = sorted(path for path in stage.rglob("*") if path.is_file())
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as archive:
@@ -289,6 +299,27 @@ def cmd_package(args: argparse.Namespace) -> int:
             archive.write(path, path.relative_to(stage).as_posix())
     print(f"packaged {zip_path} ({len(files)} files)")
     return 0
+
+
+def vendor_python(component: Doc, stage: Path, vendor: dict[str, Any]) -> None:
+    """Install the Linux wheels for the Python requirements into the stage, so App Service runs no build.
+
+    The wheels match the App Service platform (cp312, manylinux), and the smoke test starts the same files.
+    """
+    entry = Doc(f"{component.label} package.vendorPython", vendor)
+    command = [
+        sys.executable, "-m", "pip", "install",
+        "--target", str(stage / entry.get("target", str)),
+        *[option for platform in entry.get("platforms", list) for option in ("--platform", str(platform))],
+        "--implementation", "cp",
+        "--python-version", entry.get("pythonVersion", str),
+        "--only-binary=:all:",
+        "--no-compile",
+        "--disable-pip-version-check",
+        "--requirement", str(ROOT / entry.get("requirements", str)),
+    ]
+    if subprocess.run(command, cwd=ROOT).returncode != 0:
+        raise ConfigError(f"could not vendor the Python dependencies of {component.label}")
 
 
 def fetch_status(url: str) -> tuple[int | None, str]:
@@ -322,6 +353,56 @@ def cmd_health(args: argparse.Namespace) -> int:
         if attempt < attempts:
             time.sleep(delay)
     print(f"health check failed after {attempts} attempts: {url}", file=sys.stderr)
+    return 1
+
+
+def stop_process(process: subprocess.Popen[bytes]) -> None:
+    if process.poll() is None:
+        process.terminate()
+        try:
+            process.wait(timeout=30)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
+
+
+def cmd_smoke(args: argparse.Namespace) -> int:
+    """Start the packaged app with its App Service startup command and check that the health path answers.
+
+    The deploy job runs this before Bicep and the zip deploy, so a broken package never reaches the web app.
+    App settings become environment variables, with the App Service folder replaced by the extracted folder.
+    """
+    component = load_component(args.component)
+    require_kind(component, APP_SERVICE)
+    app_settings = component.get("azure.appSettings", dict)
+    startup = shlex.split(component.get("azure.startupCommand", str))
+    port = int(app_settings.get("WEBSITES_PORT", "8000"))
+    url = f"http://127.0.0.1:{port}{component.get('azure.healthPath', str)}"
+    with tempfile.TemporaryDirectory(prefix="smoke-") as tmp:
+        root = Path(tmp) / "app"
+        with zipfile.ZipFile(args.package) as archive:
+            archive.extractall(root)
+        env = dict(os.environ)
+        env.update({name: str(value).replace(APP_SERVICE_WWWROOT, str(root)) for name, value in app_settings.items()})
+        log_path = Path(tmp) / "smoke.log"
+        with log_path.open("w", encoding="utf-8") as log:
+            process = subprocess.Popen(startup, cwd=root, env=env, stdout=log, stderr=subprocess.STDOUT)
+            try:
+                for attempt in range(1, SMOKE_ATTEMPTS + 1):
+                    if process.poll() is not None:
+                        print(f"the app exited early with code {process.returncode}")
+                        break
+                    status, error = fetch_status(url)
+                    if status is not None and 200 <= status <= 399:
+                        print(f"smoke test passed: {url} returned HTTP {status} (attempt {attempt}/{SMOKE_ATTEMPTS})")
+                        return 0
+                    detail = f"HTTP {status}" if status is not None else error
+                    print(f"attempt {attempt}/{SMOKE_ATTEMPTS} failed: {detail}")
+                    time.sleep(SMOKE_DELAY_SECONDS)
+            finally:
+                stop_process(process)
+        print(log_path.read_text(encoding="utf-8")[-4000:], file=sys.stderr)
+    print(f"smoke test failed: {url} did not return a healthy status", file=sys.stderr)
     return 1
 
 
@@ -492,6 +573,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub = add("health", cmd_health, "poll the health URL of an appService component")
     sub.add_argument("--component", required=True, help="component id, e.g. api")
+
+    sub = add("smoke", cmd_smoke, "start a packaged appService app with its startup command and check its health path")
+    sub.add_argument("--component", required=True, help="component id, e.g. api")
+    sub.add_argument("--package", required=True, help="path to the zip written by package")
 
     add("validate-iac", cmd_validate_iac, "run az bicep build on every IaC template")
 

@@ -30,7 +30,13 @@
       {"from": "config/governance-vocabulary.json", "to": "shared-config/governance-vocabulary.json"},
       {"from": "config/governance-policy.json", "to": "shared-config/governance-policy.json"}
     ],
-    "patchJson": []
+    "patchJson": [],
+    "vendorPython": {
+      "requirements": "app/api/requirements.txt",
+      "target": ".python_packages/lib/site-packages",
+      "platforms": ["manylinux_2_28_x86_64", "manylinux_2_27_x86_64", "manylinux_2_17_x86_64", "manylinux2014_x86_64"],
+      "pythonVersion": "3.12"
+    }
   },
   "iac": {"tool": "bicep", "supportedTools": ["bicep", "terraform"]},
   "infra": {
@@ -40,10 +46,11 @@
   "azure": {
     "appName": "caldova-aiscr-api",
     "runtime": "PYTHON|3.12",
-    "startupCommand": "gunicorn -k uvicorn.workers.UvicornWorker app.asgi:app --bind 0.0.0.0:8000 --timeout 120",
+    "startupCommand": "python -m gunicorn -k uvicorn.workers.UvicornWorker app.asgi:app --bind 0.0.0.0:8000 --timeout 120",
     "healthPath": "/health",
     "appSettings": {
-      "SCM_DO_BUILD_DURING_DEPLOYMENT": "true",
+      "SCM_DO_BUILD_DURING_DEPLOYMENT": "false",
+      "PYTHONPATH": "/home/site/wwwroot/.python_packages/lib/site-packages:/home/site/wwwroot",
       "WEBSITES_PORT": "8000",
       "API_CONFIG_PATH": "config/api.config.json",
       "AZURE_TENANT_ID": "12a4b86b-e64c-43f9-af05-d9130a72dfd2",
