@@ -166,6 +166,27 @@ jobs:
           set -euo pipefail
           az webapp deploy --resource-group "$RESOURCE_GROUP" --name "$APP_NAME" --src-path "$RUNNER_TEMP/deploy/$COMPONENT/$COMPONENT.zip" --type zip --clean true --restart true --async true
 
+      - name: Wait for App Service deployment
+        if: steps.info.outputs.kind == 'appService'
+        env:
+          APP_NAME: "${{ steps.info.outputs.appName }}"
+        run: |
+          set -euo pipefail
+          # The async zip deploy returns while App Service still builds the app (Oryx, 15-40 minutes for the API).
+          # A restart during that build stops the deployment, so wait until Kudu reports it complete.
+          for attempt in $(seq 1 180); do
+            token="$(az account get-access-token --resource https://management.core.windows.net/ --query accessToken -o tsv)"
+            result="$(curl -fsS -H "Authorization: Bearer $token" "https://$APP_NAME.scm.azurewebsites.net/api/deployments" | python3 -c 'import json, sys; deployments = [d for d in json.load(sys.stdin) if not d.get("is_temp")]; latest = deployments[0]; print(latest["status"], latest["complete"])' || echo error)"
+            echo "attempt $attempt: status and complete flag: $result"
+            case "$result" in
+              "4 True") exit 0 ;;
+              *True*) echo "App Service deployment ended without success: $result"; exit 1 ;;
+            esac
+            sleep 20
+          done
+          echo "App Service deployment did not finish in time"
+          exit 1
+
       - name: Restart web app
         if: steps.info.outputs.kind == 'appService'
         env:

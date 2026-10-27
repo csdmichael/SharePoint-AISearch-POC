@@ -49,9 +49,11 @@ Deploy, in order:
 4. Render `bicep-params.json` with `render` (`appService` and `foundryAgent` kinds).
 5. Run `az deployment group create` with the component's Bicep template.
 6. `appService` only: `package` stages the source and writes `<id>.zip`. For `ui`, it also patches `www/assets/config/app.config.json` with the API URL and sign-in values.
-7. `appService` only: `az webapp deploy --type zip --clean true --restart true`.
-8. `appService` only: `health` polls `https://<appName>.azurewebsites.net<healthPath>` up to 12 times, 15 seconds apart. Any HTTP status from 200 to 399 passes.
-9. `foundryAgent` only: `upsert-foundry`.
+7. `appService` only: `az webapp deploy --type zip --clean true --restart true --async true`. The API is built on the server (Oryx), which can take 15 to 40 minutes.
+8. `appService` only: `Wait for App Service deployment` polls the Kudu deployment list until the latest deployment completes with status 4. It fails on any other final status. A restart while the build runs stops the deployment, so the restart waits for this step.
+9. `appService` only: `az webapp restart`.
+10. `appService` only: `health` polls `https://<appName>.azurewebsites.net<healthPath>` up to `healthCheck.attempts` times, `healthCheck.delaySeconds` apart (`deploy/settings.json`). Any HTTP status from 200 to 399 passes.
+11. `foundryAgent` only: `upsert-foundry`.
 
 `upsert-foundry` reads the agent from the Foundry project. It creates the agent when it is missing. If the latest version already has the same instructions and model, it reports "up to date" and posts nothing. Otherwise it posts a new agent version. Instructions come from the `instructions` property of `app/api/config/agent.json`. The model is `foundry.modelDeployment`.
 
