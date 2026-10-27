@@ -30,12 +30,7 @@
       {"from": "config/governance-vocabulary.json", "to": "shared-config/governance-vocabulary.json"},
       {"from": "config/governance-policy.json", "to": "shared-config/governance-policy.json"}
     ],
-    "patchJson": [
-      {
-        "file": "config/notifications.json",
-        "values": {"outboxPath": "/home/data/notifications/outbox.json"}
-      }
-    ],
+    "patchJson": [],
     "vendorPython": {
       "requirements": "app/api/requirements.txt",
       "target": ".python_packages/lib/site-packages",
@@ -56,7 +51,6 @@
     "healthPath": "/health",
     "appSettings": {
       "SCM_DO_BUILD_DURING_DEPLOYMENT": "false",
-      "WEBSITE_RUN_FROM_PACKAGE": "1",
       "PYTHONPATH": "/home/site/wwwroot/.python_packages/lib/site-packages:/home/site/wwwroot",
       "WEBSITES_PORT": "8000",
       "API_CONFIG_PATH": "config/api.config.json",
