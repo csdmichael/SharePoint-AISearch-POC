@@ -3,17 +3,17 @@
     "tabletMinPx": 768,
     "desktopMinPx": 1200
   },
-  "sidebarWidthPx": 248,
-  "headerHeightPx": 56,
-  "tabBarHeightPx": 60,
-  "maxContentWidthPx": 1280,
+  "sidebarWidthPx": 264,
+  "headerHeightPx": 60,
+  "tabBarHeightPx": 64,
+  "maxContentWidthPx": 1440,
   "paneWidths": {
-    "listPercent": 32,
-    "detailPercent": 36
+    "listPercent": 24,
+    "detailPercent": 26
   },
   "cardColumns": {
-    "mobile": 1,
-    "tablet": 2,
+    "mobile": 2,
+    "tablet": 3,
     "desktop": 4
   },
   "mobileTabIds": ["dashboard", "explorer", "cleanup", "agent"],
@@ -27,8 +27,8 @@
     "lg": 16,
     "xl": 24
   },
-  "radiusPx": 8,
-  "fabOffsetPx": 12,
+  "radiusPx": 10,
+  "fabOffsetPx": 16,
   "icons": {
     "menu": "menu-outline",
     "close": "close-outline",

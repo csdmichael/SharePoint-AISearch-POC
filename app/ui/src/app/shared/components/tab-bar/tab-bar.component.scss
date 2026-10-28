@@ -4,6 +4,7 @@
   grid-auto-columns: 1fr;
   flex: 0 0 var(--layout-tab-bar-height);
   height: var(--layout-tab-bar-height);
+  padding: 0 var(--space-xs);
   background: var(--surface-header);
   border-top: 1px solid var(--surface-border);
   box-sizing: border-box;
@@ -14,20 +15,35 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-xxs);
+  gap: 2px;
   min-width: 0;
-  padding: var(--space-xs);
+  padding: var(--space-xs) 0;
   color: var(--surface-muted-text);
   text-decoration: none;
   font-size: 0.75rem;
+  font-weight: 500;
+
+  &.is-active {
+    color: var(--surface-accent-strong);
+    font-weight: 600;
+
+    .tab-bar__pill {
+      background: var(--surface-accent-soft);
+    }
+  }
+}
+
+.tab-bar__pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 2rem;
+  border-radius: 999px;
+  transition: background-color 120ms ease;
 
   ion-icon {
     font-size: 1.375rem;
-  }
-
-  &.is-active {
-    color: var(--surface-accent);
-    font-weight: 600;
   }
 }
 

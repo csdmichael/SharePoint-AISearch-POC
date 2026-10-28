@@ -1,3 +1,9 @@
+:host {
+  display: flex;
+  flex: 0 0 var(--layout-sidebar-width);
+  min-height: 0;
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -33,25 +39,33 @@
 .sidebar__link {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm);
-  border-radius: var(--radius);
+  gap: var(--space-md);
+  min-height: 2.75rem;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--control-radius);
   color: var(--surface-text);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: background-color 120ms ease, color 120ms ease;
+
+  ion-icon {
+    flex: 0 0 auto;
+    font-size: 1.25rem;
+    color: var(--surface-muted-text);
+  }
 
   &:hover {
-    background: var(--surface-selected);
+    background: var(--surface-hover);
   }
 
   &.is-active {
-    background: var(--surface-selected);
+    background: var(--surface-accent-soft);
+    color: var(--surface-accent-strong);
     font-weight: 600;
-    box-shadow: inset 3px 0 0 var(--surface-accent);
-  }
 
-  ion-icon {
-    font-size: 1.25rem;
-    flex: 0 0 auto;
+    ion-icon {
+      color: var(--surface-accent-strong);
+    }
   }
 }

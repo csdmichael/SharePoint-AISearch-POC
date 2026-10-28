@@ -15,30 +15,42 @@ import { MicrosoftLogoComponent } from '../microsoft-logo/microsoft-logo.compone
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonButton, IonIcon, MicrosoftLogoComponent, BadgeComponent, TranslatePipe],
   template: `
-    <header class="app-header" data-testid="app-header">
-      <app-microsoft-logo />
+    <header class="app-header" data-testid="app-header" [class.app-header--compact]="layout.isMobile()" [class.app-header--hide-name]="!layout.isDesktop()">
+      <app-microsoft-logo [compact]="layout.isMobile()" />
+      <span class="app-header__divider" aria-hidden="true"></span>
       <span class="app-header__title" data-testid="app-title">{{ appName }}</span>
       @if (modeBadge(); as badge) {
         <app-badge data-testid="mode-badge" [text]="badge.text" [color]="badge.color" />
       }
       <span class="app-header__spacer"></span>
       @if (session.auth.signedIn()) {
-        <span class="app-header__user" data-testid="signed-in-user">{{ signedInText() }}</span>
+        <span class="app-header__user" data-testid="signed-in-user">
+          <span class="app-header__avatar" role="img" [attr.aria-label]="signedInText()" [attr.title]="signedInText()">{{ initials() }}</span>
+          <span class="app-header__name">{{ signedInText() }}</span>
+        </span>
       }
       @if (!layout.isDesktop()) {
-        <ion-button fill="clear" data-testid="menu-button" [attr.aria-label]="menuLabel" [attr.title]="menuLabel" (click)="openMenu()">
+        <ion-button class="app-header__icon-button" fill="clear" data-testid="menu-button" [attr.aria-label]="menuLabel" [attr.title]="menuLabel" (click)="openMenu()">
           <ion-icon slot="icon-only" [name]="icons.menu" aria-hidden="true" />
         </ion-button>
       }
       @if (session.auth.signedIn()) {
-        <ion-button fill="outline" size="small" data-testid="sign-out-button" (click)="signOut()">
-          <ion-icon slot="start" [name]="icons.signOut" aria-hidden="true" />
-          {{ 'buttons.signOut' | t }}
+        <ion-button class="app-header__action" fill="outline" size="small" data-testid="sign-out-button" [attr.aria-label]="signOutLabel" [attr.title]="signOutLabel" (click)="signOut()">
+          @if (layout.isMobile()) {
+            <ion-icon slot="icon-only" [name]="icons.signOut" aria-hidden="true" />
+          } @else {
+            <ion-icon slot="start" [name]="icons.signOut" aria-hidden="true" />
+            {{ 'buttons.signOut' | t }}
+          }
         </ion-button>
       } @else {
-        <ion-button fill="solid" size="small" data-testid="sign-in-button" [disabled]="!session.auth.configured" (click)="signIn()">
-          <ion-icon slot="start" [name]="icons.signIn" aria-hidden="true" />
-          {{ 'buttons.signIn' | t }}
+        <ion-button class="app-header__action" fill="solid" size="small" data-testid="sign-in-button" [disabled]="!session.auth.configured" [attr.aria-label]="signInLabel" [attr.title]="signInLabel" (click)="signIn()">
+          @if (layout.isMobile()) {
+            <ion-icon slot="icon-only" [name]="icons.signIn" aria-hidden="true" />
+          } @else {
+            <ion-icon slot="start" [name]="icons.signIn" aria-hidden="true" />
+            {{ 'buttons.signIn' | t }}
+          }
         </ion-button>
       }
     </header>
@@ -66,6 +78,9 @@ export class AppHeaderComponent {
   });
 
   readonly signedInText = computed(() => this.i18n.text('header.signedInAs', { name: this.session.auth.displayName() }));
+  readonly initials = computed(() => this.display.initials(this.session.auth.displayName()));
+  readonly signInLabel = this.i18n.text('buttons.signIn');
+  readonly signOutLabel = this.i18n.text('buttons.signOut');
 
   openMenu(): void {
     void this.menu.open(this.config.layout.overlayMenuId);
@@ -79,3 +94,4 @@ export class AppHeaderComponent {
     void this.session.signOut();
   }
 }
+

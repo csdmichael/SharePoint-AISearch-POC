@@ -16,7 +16,9 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
       <nav class="tab-bar" data-testid="mobile-tab-bar" [attr.aria-label]="tabBarLabel">
         @for (item of items(); track item.id) {
           <a class="tab-bar__item" [routerLink]="item.route" routerLinkActive="is-active" [attr.data-nav-id]="item.id">
-            <ion-icon [name]="item.icon" aria-hidden="true" />
+            <span class="tab-bar__pill">
+              <ion-icon [name]="item.icon" aria-hidden="true" />
+            </span>
             <span class="tab-bar__label">{{ item.labelKey | t }}</span>
           </a>
         }

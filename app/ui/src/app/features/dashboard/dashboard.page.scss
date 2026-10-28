@@ -1,15 +1,33 @@
+.kpi-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-height: 7.5rem;
+}
+
 .kpi-card__label {
   margin: 0;
   color: var(--surface-muted-text);
   font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.35;
   overflow-wrap: anywhere;
 }
 
 .kpi-card__value {
-  margin: var(--space-xs) 0 0;
-  font-size: 1.75rem;
+  margin: 0;
+  font-size: 2rem;
   font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
+}
+
+.stamp {
+  margin: calc(var(--space-sm) * -1) 0 var(--space-lg);
+  font-size: 0.8125rem;
 }
 
 .finding-list {
@@ -30,16 +48,21 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-sm) var(--space-md);
   width: 100%;
+  min-height: 3.5rem;
   margin: 0;
-  padding: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
   border: 0;
   background: transparent;
   color: inherit;
   font: inherit;
   text-align: start;
   cursor: pointer;
+
+  &:hover {
+    background: var(--surface-hover);
+  }
 }
 
 .finding__title {
@@ -55,7 +78,7 @@
 }
 
 .finding__body {
-  padding: 0 var(--space-md) var(--space-md);
+  padding: var(--space-xs) var(--space-lg) var(--space-lg);
   border-top: 1px solid var(--surface-border);
 }
 
@@ -73,6 +96,15 @@
   align-items: center;
   gap: var(--space-sm);
   max-width: 100%;
-  color: var(--surface-accent);
+  margin-inline-start: calc(var(--space-sm) * -1);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--control-radius);
+  color: var(--surface-accent-strong);
+  font-weight: 500;
   overflow-wrap: anywhere;
+
+  &:hover {
+    background: var(--surface-accent-soft);
+    text-decoration: none;
+  }
 }

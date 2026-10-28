@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 @Component({
   selector: 'app-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<span class="badge" [style.--badge-color]="color()">{{ text() }}</span>`,
+  template: `<span class="badge" [style.--badge-color]="color()"><span class="badge__text">{{ text() }}</span></span>`,
   styleUrl: './badge.component.scss',
 })
 export class BadgeComponent {

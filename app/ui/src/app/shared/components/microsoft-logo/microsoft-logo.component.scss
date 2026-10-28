@@ -38,3 +38,7 @@
 .ms-logo__wordmark {
   font-size: 1rem;
 }
+
+.ms-logo--compact .ms-logo__wordmark {
+  display: none;
+}

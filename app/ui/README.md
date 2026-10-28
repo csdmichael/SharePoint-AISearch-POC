@@ -76,8 +76,10 @@ All runtime behavior, visual themes, endpoints, and strings are controlled throu
 - `navigation.json`: Navigation items, routes, labels, icons, and menu groupings.
 - `agent.json`: Foundry agent FAB configuration, message input limits, prompt paths, and placeholder extraction patterns.
 - `strings.json`: Localized UI strings, accessibility labels, headers, and system status messages.
-- `theme.json`: Microsoft brand colors, surface tokens, status indicators, and SVG logo asset paths.
+- `theme.json`: Microsoft brand colors, surface tokens, status indicators, and SVG logo asset paths. Surface tokens become `--surface-*` CSS variables, so stylesheets never hardcode colors.
 - `pages.json`: Core route paths including home route and document detail route.
+
+Every icon named in `layout.json`, `navigation.json`, or `agent.json` must be registered in `src/app/core/icons/icon-registry.ts`. The icon registry spec fails when one is missing, and an unregistered icon renders empty.
 
 ### Testing and Server Configuration
 - `e2e/config/devices.json`: Playwright device profiles, viewports, touch support, and layout classifications.

@@ -7,6 +7,8 @@
       }
     </div>
 
+    <p class="page-subtitle">{{ 'subtitles.notifications' | t }}</p>
+
     <ion-segment
       class="segments"
       data-testid="status-filter"
@@ -32,7 +34,7 @@
               <li>
                 <button
                   type="button"
-                  class="outbox__item"
+                  class="list-row outbox__item"
                   data-testid="outbox-item"
                   [attr.data-notification-id]="item.id"
                   [class.is-selected]="selectedId() === item.id"
@@ -58,7 +60,7 @@
         <h2 class="section-title">{{ 'notifications.previewHeading' | t }}</h2>
         @if (selected(); as item) {
           <h3 class="preview__subject" data-testid="preview-subject">{{ item.subject }}</h3>
-          <dl class="meta">
+          <dl class="definition-list">
             <dt>{{ 'notifications.recipient' | t }}</dt>
             <dd>{{ recipientText(item) }}</dd>
             <dt>{{ 'notifications.createdAt' | t }}</dt>

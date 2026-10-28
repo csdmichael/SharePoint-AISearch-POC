@@ -1,30 +1,32 @@
 <ion-content>
   <div class="page-frame" data-testid="page-documents">
     <h1 class="page-title">{{ 'pages.documents' | t }}</h1>
+    <p class="page-subtitle">{{ 'subtitles.documents' | t }}</p>
 
-    <div class="toolbar-row filters">
-      <ion-select
-        class="filter"
-        data-testid="filter-category"
-        [label]="'documents.categoryLabel' | t"
-        labelPlacement="stacked"
-        interface="popover"
-        [value]="category()"
-        (ionChange)="selectCategory(selectValue($event))"
-      >
-        <ion-select-option value="">{{ 'documents.allCategories' | t }}</ion-select-option>
-        @for (value of categories(); track value) {
-          <ion-select-option [value]="value">{{ value }}</ion-select-option>
-        }
-      </ion-select>
-      <span class="muted" data-testid="document-count">{{ countText() }}</span>
-    </div>
+    <ion-segment
+      class="segments"
+      data-testid="category-segments"
+      scrollable="true"
+      [value]="segmentValue()"
+      [attr.aria-label]="'documents.categoryLabel' | t"
+      (ionChange)="selectCategory(selectValue($event))"
+    >
+      <ion-segment-button [value]="allValue" [attr.data-category]="allValue">
+        <ion-label>{{ 'documents.allLabel' | t }}</ion-label>
+      </ion-segment-button>
+      @for (value of categories(); track value) {
+        <ion-segment-button [value]="value" [attr.data-category]="value">
+          <ion-label>{{ value }}</ion-label>
+        </ion-segment-button>
+      }
+    </ion-segment>
+    <p class="muted document-count" data-testid="document-count">{{ countText() }}</p>
 
     <app-state-view [state]="view()" emptyKey="documents.empty" (retry)="retry()" />
 
     @if (view().kind === 'ready') {
       <div class="table-scroll">
-        <table class="data-table" data-testid="documents-table">
+        <table class="data-table data-table--cards" data-testid="documents-table">
           <thead>
             <tr>
               <th scope="col">{{ 'documents.columns.title' | t }}</th>
@@ -39,15 +41,17 @@
           <tbody>
             @for (doc of documents.items(); track doc.id) {
               <tr data-testid="document-row" [attr.data-document-id]="doc.id">
-                <td>
-                  <a class="row-link" [routerLink]="documentPath(doc.id)" data-testid="document-link">{{ doc.title }}</a>
+                <td [attr.data-label]="'documents.columns.title' | t">
+                                  <a class="document-title" [routerLink]="documentPath(doc.id)" data-testid="document-link">{{ doc.title }}</a>
                 </td>
-                <td>{{ doc.knowledgeCategory ?? ('states.notAvailable' | t) }}</td>
-                <td>{{ doc.artifactId ?? ('states.notAvailable' | t) }}</td>
-                <td>{{ lifecycleLabel(doc.lifecycleStatus) }}</td>
-                <td>{{ trustLabel(doc.trustScore) }}</td>
-                <td>{{ ownerLabel(doc) }}</td>
-                <td>{{ doc.libraryTitle ?? ('states.notAvailable' | t) }}</td>
+                <td [attr.data-label]="'documents.columns.category' | t">{{ doc.knowledgeCategory ?? ('states.notAvailable' | t) }}</td>
+                <td [attr.data-label]="'documents.columns.artifactId' | t">{{ doc.artifactId ?? ('states.notAvailable' | t) }}</td>
+                <td [attr.data-label]="'documents.columns.lifecycle' | t">{{ lifecycleLabel(doc.lifecycleStatus) }}</td>
+                <td [attr.data-label]="'documents.columns.trustScore' | t">
+                  <app-badge [text]="trustLabel(doc.trustScore)" [color]="trustColor(doc.trustScore)" />
+                </td>
+                <td [attr.data-label]="'documents.columns.owner' | t">{{ ownerLabel(doc) }}</td>
+                <td [attr.data-label]="'documents.columns.library' | t">{{ doc.libraryTitle ?? ('states.notAvailable' | t) }}</td>
               </tr>
             }
           </tbody>

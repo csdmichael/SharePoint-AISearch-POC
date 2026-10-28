@@ -45,4 +45,16 @@ export class DisplayService {
   notAvailable(): string {
     return this.i18n.text('states.notAvailable');
   }
+
+  /** Up to two initials for an avatar. Email addresses use their local part. */
+  initials(name: string): string {
+    const local = name.includes('@') ? name.split('@')[0] : name;
+    const parts = local.split(/[\s._-]+/).filter(Boolean);
+    if (parts.length === 0) {
+      return '';
+    }
+    const first = parts[0].charAt(0);
+    const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
+    return `${first}${last}`.toUpperCase();
+  }
 }

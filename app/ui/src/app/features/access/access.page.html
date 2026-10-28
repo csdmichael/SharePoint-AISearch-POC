@@ -1,6 +1,7 @@
 <ion-content>
   <div class="page-frame" data-testid="page-access">
     <h1 class="page-title">{{ 'pages.access' | t }}</h1>
+    <p class="page-subtitle">{{ 'subtitles.access' | t }}</p>
 
     <div class="panes">
       <section class="pane pane--master" data-testid="access-master">
@@ -21,13 +22,13 @@
                 <li>
                   <button
                     type="button"
-                    class="user-list__item"
+                    class="list-row"
                     data-testid="user-item"
                     [class.is-selected]="isSelected(user)"
                     [attr.aria-pressed]="isSelected(user)"
                     (click)="selectUser(user)"
                   >
-                    <ion-icon [name]="icons.user" aria-hidden="true" />
+                    <span class="user-list__avatar" aria-hidden="true">{{ display.initials(user.displayName) }}</span>
                     <span class="user-list__text">
                       <span>{{ user.displayName }}</span>
                       <span class="muted user-list__upn">
@@ -53,7 +54,7 @@
           <app-state-view [state]="itemsView()" emptyKey="access.itemsEmpty" (retry)="items.reload()" />
           @if (itemsView().kind === 'ready') {
             <div class="table-scroll">
-              <table class="data-table" data-testid="access-table">
+              <table class="data-table data-table--cards" data-testid="access-table">
                 <thead>
                   <tr>
                     <th scope="col">{{ 'access.columns.name' | t }}</th>
@@ -66,11 +67,11 @@
                 <tbody>
                   @for (record of items.items(); track recordKey(record)) {
                     <tr data-testid="access-row">
-                      <td>{{ record.item.name }}</td>
-                      <td>{{ record.item.path ?? ('states.notAvailable' | t) }}</td>
-                      <td>{{ kindLabel(record.item.kind) }}</td>
-                      <td>{{ record.role }}</td>
-                      <td>{{ grantPathText(record) }}</td>
+                      <td [attr.data-label]="'access.columns.name' | t">{{ record.item.name }}</td>
+                      <td [attr.data-label]="'access.columns.path' | t">{{ record.item.path ?? ('states.notAvailable' | t) }}</td>
+                      <td [attr.data-label]="'access.columns.kind' | t">{{ kindLabel(record.item.kind) }}</td>
+                      <td [attr.data-label]="'access.columns.role' | t">{{ record.role }}</td>
+                      <td [attr.data-label]="'access.columns.grantPath' | t">{{ grantPathText(record) }}</td>
                     </tr>
                   }
                 </tbody>
@@ -87,8 +88,13 @@
 
       <section class="pane pane--detail" data-testid="access-summary">
         @if (selectedUser(); as user) {
-          <h2 class="section-title">{{ user.displayName }}</h2>
+          <div class="user-summary">
+            <span class="user-list__avatar user-summary__avatar" aria-hidden="true">{{ display.initials(user.displayName) }}</span>
+            <div class="user-summary__text">
+              <h2 class="section-title user-summary__name">{{ user.displayName }}</h2>
           <p class="muted user-upn">{{ user.userPrincipalName ?? user.loginName }}</p>
+            </div>
+          </div>
           @if (itemsView().kind === 'ready') {
             <p data-testid="access-count">{{ 'access.rowCount' | t: { count: i18n.number(items.items().length) } }}</p>
           }

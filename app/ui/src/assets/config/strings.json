@@ -42,6 +42,16 @@
     "document": "Document governance",
     "notFound": "Page not found"
   },
+  "subtitles": {
+    "dashboard": "Governance health across the configured SharePoint libraries.",
+    "explorer": "Browse libraries and folders, then review who can access each item.",
+    "access": "Find a user and see every item they can reach, and how access was granted.",
+    "documents": "Governed documents, grouped by knowledge category.",
+    "document": "Governance facts, trust, and conflicts for one document.",
+    "cleanup": "Review duplicates, expired documents, anomalies, and exposure. Draft owner notifications for items that need action.",
+    "notifications": "Owner notifications from draft to delivery. Nothing is sent without approval.",
+    "agent": "Ask a governance question. Answers come from live evidence and cite SharePoint documents."
+  },
   "buttons": {
     "signIn": "Sign in",
     "signOut": "Sign out",
@@ -218,6 +228,9 @@
     "promptsHeading": "Prompts",
     "promptsEmpty": "No prompts are available.",
     "placeholderLabel": "Value for {name}",
+    "placeholderNames": {
+      "userUpn": "User email address"
+    },
     "placeholderRequired": "Enter a value for {name} before sending this prompt.",
     "inputLabel": "Message",
     "inputPlaceholder": "Ask about governance, access, or evidence",
@@ -273,7 +286,7 @@
   },
   "documents": {
     "categoryLabel": "Knowledge category",
-    "allCategories": "All categories",
+    "allLabel": "All",
     "countText": "{count} documents",
     "empty": "No documents are in this category.",
     "columns": {

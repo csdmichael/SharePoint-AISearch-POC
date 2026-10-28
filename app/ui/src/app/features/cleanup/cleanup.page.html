@@ -1,6 +1,7 @@
 <ion-content>
   <div class="page-frame" data-testid="page-cleanup">
     <h1 class="page-title">{{ 'pages.cleanup' | t }}</h1>
+    <p class="page-subtitle">{{ 'subtitles.cleanup' | t }}</p>
 
     <ion-segment
       class="segments"
@@ -56,7 +57,7 @@
 
     @if (view().kind === 'ready') {
       <div class="table-scroll">
-        <table class="data-table" data-testid="cleanup-table">
+        <table class="data-table data-table--cards" data-testid="cleanup-table">
           <thead>
             <tr>
               <th scope="col" class="select-column"><span class="sr-only">{{ 'buttons.selectAll' | t }}</span></th>
@@ -81,11 +82,11 @@
                         (change)="toggle(member.id)"
                       />
                     </td>
-                    <td>
+                    <td [attr.data-label]="'cleanup.columns.document' | t">
                       <span>{{ member.name }}</span>
                       <a class="row-link" [routerLink]="documentPath(member.id)">{{ 'buttons.openDocument' | t }}</a>
                     </td>
-                    <td>{{ canonicalOf(record.canonical) }}</td>
+                    <td [attr.data-label]="'cleanup.columns.detail' | t">{{ canonicalOf(record.canonical) }}</td>
                   </tr>
                 }
               </tbody>
@@ -101,11 +102,11 @@
                       (change)="toggle(record.document.id)"
                     />
                   </td>
-                  <td>
+                  <td [attr.data-label]="'cleanup.columns.document' | t">
                     <span>{{ record.document.name }}</span>
                     <a class="row-link" [routerLink]="documentPath(record.document.id)">{{ 'buttons.openDocument' | t }}</a>
                   </td>
-                  <td>{{ recordDetail(record) }}</td>
+                  <td [attr.data-label]="'cleanup.columns.detail' | t">{{ recordDetail(record) }}</td>
                 </tr>
               </tbody>
             }

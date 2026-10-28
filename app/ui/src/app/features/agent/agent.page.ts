@@ -5,7 +5,7 @@ import { ApiError, asApiError, toApiError } from '../../core/api/api-error';
 import { ApiService } from '../../core/api/api.service';
 import { AgentPrompt, AgentPromptsResponse, AgentReply, EvidenceValue } from '../../core/api/models/api.models';
 import { ConfigService } from '../../core/config/config.service';
-import { I18nService } from '../../core/i18n/i18n.service';
+import { I18nService, lookupString } from '../../core/i18n/i18n.service';
 import { SessionService, ViewState, resolveViewState } from '../../core/session/session.service';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { StateViewComponent } from '../../shared/components/state-view/state-view.component';
@@ -105,7 +105,7 @@ export class AgentPage {
   }
 
   placeholderLabel(name: string): string {
-    return this.i18n.text('agent.placeholderLabel', { name });
+    return lookupString(this.config.strings, `agent.placeholderNames.${name}`) ?? this.i18n.text('agent.placeholderLabel', { name });
   }
 
   promptReady(prompt: AgentPrompt): boolean {

@@ -27,6 +27,7 @@ resource site 'Microsoft.Web/sites@2023-12-01' = {
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
       http20Enabled: true
+      alwaysOn: true
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "apiBaseUrl": "http://127.0.0.1:8000/api/v1",
-  "requestTimeoutMs": 15000,
+  "requestTimeoutMs": 30000,
   "pageSize": 25,
   "endpoints": {
     "health": "/health",

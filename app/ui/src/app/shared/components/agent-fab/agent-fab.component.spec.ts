@@ -10,6 +10,7 @@ import agentConfig from '../../../../assets/config/agent.json';
 import stringsConfig from '../../../../assets/config/strings.json';
 import themeConfig from '../../../../assets/config/theme.json';
 import pagesConfig from '../../../../assets/config/pages.json';
+import { registerIcons } from '../../../core/icons/icon-registry';
 
 describe('AgentFabComponent', () => {
   let fixture: ComponentFixture<AgentFabComponent>;
@@ -17,6 +18,7 @@ describe('AgentFabComponent', () => {
   let router: Router;
 
   beforeEach(async () => {
+    registerIcons();
     await TestBed.configureTestingModule({
       imports: [AgentFabComponent],
       providers: [provideHttpClient(), provideRouter([])],

@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { IonContent, IonSelect, IonSelectOption } from '@ionic/angular';
+import { IonContent, IonLabel, IonSegment, IonSegmentButton } from '@ionic/angular';
 import { ApiService } from '../../core/api/api.service';
 import { DocumentPage, DocumentSummary } from '../../core/api/models/api.models';
 import { ConfigService } from '../../core/config/config.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { NavigationService } from '../../core/navigation/navigation';
 import { SessionService, ViewState, resolveViewState } from '../../core/session/session.service';
+import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { StateViewComponent } from '../../shared/components/state-view/state-view.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { CursorList } from '../../shared/util/cursor-list';
@@ -16,7 +17,7 @@ import { DisplayService } from '../../shared/util/display.service';
 @Component({
   selector: 'app-document-list-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonSelect, IonSelectOption, RouterLink, StateViewComponent, TranslatePipe],
+  imports: [IonContent, IonLabel, IonSegment, IonSegmentButton, RouterLink, BadgeComponent, StateViewComponent, TranslatePipe],
   templateUrl: './document-list.page.html',
   styleUrl: './document-list.page.scss',
   host: { class: 'ion-page' },
@@ -33,6 +34,9 @@ export class DocumentListPage {
 
   /** The selected knowledge category. The empty string lists every category. */
   readonly category = signal('');
+
+  /** Segment value of the "All" choice. It is not a category name, so it cannot match one. */
+  readonly allValue = '__all__';
   readonly documents = new CursorList<DocumentSummary, DocumentPage>({
     key: () => (this.session.gate() === 'ready' ? this.category() : undefined),
     fetch: (key, cursor) => this.api.documents(key, cursor),
@@ -57,8 +61,12 @@ export class DocumentListPage {
     return typeof value === 'string' ? value : '';
   }
 
+  segmentValue(): string {
+    return this.category() || this.allValue;
+  }
+
   selectCategory(value: string): void {
-    this.category.set(value);
+    this.category.set(value === this.allValue ? '' : value);
   }
 
   documentPath(id: string): string {
@@ -75,6 +83,10 @@ export class DocumentListPage {
 
   trustLabel(score: number | null): string {
     return score === null ? this.i18n.text('states.notAvailable') : this.i18n.number(score);
+  }
+
+  trustColor(score: number | null): string {
+    return score === null ? this.display.statusColor(null) : this.display.trustColor(score);
   }
 
   retry(): void {

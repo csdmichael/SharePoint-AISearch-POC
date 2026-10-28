@@ -1,32 +1,19 @@
-.filters {
-  margin-bottom: var(--space-sm);
+.segments {
+  margin-bottom: var(--space-xs);
 }
 
-.filter {
-  flex: 1 1 10rem;
-  min-width: 0;
-  max-width: 100%;
+.document-count {
+  margin: 0 0 var(--space-md);
+  font-size: 0.875rem;
 }
 
-.row-link {
-  color: var(--surface-accent);
-}
+.document-title {
+  color: var(--surface-accent-strong);
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
 
-.load-more {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  margin-top: var(--space-md);
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--surface-accent);
-  border-radius: var(--radius);
-  background: var(--surface-card);
-  color: var(--surface-accent);
-  font: inherit;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: default;
+  &:hover {
+    text-decoration: underline;
   }
 }

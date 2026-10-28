@@ -3,3 +3,18 @@ ion-fab.agent-fab {
   bottom: var(--fab-bottom);
   z-index: 10;
 }
+
+ion-fab.agent-fab ion-fab-button {
+  --background: var(--surface-accent);
+  --background-hover: var(--surface-accent-hover);
+  --background-activated: var(--surface-accent-pressed);
+  --background-focused: var(--surface-accent-hover);
+  --color: var(--surface-accent-text);
+  --box-shadow: var(--shadow-raised);
+  width: 3.5rem;
+  height: 3.5rem;
+
+  ion-icon {
+    font-size: 1.5rem;
+  }
+}

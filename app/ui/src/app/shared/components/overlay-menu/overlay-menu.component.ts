@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
   IonButton,
   IonButtons,
@@ -27,6 +27,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterLink,
+    RouterLinkActive,
     IonMenu,
     IonHeader,
     IonToolbar,
@@ -66,7 +67,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
             <ion-list-header>{{ group.groupLabelKey | t }}</ion-list-header>
             <ion-list>
               @for (item of group.items; track item.id) {
-                <ion-item button detail="false" [routerLink]="item.route" [attr.data-nav-id]="item.id" (click)="close()">
+                <ion-item button detail="false" [routerLink]="item.route" routerLinkActive="is-active" [attr.data-nav-id]="item.id" (click)="close()">
                   <ion-icon slot="start" [name]="item.icon" aria-hidden="true" />
                   <ion-label>{{ item.labelKey | t }}</ion-label>
                 </ion-item>

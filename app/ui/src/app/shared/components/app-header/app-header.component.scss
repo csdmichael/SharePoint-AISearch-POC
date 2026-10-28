@@ -4,19 +4,37 @@
   gap: var(--space-md);
   height: var(--layout-header-height);
   min-width: 0;
-  padding: 0 var(--space-lg);
+  padding: 0 var(--space-xl);
   background: var(--surface-header);
   border-bottom: 1px solid var(--surface-border);
   box-sizing: border-box;
   color: var(--surface-text);
 }
 
+.app-header--compact {
+  gap: var(--space-sm);
+  padding: 0 var(--space-md);
+}
+
+.app-header__divider {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 1.5rem;
+  background: var(--surface-border);
+}
+
 .app-header__title {
-  font-weight: 600;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  min-width: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.app-header--compact .app-header__title {
+  font-size: 0.9375rem;
 }
 
 .app-header__spacer {
@@ -24,12 +42,49 @@
 }
 
 .app-header__user {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
   color: var(--surface-muted-text);
   font-size: 0.875rem;
+}
+
+.app-header__avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--surface-accent-soft);
+  color: var(--surface-accent-strong);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.app-header__name {
+  max-width: 16rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 16rem;
+}
+
+.app-header--hide-name .app-header__name {
+  display: none;
+}
+
+.app-header__action,
+.app-header__icon-button {
+  flex: 0 0 auto;
+}
+
+.app-header--compact .app-header__action {
+  --padding-start: 0;
+  --padding-end: 0;
+  width: 2.5rem;
+  height: 2.5rem;
 }
 
 .app-header > app-microsoft-logo,

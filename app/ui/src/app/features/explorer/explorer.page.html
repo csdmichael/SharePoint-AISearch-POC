@@ -1,6 +1,7 @@
 <ion-content>
   <div class="page-frame" data-testid="page-explorer">
     <h1 class="page-title">{{ 'pages.explorer' | t }}</h1>
+    <p class="page-subtitle">{{ 'subtitles.explorer' | t }}</p>
 
     <div class="panes" data-testid="explorer-panes">
       <section class="pane pane--master" data-testid="explorer-master">
@@ -10,10 +11,7 @@
           <ul class="library-list" data-testid="library-list">
             @for (library of libraryItems(); track library.id) {
               <li>
-                <button
-                  type="button"
-                  class="library-list__item"
-                  data-testid="library-item"
+                <button type="button" class="list-row" data-testid="library-item"
                   [class.is-selected]="selectedLibrary()?.id === library.id"
                   [attr.aria-pressed]="selectedLibrary()?.id === library.id"
                   (click)="selectLibrary(library)"
@@ -50,7 +48,7 @@
                   }
                   <button
                     type="button"
-                    class="tree-row__name"
+                    class="list-row tree-row__name"
                     data-testid="tree-item"
                     [class.is-selected]="isSelectedItem(row.item)"
                     [attr.aria-current]="isSelectedItem(row.item) ? 'true' : null"
@@ -123,12 +121,11 @@
               <p class="muted" data-testid="permissions-filtered-empty">{{ 'explorer.permissionsFilteredEmpty' | t }}</p>
             } @else {
               <div class="table-scroll">
-                <table class="data-table" data-testid="permissions-table">
+                <table class="data-table data-table--cards" data-testid="permissions-table">
                   <thead>
                     <tr>
                       <th scope="col">{{ 'explorer.columns.principal' | t }}</th>
-                      <th scope="col">{{ 'explorer.columns.type' | t }}</th>
-                      <th scope="col">{{ 'explorer.columns.role' | t }}</th>
+                          <th scope="col">{{ 'explorer.columns.role' | t }}</th>
                       <th scope="col">{{ 'explorer.columns.grantedVia' | t }}</th>
                       <th scope="col">{{ 'explorer.columns.inheritedFrom' | t }}</th>
                       <th scope="col">{{ 'explorer.columns.members' | t }}</th>
@@ -137,17 +134,17 @@
                   <tbody>
                     @for (entry of filteredPermissions(); track entry.id) {
                       <tr class="permission-row" data-testid="permission-row" [class.is-selected]="selectedPermissionId() === entry.id" [attr.data-permission-id]="entry.id" (click)="selectPermission(entry)">
-                        <td>
+                        <td [attr.data-label]="'explorer.columns.principal' | t">
                           {{ entry.principal.displayName }}
+                          <span class="principal__type">{{ permissionTypeLabel(entry.principal.type) }}</span>
                           @if (entry.accountEnabled === false) {
                             <span class="muted"> · {{ 'explorer.accountDisabled' | t }}</span>
                           }
                         </td>
-                        <td>{{ permissionTypeLabel(entry.principal.type) }}</td>
-                        <td>{{ entry.role }}</td>
-                        <td>{{ grantedViaLabel(entry.grantedVia) }}</td>
-                        <td>{{ entry.inheritedFrom ? entry.inheritedFrom.path : ('states.notAvailable' | t) }}</td>
-                        <td>
+                        <td [attr.data-label]="'explorer.columns.role' | t">{{ entry.role }}</td>
+                        <td [attr.data-label]="'explorer.columns.grantedVia' | t">{{ grantedViaLabel(entry.grantedVia) }}</td>
+                        <td [attr.data-label]="'explorer.columns.inheritedFrom' | t">{{ entry.inheritedFrom ? entry.inheritedFrom.path : ('states.notAvailable' | t) }}</td>
+                        <td [attr.data-label]="'explorer.columns.members' | t">
                           @if (entry.expandedMembers.length > 0) {
                             <button type="button" class="tree-row__more" [attr.aria-expanded]="isPrincipalExpanded(entry)" (click)="$event.stopPropagation(); togglePrincipal(entry)">
                               {{ 'explorer.memberCount' | t: { count: entry.expandedMembers.length } }}
@@ -159,7 +156,7 @@
                       </tr>
                       @if (entry.expandedMembers.length > 0 && isPrincipalExpanded(entry)) {
                         <tr class="members-row" data-testid="members-row">
-                          <td colspan="6">
+                          <td colspan="5">
                             <ul class="member-list">
                               @for (member of entry.expandedMembers; track $index) {
                                 <li>{{ memberLine(member) }}</li>
@@ -181,7 +178,7 @@
         <h2 class="section-title">{{ 'explorer.detailHeading' | t }}</h2>
         @if (selectedItem(); as item) {
           <h3 class="detail__name" data-testid="detail-name">{{ item.name }}</h3>
-          <dl class="detail-list">
+          <dl class="definition-list">
             <dt>{{ 'explorer.kind' | t }}</dt>
             <dd>{{ itemLabel(item) }}</dd>
             <dt>{{ 'explorer.path' | t }}</dt>

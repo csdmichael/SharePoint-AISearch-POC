@@ -30,11 +30,11 @@ interface StateCopy {
             <p class="state-view__text">{{ loadingKey() | t }}</p>
           }
           @case ('empty') {
-            <ion-icon class="state-view__icon" [name]="icons.empty" aria-hidden="true" />
+            <span class="state-view__icon-wrap" aria-hidden="true"><ion-icon class="state-view__icon" [name]="icons.empty" /></span>
             <p class="state-view__text" data-testid="state-empty">{{ emptyKey() | t }}</p>
           }
           @default {
-            <ion-icon class="state-view__icon" [name]="copy().icon" aria-hidden="true" />
+            <span class="state-view__icon-wrap" aria-hidden="true"><ion-icon class="state-view__icon" [name]="copy().icon" /></span>
             <h2 class="state-view__title" data-testid="state-title">{{ copy().titleKey | t }}</h2>
             <p class="state-view__text" data-testid="state-body">{{ copy().bodyKey | t }}</p>
             @if (copy().retry || copy().signIn) {

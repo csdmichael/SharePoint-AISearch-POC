@@ -12,14 +12,20 @@
     "page": "#F3F2F1",
     "card": "#FFFFFF",
     "header": "#FFFFFF",
-    "sidebar": "#FAF9F8",
+    "sidebar": "#FFFFFF",
     "text": "#201F1E",
     "mutedText": "#605E5C",
     "border": "#E1DFDD",
+    "controlBorder": "#8A8886",
     "accent": "#0078D4",
+    "accentHover": "#106EBE",
+    "accentPressed": "#005A9E",
+    "accentStrong": "#005A9E",
+    "accentSoft": "#EFF6FC",
     "accentText": "#FFFFFF",
-    "tableHeader": "#F3F2F1",
-    "selected": "#DEECF9"
+    "tableHeader": "#FAF9F8",
+    "selected": "#DEECF9",
+    "hover": "#F3F2F1"
   },
   "contrast": {
     "light": "#FFFFFF",
