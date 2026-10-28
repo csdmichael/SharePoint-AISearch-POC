@@ -843,6 +843,10 @@ Set-AzContext -Subscription '<SUBSCRIPTION_ID>'
 .\scripts\provision_search.ps1
 .\scripts\validate_search.ps1
 .\scripts\provision_foundry_agent.ps1
+# For multi-site demo content, mirror generated docs/videos/transcripts into data/sites/<siteId>.
+python .\scripts\expand_site_corpora.py
+python .\scripts\regenerate_site_media.py --seconds 16 --fps 12
+python .\scripts\sync_site_corpora_to_data.py --clean
 ```
 
 These are **not read-only setup probes**. SharePoint provisioning uploads and

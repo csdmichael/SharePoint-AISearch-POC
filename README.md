@@ -328,6 +328,16 @@ Use `-SiteOnly` to provision metadata before generating files. Use
 `-ExpectedDocuments` with a staged manifest and `-PruneMissingDocuments` to
 make SharePoint exactly match that manifest before upload.
 
+For the multi-site demo corpus, mirror generated files into per-site folders in
+the repository data tree (documents, recordings, and Teams-style transcript
+files `.vtt`/`.txt`):
+
+```powershell
+python .\scripts\expand_site_corpora.py
+python .\scripts\regenerate_site_media.py --seconds 16 --fps 12
+python .\scripts\sync_site_corpora_to_data.py --clean
+```
+
 The staged workflow prunes only the isolated bootstrap library. It fully
 generates, validates, and preflights the production corpus before upload.
 Unexpected stale production files cause the exact parent/artifact gate to fail

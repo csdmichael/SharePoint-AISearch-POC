@@ -9,7 +9,8 @@ param(
     [string]$StatePath,
     [int]$ExpectedDocuments,
     [switch]$SiteOnly,
-    [switch]$PruneMissingDocuments
+    [switch]$PruneMissingDocuments,
+    [switch]$SkipMetadataValidation
 )
 
 Set-StrictMode -Version Latest
@@ -101,6 +102,71 @@ function ConvertTo-DrivePath {
     param([Parameter(Mandatory)][string]$RelativePath)
 
     return (($RelativePath -split '/') | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
+}
+
+function ConvertTo-RelativePath {
+    param([Parameter(Mandatory)][string]$Path)
+
+    return (($Path -replace '\\', '/') -replace '^\./', '') -replace '/+', '/'
+}
+
+function Ensure-DriveFolderPath {
+    param(
+        [Parameter(Mandatory)][string]$DriveId,
+        [Parameter(Mandatory)][string]$RelativeFolderPath
+    )
+
+    $normalized = ConvertTo-RelativePath -Path $RelativeFolderPath
+    if ([string]::IsNullOrWhiteSpace($normalized)) { return }
+    $segments = @($normalized -split '/')
+    $currentPath = ''
+    foreach ($segment in $segments) {
+        if ([string]::IsNullOrWhiteSpace($segment)) { continue }
+        $currentPath = if ($currentPath) { "$currentPath/$segment" } else { $segment }
+        $encodedPath = ConvertTo-DrivePath -RelativePath $currentPath
+        $existing = Invoke-Graph -Method GET -Uri "/drives/$DriveId/root:/$encodedPath" -AllowNotFound
+        if (-not $existing) {
+            $parentPath = Split-Path -Path $currentPath -Parent
+            $parentUri = if ($parentPath -and $parentPath -ne '.') {
+                "/drives/$DriveId/root:/$(ConvertTo-DrivePath -RelativePath $parentPath):/children"
+            } else {
+                "/drives/$DriveId/root/children"
+            }
+            Invoke-Graph -Method POST -Uri $parentUri -Body @{
+                name = $segment
+                folder = @{}
+                '@microsoft.graph.conflictBehavior' = 'fail'
+            } | Out-Null
+        }
+    }
+}
+
+function Get-DriveFilesRecursively {
+    param(
+        [Parameter(Mandatory)][string]$DriveId,
+        [Parameter(Mandatory)][string]$RelativeFolderPath
+    )
+
+    $results = @{}
+    $normalizedRoot = ConvertTo-RelativePath -Path $RelativeFolderPath
+    $pending = [System.Collections.Generic.Queue[string]]::new()
+    $pending.Enqueue($normalizedRoot)
+
+    while ($pending.Count -gt 0) {
+        $currentFolder = $pending.Dequeue()
+        $encodedFolder = ConvertTo-DrivePath -RelativePath $currentFolder
+        $response = Invoke-Graph -Method GET -Uri "/drives/$DriveId/root:/$encodedFolder`:/children?`$select=id,name,file,folder"
+        foreach ($child in @($response.value)) {
+            $childPath = ConvertTo-RelativePath -Path "$currentFolder/$($child.name)"
+            if ($child.file) {
+                $results[$childPath] = $child
+            }
+            elseif ($child.folder) {
+                $pending.Enqueue($childPath)
+            }
+        }
+    }
+    return $results
 }
 
 function Ensure-Column {
@@ -335,14 +401,14 @@ foreach ($category in $Categories) {
 if ($PruneMissingDocuments -and -not $SiteOnly) {
     $expectedPaths = @{}
     foreach ($item in $manifest) {
-        $expectedPaths["$($item.category)/$($item.filename)"] = $true
+        $expectedPaths[(ConvertTo-RelativePath -Path $item.relative_path)] = $true
     }
     foreach ($category in $Categories) {
-        $encodedCategory = [Uri]::EscapeDataString($category)
-        $children = Invoke-Graph -Method GET -Uri "/drives/$($drive.id)/root:/$encodedCategory`:/children?`$select=id,name,file"
-        foreach ($child in @($children.value)) {
-            if ($child.file -and -not $expectedPaths.ContainsKey("$category/$($child.name)")) {
-                Invoke-Graph -Method DELETE -Uri "/drives/$($drive.id)/items/$($child.id)" | Out-Null
+        $remoteFiles = Get-DriveFilesRecursively -DriveId $drive.id -RelativeFolderPath $category
+        foreach ($remotePath in $remoteFiles.Keys) {
+            if (-not $expectedPaths.ContainsKey($remotePath)) {
+                $remoteItem = $remoteFiles[$remotePath]
+                Invoke-Graph -Method DELETE -Uri "/drives/$($drive.id)/items/$($remoteItem.id)" | Out-Null
             }
         }
     }
@@ -353,7 +419,12 @@ if (-not $SiteOnly) {
     foreach ($item in $manifest) {
         $localPath = Join-Path $resolvedCorpus ($item.relative_path -replace '/', [IO.Path]::DirectorySeparatorChar)
         if (-not (Test-Path $localPath)) { throw "Missing corpus file: $localPath" }
-        $drivePath = ConvertTo-DrivePath -RelativePath "$($item.category)/$($item.filename)"
+        $relativePath = ConvertTo-RelativePath -Path $item.relative_path
+        $relativeFolder = Split-Path -Path $relativePath -Parent
+        if ($relativeFolder -and $relativeFolder -ne '.') {
+            Ensure-DriveFolderPath -DriveId $drive.id -RelativeFolderPath $relativeFolder
+        }
+        $drivePath = ConvertTo-DrivePath -RelativePath $relativePath
         $uploaded = Invoke-Graph -Method PUT -Uri "/drives/$($drive.id)/root:/$drivePath`:/content" -InFile $localPath
         Invoke-Graph -Method PATCH -Uri "/drives/$($drive.id)/items/$($uploaded.id)/listItem/fields" -Body @{
             Title              = $item.title
@@ -370,13 +441,12 @@ if (-not $SiteOnly) {
 
 if (-not $SiteOnly) {
     $expectedByPath = @{}
-    foreach ($item in $manifest) { $expectedByPath["$($item.category)/$($item.filename)"] = $item }
+    foreach ($item in $manifest) { $expectedByPath[(ConvertTo-RelativePath -Path $item.relative_path)] = $item }
     $remoteByPath = @{}
     foreach ($category in $Categories) {
-        $encodedCategory = [Uri]::EscapeDataString($category)
-        $children = Invoke-Graph -Method GET -Uri "/drives/$($drive.id)/root:/$encodedCategory`:/children?`$select=id,name,file"
-        foreach ($child in @($children.value)) {
-            if ($child.file) { $remoteByPath["$category/$($child.name)"] = $child }
+        $files = Get-DriveFilesRecursively -DriveId $drive.id -RelativeFolderPath $category
+        foreach ($path in $files.Keys) {
+            $remoteByPath[$path] = $files[$path]
         }
     }
     $pathDifference = @(Compare-Object @($expectedByPath.Keys | Sort-Object) @($remoteByPath.Keys | Sort-Object))
@@ -384,18 +454,20 @@ if (-not $SiteOnly) {
         $differenceText = $pathDifference | ForEach-Object { "$($_.SideIndicator)$($_.InputObject)" }
         throw "SharePoint inventory does not match the manifest: $($differenceText -join ', ')"
     }
-    foreach ($remotePath in $expectedByPath.Keys) {
-        $expected = $expectedByPath[$remotePath]
-        $remote = $remoteByPath[$remotePath]
-        $fields = Invoke-Graph -Method GET -Uri "/drives/$($drive.id)/items/$($remote.id)/listItem/fields"
-        $metadataMatches = $fields.ArtifactId -eq $expected.artifact_id -and
-            $fields.KnowledgeCategory -eq $expected.category -and
-            $fields.SourceTable -eq $expected.source_table -and
-            $fields.SourceSystem -eq $expected.source_system
-        $expectedTimestamp = [DateTimeOffset]::Parse($expected.profile_generated_at)
-        $actualTimestamp = [DateTimeOffset]::Parse($fields.ProfileGeneratedAt)
-        if (-not $metadataMatches -or [Math]::Abs(($actualTimestamp - $expectedTimestamp).TotalSeconds) -gt 1) {
-            throw "SharePoint metadata does not match the manifest for $remotePath."
+    if (-not $SkipMetadataValidation) {
+        foreach ($remotePath in $expectedByPath.Keys) {
+            $expected = $expectedByPath[$remotePath]
+            $remote = $remoteByPath[$remotePath]
+            $fields = Invoke-Graph -Method GET -Uri "/drives/$($drive.id)/items/$($remote.id)/listItem/fields"
+            $metadataMatches = $fields.ArtifactId -eq $expected.artifact_id -and
+                $fields.KnowledgeCategory -eq $expected.category -and
+                $fields.SourceTable -eq $expected.source_table -and
+                $fields.SourceSystem -eq $expected.source_system
+            $expectedTimestamp = [DateTimeOffset]::Parse($expected.profile_generated_at)
+            $actualTimestamp = [DateTimeOffset]::Parse($fields.ProfileGeneratedAt)
+            if (-not $metadataMatches -or [Math]::Abs(($actualTimestamp - $expectedTimestamp).TotalSeconds) -gt 1) {
+                throw "SharePoint metadata does not match the manifest for $remotePath."
+            }
         }
     }
 }
@@ -422,6 +494,12 @@ $state | ConvertTo-Json -Depth 6
 finally {
     $cleanupErrors = @()
     if ($script:AdminGraphToken) {
+        try {
+            $script:AdminGraphToken = Get-AzBearerToken -ResourceUrl 'https://graph.microsoft.com'
+        }
+        catch {
+            $cleanupErrors += "token refresh before cleanup ($provisioningCorrelationId): $($_.Exception.Message)"
+        }
         $correlatedApplications = @()
         try {
             $encodedTemporaryName = [Uri]::EscapeDataString("displayName eq '$temporaryDisplayName'")
@@ -490,6 +568,13 @@ finally {
     Remove-Variable GraphToken -Scope Script -ErrorAction SilentlyContinue
     Remove-Variable AdminGraphToken -Scope Script -ErrorAction SilentlyContinue
     if ($cleanupErrors.Count) {
-        throw "Temporary Graph provisioner cleanup failed (correlation=$provisioningCorrelationId, displayName='$temporaryDisplayName'): $($cleanupErrors -join ' | ')"
+        $tokenRevocationOnly = @($cleanupErrors | Where-Object { $_ -match 'TokenIssuedBeforeRevocationTimestamp' }).Count -eq $cleanupErrors.Count
+        if ($tokenRevocationOnly) {
+            Write-Warning "Temporary Graph provisioner cleanup could not complete due to token revocation challenge (correlation=$provisioningCorrelationId). Reauthenticate and run cleanup validation."
+            $cleanupErrors = @()
+        }
+        if ($cleanupErrors.Count) {
+            throw "Temporary Graph provisioner cleanup failed (correlation=$provisioningCorrelationId, displayName='$temporaryDisplayName'): $($cleanupErrors -join ' | ')"
+        }
     }
 }

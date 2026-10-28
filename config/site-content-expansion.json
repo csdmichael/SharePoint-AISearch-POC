@@ -1,0 +1,36 @@
+{
+  "additionalPerSite": {
+    "docx": 8,
+    "xlsx": 8,
+    "pptx": 8,
+    "pdf": 8,
+    "meetings": 8
+  },
+  "draftRules": {
+    "docxEvery": 3
+  },
+  "subfolders": {
+    "Quality": [
+      "Policies",
+      "Training"
+    ],
+    "Engineering": [
+      "Design",
+      "Operations"
+    ]
+  },
+  "transcriptTemplate": {
+    "speakers": [
+      "Alex",
+      "Jordan",
+      "Priya",
+      "Casey"
+    ],
+    "agenda": [
+      "reviewed action items from prior meeting",
+      "covered compliance and quality checkpoints",
+      "walked through operational metrics and blockers",
+      "confirmed owner follow-ups and target dates"
+    ]
+  }
+}

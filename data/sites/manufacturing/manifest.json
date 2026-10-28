@@ -1,0 +1,1262 @@
+[
+  {
+    "artifact_id": "MANUFACTURING-DOCX-001",
+    "filename": "DRAFT_manufacturing_docx_01.docx",
+    "title": "DRAFT Manufacturing Knowledge Hub DOCX Document 01",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/DRAFT_manufacturing_docx_01.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-002",
+    "filename": "DRAFT_manufacturing_docx_02.docx",
+    "title": "DRAFT Manufacturing Knowledge Hub DOCX Document 02",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/DRAFT_manufacturing_docx_02.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-003",
+    "filename": "DRAFT_manufacturing_docx_03.docx",
+    "title": "DRAFT Manufacturing Knowledge Hub DOCX Document 03",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/DRAFT_manufacturing_docx_03.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-004",
+    "filename": "DRAFT_manufacturing_docx_04.docx",
+    "title": "DRAFT Manufacturing Knowledge Hub DOCX Document 04",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/DRAFT_manufacturing_docx_04.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-005",
+    "filename": "DRAFT_manufacturing_docx_05.docx",
+    "title": "DRAFT Manufacturing Knowledge Hub DOCX Document 05",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/DRAFT_manufacturing_docx_05.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-006",
+    "filename": "DRAFT_manufacturing_docx_06.docx",
+    "title": "DRAFT Manufacturing Knowledge Hub DOCX Document 06",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/DRAFT_manufacturing_docx_06.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-007",
+    "filename": "DRAFT_manufacturing_docx_07.docx",
+    "title": "DRAFT Manufacturing Knowledge Hub DOCX Document 07",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/DRAFT_manufacturing_docx_07.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-008",
+    "filename": "DRAFT_manufacturing_docx_08.docx",
+    "title": "DRAFT Manufacturing Knowledge Hub DOCX Document 08",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/DRAFT_manufacturing_docx_08.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-009",
+    "filename": "manufacturing_docx_09.docx",
+    "title": "Manufacturing Knowledge Hub DOCX Document 09",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_docx_09.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-010",
+    "filename": "manufacturing_docx_10.docx",
+    "title": "Manufacturing Knowledge Hub DOCX Document 10",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_docx_10.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-001",
+    "filename": "manufacturing_xlsx_01.xlsx",
+    "title": "Manufacturing Knowledge Hub XLSX Document 01",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_xlsx_01.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-002",
+    "filename": "manufacturing_xlsx_02.xlsx",
+    "title": "Manufacturing Knowledge Hub XLSX Document 02",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_xlsx_02.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-003",
+    "filename": "manufacturing_xlsx_03.xlsx",
+    "title": "Manufacturing Knowledge Hub XLSX Document 03",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_xlsx_03.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-004",
+    "filename": "manufacturing_xlsx_04.xlsx",
+    "title": "Manufacturing Knowledge Hub XLSX Document 04",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_xlsx_04.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-005",
+    "filename": "manufacturing_xlsx_05.xlsx",
+    "title": "Manufacturing Knowledge Hub XLSX Document 05",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_xlsx_05.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-006",
+    "filename": "manufacturing_xlsx_06.xlsx",
+    "title": "Manufacturing Knowledge Hub XLSX Document 06",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_xlsx_06.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-007",
+    "filename": "manufacturing_xlsx_07.xlsx",
+    "title": "Manufacturing Knowledge Hub XLSX Document 07",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_xlsx_07.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-008",
+    "filename": "manufacturing_xlsx_08.xlsx",
+    "title": "Manufacturing Knowledge Hub XLSX Document 08",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_xlsx_08.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-009",
+    "filename": "manufacturing_xlsx_09.xlsx",
+    "title": "Manufacturing Knowledge Hub XLSX Document 09",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_xlsx_09.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-010",
+    "filename": "manufacturing_xlsx_10.xlsx",
+    "title": "Manufacturing Knowledge Hub XLSX Document 10",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_xlsx_10.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-001",
+    "filename": "manufacturing_pptx_01.pptx",
+    "title": "Manufacturing Knowledge Hub PPTX Document 01",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_pptx_01.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-002",
+    "filename": "manufacturing_pptx_02.pptx",
+    "title": "Manufacturing Knowledge Hub PPTX Document 02",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_pptx_02.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-003",
+    "filename": "manufacturing_pptx_03.pptx",
+    "title": "Manufacturing Knowledge Hub PPTX Document 03",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_pptx_03.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-004",
+    "filename": "manufacturing_pptx_04.pptx",
+    "title": "Manufacturing Knowledge Hub PPTX Document 04",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_pptx_04.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-005",
+    "filename": "manufacturing_pptx_05.pptx",
+    "title": "Manufacturing Knowledge Hub PPTX Document 05",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_pptx_05.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-006",
+    "filename": "manufacturing_pptx_06.pptx",
+    "title": "Manufacturing Knowledge Hub PPTX Document 06",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_pptx_06.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-007",
+    "filename": "manufacturing_pptx_07.pptx",
+    "title": "Manufacturing Knowledge Hub PPTX Document 07",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_pptx_07.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-008",
+    "filename": "manufacturing_pptx_08.pptx",
+    "title": "Manufacturing Knowledge Hub PPTX Document 08",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_pptx_08.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-009",
+    "filename": "manufacturing_pptx_09.pptx",
+    "title": "Manufacturing Knowledge Hub PPTX Document 09",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_pptx_09.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-010",
+    "filename": "manufacturing_pptx_10.pptx",
+    "title": "Manufacturing Knowledge Hub PPTX Document 10",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_pptx_10.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-001",
+    "filename": "manufacturing_pdf_01.pdf",
+    "title": "Manufacturing Knowledge Hub PDF Document 01",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_pdf_01.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-002",
+    "filename": "manufacturing_pdf_02.pdf",
+    "title": "Manufacturing Knowledge Hub PDF Document 02",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_pdf_02.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-003",
+    "filename": "manufacturing_pdf_03.pdf",
+    "title": "Manufacturing Knowledge Hub PDF Document 03",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_pdf_03.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-004",
+    "filename": "manufacturing_pdf_04.pdf",
+    "title": "Manufacturing Knowledge Hub PDF Document 04",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_pdf_04.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-005",
+    "filename": "manufacturing_pdf_05.pdf",
+    "title": "Manufacturing Knowledge Hub PDF Document 05",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_pdf_05.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-006",
+    "filename": "manufacturing_pdf_06.pdf",
+    "title": "Manufacturing Knowledge Hub PDF Document 06",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_pdf_06.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-007",
+    "filename": "manufacturing_pdf_07.pdf",
+    "title": "Manufacturing Knowledge Hub PDF Document 07",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_pdf_07.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-008",
+    "filename": "manufacturing_pdf_08.pdf",
+    "title": "Manufacturing Knowledge Hub PDF Document 08",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_pdf_08.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-009",
+    "filename": "manufacturing_pdf_09.pdf",
+    "title": "Manufacturing Knowledge Hub PDF Document 09",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_pdf_09.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-010",
+    "filename": "manufacturing_pdf_10.pdf",
+    "title": "Manufacturing Knowledge Hub PDF Document 10",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_pdf_10.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-002",
+    "filename": "manufacturing_meeting_02.mp4",
+    "title": "Manufacturing Knowledge Hub Meeting Recording 01",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_recordings",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_02.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-002",
+    "filename": "manufacturing_meeting_02.vtt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript VTT 01",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_02.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-002",
+    "filename": "manufacturing_meeting_02.txt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript TXT 01",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_02.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-004",
+    "filename": "manufacturing_meeting_04.mp4",
+    "title": "Manufacturing Knowledge Hub Meeting Recording 02",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_recordings",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_04.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-004",
+    "filename": "manufacturing_meeting_04.vtt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript VTT 02",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_04.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-004",
+    "filename": "manufacturing_meeting_04.txt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript TXT 02",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_04.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-006",
+    "filename": "manufacturing_meeting_06.mp4",
+    "title": "Manufacturing Knowledge Hub Meeting Recording 03",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_recordings",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_06.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-006",
+    "filename": "manufacturing_meeting_06.vtt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript VTT 03",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_06.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-006",
+    "filename": "manufacturing_meeting_06.txt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript TXT 03",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_06.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-008",
+    "filename": "manufacturing_meeting_08.mp4",
+    "title": "Manufacturing Knowledge Hub Meeting Recording 04",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_recordings",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_08.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-008",
+    "filename": "manufacturing_meeting_08.vtt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript VTT 04",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_08.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-008",
+    "filename": "manufacturing_meeting_08.txt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript TXT 04",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_08.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-010",
+    "filename": "manufacturing_meeting_10.mp4",
+    "title": "Manufacturing Knowledge Hub Meeting Recording 05",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_recordings",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_10.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-010",
+    "filename": "manufacturing_meeting_10.vtt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript VTT 05",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_10.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-010",
+    "filename": "manufacturing_meeting_10.txt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript TXT 05",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_10.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-012",
+    "filename": "manufacturing_meeting_12.mp4",
+    "title": "Manufacturing Knowledge Hub Meeting Recording 06",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_recordings",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_12.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-012",
+    "filename": "manufacturing_meeting_12.vtt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript VTT 06",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_12.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-012",
+    "filename": "manufacturing_meeting_12.txt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript TXT 06",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_12.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-014",
+    "filename": "manufacturing_meeting_14.mp4",
+    "title": "Manufacturing Knowledge Hub Meeting Recording 07",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_recordings",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_14.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-014",
+    "filename": "manufacturing_meeting_14.vtt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript VTT 07",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_14.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-014",
+    "filename": "manufacturing_meeting_14.txt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript TXT 07",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_14.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-016",
+    "filename": "manufacturing_meeting_16.mp4",
+    "title": "Manufacturing Knowledge Hub Meeting Recording 08",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_recordings",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_16.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-016",
+    "filename": "manufacturing_meeting_16.vtt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript VTT 08",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_16.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-016",
+    "filename": "manufacturing_meeting_16.txt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript TXT 08",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_16.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-017",
+    "filename": "manufacturing_meeting_17.mp4",
+    "title": "Manufacturing Knowledge Hub Meeting Recording 09",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_recordings",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_17.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-017",
+    "filename": "manufacturing_meeting_17.vtt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript VTT 09",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_17.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-017",
+    "filename": "manufacturing_meeting_17.txt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript TXT 09",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Quality/manufacturing_meeting_17.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-018",
+    "filename": "manufacturing_meeting_18.mp4",
+    "title": "Manufacturing Knowledge Hub Meeting Recording 10",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_recordings",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_18.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-018",
+    "filename": "manufacturing_meeting_18.vtt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript VTT 10",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_18.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-018",
+    "filename": "manufacturing_meeting_18.txt",
+    "title": "Manufacturing Knowledge Hub Meeting Transcript TXT 10",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.meeting_transcripts",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T21:52:52.837019+00:00",
+    "relative_path": "Engineering/manufacturing_meeting_18.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-011",
+    "filename": "manufacturing_docx_11.docx",
+    "title": " Manufacturing Knowledge Hub DOCX Document 11",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_docx_11.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-012",
+    "filename": "DRAFT_manufacturing_docx_12.docx",
+    "title": "DRAFT Manufacturing Knowledge Hub DOCX Document 12",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/DRAFT_manufacturing_docx_12.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-013",
+    "filename": "manufacturing_docx_13.docx",
+    "title": " Manufacturing Knowledge Hub DOCX Document 13",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_docx_13.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-014",
+    "filename": "manufacturing_docx_14.docx",
+    "title": " Manufacturing Knowledge Hub DOCX Document 14",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_docx_14.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-015",
+    "filename": "DRAFT_manufacturing_docx_15.docx",
+    "title": "DRAFT Manufacturing Knowledge Hub DOCX Document 15",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/DRAFT_manufacturing_docx_15.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-016",
+    "filename": "manufacturing_docx_16.docx",
+    "title": " Manufacturing Knowledge Hub DOCX Document 16",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_docx_16.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-017",
+    "filename": "manufacturing_docx_17.docx",
+    "title": " Manufacturing Knowledge Hub DOCX Document 17",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_docx_17.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOCX-018",
+    "filename": "DRAFT_manufacturing_docx_18.docx",
+    "title": "DRAFT Manufacturing Knowledge Hub DOCX Document 18",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/DRAFT_manufacturing_docx_18.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-011",
+    "filename": "manufacturing_xlsx_11.xlsx",
+    "title": " Manufacturing Knowledge Hub XLSX Document 11",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_xlsx_11.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-012",
+    "filename": "manufacturing_xlsx_12.xlsx",
+    "title": " Manufacturing Knowledge Hub XLSX Document 12",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_xlsx_12.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-013",
+    "filename": "manufacturing_xlsx_13.xlsx",
+    "title": " Manufacturing Knowledge Hub XLSX Document 13",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_xlsx_13.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-014",
+    "filename": "manufacturing_xlsx_14.xlsx",
+    "title": " Manufacturing Knowledge Hub XLSX Document 14",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_xlsx_14.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-015",
+    "filename": "manufacturing_xlsx_15.xlsx",
+    "title": " Manufacturing Knowledge Hub XLSX Document 15",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_xlsx_15.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-016",
+    "filename": "manufacturing_xlsx_16.xlsx",
+    "title": " Manufacturing Knowledge Hub XLSX Document 16",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_xlsx_16.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-017",
+    "filename": "manufacturing_xlsx_17.xlsx",
+    "title": " Manufacturing Knowledge Hub XLSX Document 17",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_xlsx_17.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-XLSX-018",
+    "filename": "manufacturing_xlsx_18.xlsx",
+    "title": " Manufacturing Knowledge Hub XLSX Document 18",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_xlsx_18.xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-011",
+    "filename": "manufacturing_pptx_11.pptx",
+    "title": " Manufacturing Knowledge Hub PPTX Document 11",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_pptx_11.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-012",
+    "filename": "manufacturing_pptx_12.pptx",
+    "title": " Manufacturing Knowledge Hub PPTX Document 12",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_pptx_12.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-013",
+    "filename": "manufacturing_pptx_13.pptx",
+    "title": " Manufacturing Knowledge Hub PPTX Document 13",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_pptx_13.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-014",
+    "filename": "manufacturing_pptx_14.pptx",
+    "title": " Manufacturing Knowledge Hub PPTX Document 14",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_pptx_14.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-015",
+    "filename": "manufacturing_pptx_15.pptx",
+    "title": " Manufacturing Knowledge Hub PPTX Document 15",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_pptx_15.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-016",
+    "filename": "manufacturing_pptx_16.pptx",
+    "title": " Manufacturing Knowledge Hub PPTX Document 16",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_pptx_16.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-017",
+    "filename": "manufacturing_pptx_17.pptx",
+    "title": " Manufacturing Knowledge Hub PPTX Document 17",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_pptx_17.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PPTX-018",
+    "filename": "manufacturing_pptx_18.pptx",
+    "title": " Manufacturing Knowledge Hub PPTX Document 18",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_pptx_18.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-011",
+    "filename": "manufacturing_pdf_11.pdf",
+    "title": " Manufacturing Knowledge Hub PDF Document 11",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_pdf_11.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-012",
+    "filename": "manufacturing_pdf_12.pdf",
+    "title": " Manufacturing Knowledge Hub PDF Document 12",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_pdf_12.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-013",
+    "filename": "manufacturing_pdf_13.pdf",
+    "title": " Manufacturing Knowledge Hub PDF Document 13",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_pdf_13.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-014",
+    "filename": "manufacturing_pdf_14.pdf",
+    "title": " Manufacturing Knowledge Hub PDF Document 14",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_pdf_14.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-015",
+    "filename": "manufacturing_pdf_15.pdf",
+    "title": " Manufacturing Knowledge Hub PDF Document 15",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_pdf_15.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-016",
+    "filename": "manufacturing_pdf_16.pdf",
+    "title": " Manufacturing Knowledge Hub PDF Document 16",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_pdf_16.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-017",
+    "filename": "manufacturing_pdf_17.pdf",
+    "title": " Manufacturing Knowledge Hub PDF Document 17",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_pdf_17.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-PDF-018",
+    "filename": "manufacturing_pdf_18.pdf",
+    "title": " Manufacturing Knowledge Hub PDF Document 18",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_pdf_18.pdf"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-001",
+    "filename": "manufacturing_meeting_01.mp4",
+    "title": " Manufacturing Knowledge Hub MP4 Document 01",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_meeting_01.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-001",
+    "filename": "manufacturing_meeting_01.vtt",
+    "title": " Manufacturing Knowledge Hub VTT Document 01",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_meeting_01.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-001",
+    "filename": "manufacturing_meeting_01.txt",
+    "title": " Manufacturing Knowledge Hub TXT Document 01",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_meeting_01.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-003",
+    "filename": "manufacturing_meeting_03.mp4",
+    "title": " Manufacturing Knowledge Hub MP4 Document 02",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_meeting_03.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-003",
+    "filename": "manufacturing_meeting_03.vtt",
+    "title": " Manufacturing Knowledge Hub VTT Document 02",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_meeting_03.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-003",
+    "filename": "manufacturing_meeting_03.txt",
+    "title": " Manufacturing Knowledge Hub TXT Document 02",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_meeting_03.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-005",
+    "filename": "manufacturing_meeting_05.mp4",
+    "title": " Manufacturing Knowledge Hub MP4 Document 03",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_meeting_05.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-005",
+    "filename": "manufacturing_meeting_05.vtt",
+    "title": " Manufacturing Knowledge Hub VTT Document 03",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_meeting_05.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-005",
+    "filename": "manufacturing_meeting_05.txt",
+    "title": " Manufacturing Knowledge Hub TXT Document 03",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_meeting_05.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-007",
+    "filename": "manufacturing_meeting_07.mp4",
+    "title": " Manufacturing Knowledge Hub MP4 Document 04",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_meeting_07.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-007",
+    "filename": "manufacturing_meeting_07.vtt",
+    "title": " Manufacturing Knowledge Hub VTT Document 04",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_meeting_07.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-007",
+    "filename": "manufacturing_meeting_07.txt",
+    "title": " Manufacturing Knowledge Hub TXT Document 04",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_meeting_07.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-009",
+    "filename": "manufacturing_meeting_09.mp4",
+    "title": " Manufacturing Knowledge Hub MP4 Document 05",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_meeting_09.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-009",
+    "filename": "manufacturing_meeting_09.vtt",
+    "title": " Manufacturing Knowledge Hub VTT Document 05",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_meeting_09.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-009",
+    "filename": "manufacturing_meeting_09.txt",
+    "title": " Manufacturing Knowledge Hub TXT Document 05",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_meeting_09.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-011",
+    "filename": "manufacturing_meeting_11.mp4",
+    "title": " Manufacturing Knowledge Hub MP4 Document 06",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_meeting_11.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-011",
+    "filename": "manufacturing_meeting_11.vtt",
+    "title": " Manufacturing Knowledge Hub VTT Document 06",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_meeting_11.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-011",
+    "filename": "manufacturing_meeting_11.txt",
+    "title": " Manufacturing Knowledge Hub TXT Document 06",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_meeting_11.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-013",
+    "filename": "manufacturing_meeting_13.mp4",
+    "title": " Manufacturing Knowledge Hub MP4 Document 07",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_meeting_13.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-013",
+    "filename": "manufacturing_meeting_13.vtt",
+    "title": " Manufacturing Knowledge Hub VTT Document 07",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_meeting_13.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-013",
+    "filename": "manufacturing_meeting_13.txt",
+    "title": " Manufacturing Knowledge Hub TXT Document 07",
+    "category": "Quality",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Quality/Policies/manufacturing_meeting_13.txt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-MP4-015",
+    "filename": "manufacturing_meeting_15.mp4",
+    "title": " Manufacturing Knowledge Hub MP4 Document 08",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_meeting_15.mp4"
+  },
+  {
+    "artifact_id": "MANUFACTURING-VTT-015",
+    "filename": "manufacturing_meeting_15.vtt",
+    "title": " Manufacturing Knowledge Hub VTT Document 08",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_meeting_15.vtt"
+  },
+  {
+    "artifact_id": "MANUFACTURING-TXT-015",
+    "filename": "manufacturing_meeting_15.txt",
+    "title": " Manufacturing Knowledge Hub TXT Document 08",
+    "category": "Engineering",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Synthetic Generator",
+    "profile_generated_at": "2026-10-28T23:01:24.891352+00:00",
+    "relative_path": "Engineering/Operations/manufacturing_meeting_15.txt"
+  }
+]

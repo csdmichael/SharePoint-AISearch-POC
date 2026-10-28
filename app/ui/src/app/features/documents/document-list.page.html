@@ -21,6 +21,15 @@
       }
     </ion-segment>
     <p class="muted document-count" data-testid="document-count">{{ countText() }}</p>
+    <ion-input
+      class="folder-filter"
+      data-testid="folder-filter-input"
+      fill="outline"
+      [label]="'documents.folderFilterLabel' | t"
+      [placeholder]="'documents.folderFilterPlaceholder' | t"
+      [value]="folderQuery()"
+      (ionInput)="updateFolderQuery($event)"
+    />
 
     <app-state-view [state]="view()" emptyKey="documents.empty" (retry)="retry()" />
 
@@ -36,10 +45,11 @@
               <th scope="col">{{ 'documents.columns.trustScore' | t }}</th>
               <th scope="col">{{ 'documents.columns.owner' | t }}</th>
               <th scope="col">{{ 'documents.columns.library' | t }}</th>
+              <th scope="col">{{ 'documents.columns.path' | t }}</th>
             </tr>
           </thead>
           <tbody>
-            @for (doc of documents.items(); track doc.id) {
+            @for (doc of filteredDocuments(); track doc.id) {
               <tr data-testid="document-row" [attr.data-document-id]="doc.id">
                 <td [attr.data-label]="'documents.columns.title' | t">
                                   <a class="document-title" [routerLink]="documentPath(doc.id)" data-testid="document-link">{{ doc.title }}</a>
@@ -52,6 +62,7 @@
                 </td>
                 <td [attr.data-label]="'documents.columns.owner' | t">{{ ownerLabel(doc) }}</td>
                 <td [attr.data-label]="'documents.columns.library' | t">{{ doc.libraryTitle ?? ('states.notAvailable' | t) }}</td>
+                <td [attr.data-label]="'documents.columns.path' | t">{{ doc.path ?? ('states.notAvailable' | t) }}</td>
               </tr>
             }
           </tbody>

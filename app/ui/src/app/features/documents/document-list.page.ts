@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { IonContent, IonLabel, IonSegment, IonSegmentButton } from '@ionic/angular';
+import { IonContent, IonInput, IonLabel, IonSegment, IonSegmentButton } from '@ionic/angular';
 import { ApiService } from '../../core/api/api.service';
 import { DocumentPage, DocumentSummary } from '../../core/api/models/api.models';
 import { ConfigService } from '../../core/config/config.service';
@@ -17,7 +17,7 @@ import { DisplayService } from '../../shared/util/display.service';
 @Component({
   selector: 'app-document-list-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonLabel, IonSegment, IonSegmentButton, RouterLink, BadgeComponent, StateViewComponent, TranslatePipe],
+  imports: [IonContent, IonInput, IonLabel, IonSegment, IonSegmentButton, RouterLink, BadgeComponent, StateViewComponent, TranslatePipe],
   templateUrl: './document-list.page.html',
   styleUrl: './document-list.page.scss',
   host: { class: 'ion-page' },
@@ -34,6 +34,7 @@ export class DocumentListPage {
 
   /** The selected knowledge category. The empty string lists every category. */
   readonly category = signal('');
+  readonly folderQuery = signal('');
 
   /** Segment value of the "All" choice. It is not a category name, so it cannot match one. */
   readonly allValue = '__all__';
@@ -52,8 +53,15 @@ export class DocumentListPage {
 
   /** The categories in the whole library, so the choices stay the same when a category is selected. */
   readonly categories = computed<string[]>(() => this.documents.page()?.knowledgeCategories ?? []);
+  readonly filteredDocuments = computed<DocumentSummary[]>(() => {
+    const query = this.folderQuery().trim().toLowerCase();
+    if (!query) {
+      return this.documents.items();
+    }
+    return this.documents.items().filter((doc) => (doc.path ?? '').toLowerCase().includes(query));
+  });
   readonly countText = computed(() =>
-    this.i18n.text('documents.countText', { count: this.i18n.number(this.documents.page()?.total ?? 0) }),
+    this.i18n.text('documents.countText', { count: this.i18n.number(this.filteredDocuments().length) }),
   );
 
   selectValue(event: { detail: { value?: unknown } }): string {
@@ -67,6 +75,11 @@ export class DocumentListPage {
 
   selectCategory(value: string): void {
     this.category.set(value === this.allValue ? '' : value);
+  }
+
+  updateFolderQuery(event: CustomEvent): void {
+    const value = typeof event.detail?.value === 'string' ? event.detail.value : '';
+    this.folderQuery.set(value);
   }
 
   documentPath(id: string): string {

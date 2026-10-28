@@ -288,6 +288,8 @@
   "documents": {
     "categoryLabel": "Knowledge category",
     "allLabel": "All",
+    "folderFilterLabel": "Folder path filter",
+    "folderFilterPlaceholder": "Type part of a folder path",
     "countText": "{count} documents",
     "empty": "No documents are in this category.",
     "columns": {
@@ -297,7 +299,8 @@
       "lifecycle": "Lifecycle",
       "trustScore": "Trust score",
       "owner": "Owner",
-      "library": "Library"
+      "library": "Library",
+      "path": "Path"
     }
   },
   "values": {
