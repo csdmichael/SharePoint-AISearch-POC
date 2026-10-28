@@ -10,6 +10,7 @@ from __future__ import annotations
 import re
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Any, Callable, Hashable, TypeVar
 
@@ -75,10 +76,11 @@ class MembershipService:
             hit = self._cache.get(key)
             if hit is not None and now - hit[0] < self._ttl:
                 return hit[1]
-            value = loader()
+        value = loader()
+        with self._lock:
             if self._ttl > 0:
                 self._cache[key] = (now, value)
-            return value
+        return value
 
     def members(self, principal: Principal) -> list[Member]:
         if principal.kind is PrincipalKind.ENTRA_GROUP and principal.entra_group_id:
@@ -113,8 +115,10 @@ class MembershipService:
     def _sharepoint_members(self, group_id: int) -> list[Member]:
         members: list[Member] = []
         try:
-            for row in self._sharepoint.group_users(group_id):
-                if len(members) >= self._max_members:
+            user_rows = list(self._sharepoint.group_users(group_id))
+            parsed_users: list[tuple[dict[str, Any], str]] = []
+            for row in user_rows:
+                if len(parsed_users) >= self._max_members:
                     break
                 login = str(row.get("LoginName") or "")
                 match = self._user_pattern.search(login)
@@ -123,8 +127,16 @@ class MembershipService:
                 else:
                     fallback = row.get("UserPrincipalName") or row.get("Email")
                     upn = str(fallback).lower() if fallback else None
-                if upn is None:
-                    continue
+                if upn is not None:
+                    parsed_users.append((row, upn))
+
+            # Prefetch accounts in parallel so multiple Graph calls run concurrently
+            uncached = [upn for _, upn in parsed_users if ("account", upn) not in self._cache]
+            if uncached:
+                with ThreadPoolExecutor(max_workers=min(8, len(uncached))) as pool:
+                    list(pool.map(self.account, uncached))
+
+            for row, upn in parsed_users:
                 account_enabled, status = self.account(upn)
                 members.append(
                     Member(
@@ -150,6 +162,8 @@ class MembershipService:
             try:
                 account = self._graph.user(upn)
             except UpstreamError:
+                return None, STATUS_UNKNOWN
+            except Exception:
                 return None, STATUS_UNKNOWN
             if account is None:
                 return None, STATUS_MISSING

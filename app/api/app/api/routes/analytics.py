@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Query
 from app.api.deps import get_container
 from app.auth.validator import require_auditor
 from app.container import Container
+from app.core.errors import UpstreamError
 from app.services.exposure import unique_findings
 from app.services.documents import document_summary, expiry_view
 
@@ -28,9 +29,19 @@ def _coverage(container: Container, corpora: list[Any]) -> list[dict[str, Any]]:
     ]
 
 
+def _corpora(container: Container) -> list[Any]:
+    corpora: list[Any] = []
+    for library in container.libraries.configured():
+        try:
+            corpora.append(container.libraries.corpus(library.id))
+        except UpstreamError:
+            continue
+    return corpora
+
+
 @router.get("/analytics/duplicates", summary="Exact and near-duplicate clusters with canonical copies")
 def duplicates(container: Container = Depends(get_container)) -> dict[str, Any]:
-    corpora = [container.libraries.corpus(library.id) for library in container.libraries.configured()]
+    corpora = _corpora(container)
     exact: list[dict[str, Any]] = []
     near: list[dict[str, Any]] = []
     conflicts: list[dict[str, Any]] = []
@@ -83,7 +94,7 @@ def duplicates(container: Container = Depends(get_container)) -> dict[str, Any]:
 def expiry(
     container: Container = Depends(get_container),
 ) -> dict[str, Any]:
-    corpora = [container.libraries.corpus(library.id) for library in container.libraries.configured()]
+    corpora = _corpora(container)
     expired: list[dict[str, Any]] = []
     overdue: list[dict[str, Any]] = []
     for corpus in corpora:
@@ -108,7 +119,7 @@ def expiry(
 
 @router.get("/analytics/anomalies", summary="IsolationForest anomaly scores with per-feature contributions")
 def anomalies(container: Container = Depends(get_container)) -> dict[str, Any]:
-    corpora = [container.libraries.corpus(library.id) for library in container.libraries.configured()]
+    corpora = _corpora(container)
     rows: list[dict[str, Any]] = []
     for corpus in corpora:
         rows.extend(container.analytics.anomalies(corpus))
@@ -129,7 +140,7 @@ def exposure(
     finding_type: str | None = Query(default=None, alias="type", max_length=60),
     container: Container = Depends(get_container),
 ) -> dict[str, Any]:
-    corpora = [container.libraries.corpus(library.id) for library in container.libraries.configured()]
+    corpora = _corpora(container)
     findings: list[dict[str, Any]] = []
     for corpus in corpora:
         findings.extend(container.analytics.exposure(corpus))

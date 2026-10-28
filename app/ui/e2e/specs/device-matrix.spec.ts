@@ -56,6 +56,19 @@ test.describe('Responsive Device Matrix', () => {
     const fab = page.getByTestId('agent-fab');
     await expect(fab).toBeVisible();
 
+    // 2b. Verify footer is visible with author, LinkedIn, and GitHub links
+    const footer = page.getByTestId('app-footer');
+    await expect(footer).toBeVisible();
+    await expect(footer).toContainText('Michael Yaacoub');
+    await expect(footer.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute(
+      'href',
+      'https://www.linkedin.com/in/michael-yaacoub-7a46436/',
+    );
+    await expect(footer.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
+      'href',
+      'https://github.com/csdmichael/SharePoint-AISearch-POC',
+    );
+
     // 3. Verify navigation matches device class
     if (device.deviceClass === 'phone') {
       // Phone: bottom tab bar is visible

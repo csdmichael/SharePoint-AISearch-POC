@@ -15,14 +15,61 @@
 
 .app-main {
   position: relative;
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
 }
 
+.app-main__outlet {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+}
+
 ion-router-outlet {
   display: block;
   position: relative;
   height: 100%;
+}
+
+.app-footer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-height: 2.25rem;
+  padding: var(--space-xs) var(--space-md);
+  background: var(--surface-header);
+  border-top: 1px solid var(--surface-border);
+  color: var(--surface-muted-text);
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  box-sizing: border-box;
+  text-align: center;
+  flex-wrap: wrap;
+}
+
+.app-footer__author {
+  font-weight: 500;
+  color: var(--surface-text);
+}
+
+.app-footer__sep {
+  color: var(--surface-border);
+}
+
+.app-footer__link {
+  color: var(--surface-accent-strong);
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }

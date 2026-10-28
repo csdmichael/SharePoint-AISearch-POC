@@ -80,20 +80,24 @@ class LibraryCorpus:
         with self._lock:
             if self._drive is not None:
                 return self._drive
-            site = self._settings.site
-            graph_site = self._graph.site(site.host, site.server_relative_path)
-            site_id = str(graph_site["id"])
-            drive = self._graph.library_drive(site_id, self.library.id)
-            by_list: dict[int, dict[str, Any]] = {}
-            reverse: dict[str, int] = {}
-            for row in self._graph.list_drive_items(site_id, self.library.id):
-                drive_item = row.get("driveItem")
-                if isinstance(drive_item, dict) and drive_item.get("id") and row.get("id") is not None:
-                    list_item_id = int(row["id"])
-                    by_list[list_item_id] = drive_item
-                    reverse[str(drive_item["id"])] = list_item_id
-            self._drive = DriveContext(site_id=site_id, drive_id=str(drive["id"]), by_list_id=by_list,
-                                       list_by_drive_item=reverse)
+            try:
+                site = self._settings.site
+                graph_site = self._graph.site(site.host, site.server_relative_path)
+                site_id = str(graph_site["id"])
+                drive = self._graph.library_drive(site_id, self.library.id)
+                by_list: dict[int, dict[str, Any]] = {}
+                reverse: dict[str, int] = {}
+                for row in self._graph.list_drive_items(site_id, self.library.id):
+                    drive_item = row.get("driveItem")
+                    if isinstance(drive_item, dict) and drive_item.get("id") and row.get("id") is not None:
+                        list_item_id = int(row["id"])
+                        by_list[list_item_id] = drive_item
+                        reverse[str(drive_item["id"])] = list_item_id
+                self._drive = DriveContext(site_id=site_id, drive_id=str(drive["id"]), by_list_id=by_list,
+                                           list_by_drive_item=reverse)
+            except UpstreamError as exc:
+                self._drive = DriveContext(site_id="", drive_id="", by_list_id={}, list_by_drive_item={})
+                self._link_errors["library"] = exc.message
             return self._drive
 
     # ---- sharing links -------------------------------------------------------------------------------------
@@ -118,6 +122,8 @@ class LibraryCorpus:
 
     def _fetch_links(self, item: ItemRecord | None, *, container: bool) -> list[PermissionEntry]:
         context = self.drive_context()
+        if not context.drive_id:
+            return []
         if container:
             permissions = self._graph.drive_root_permissions(context.drive_id)
         else:
@@ -198,7 +204,12 @@ class LibraryCorpus:
             cached = self._texts.get(item.item_id)
         if cached is not None:
             return cached
-        result = self._load_text(item)
+        try:
+            result = self._load_text(item)
+        except UpstreamError as exc:
+            result = TextResult("error", reason=exc.message)
+        except Exception as exc:
+            result = TextResult("error", reason=str(exc))
         with self._lock:
             self._texts[item.item_id] = result
         return result
@@ -211,6 +222,8 @@ class LibraryCorpus:
         if item.size is not None and item.size > extraction.maxFileBytes:
             return TextResult("tooLarge", reason="file exceeds the analysis size limit")
         context = self.drive_context()
+        if not context.drive_id:
+            return TextResult("noDrive", reason="drive is not available")
         drive_item = context.by_list_id.get(item.list_item_id)
         if drive_item is None:
             return TextResult("noDriveItem", reason="no drive item is linked to this list item")
@@ -235,7 +248,9 @@ class LibraryCorpus:
         pending = [item for item in items if item.item_id not in self._links]
         if not pending:
             return
-        self.drive_context()
+        context = self.drive_context()
+        if not context.drive_id:
+            return
         with ThreadPoolExecutor(max_workers=self._workers) as pool:
             list(pool.map(self.links, pending))
 
@@ -243,7 +258,9 @@ class LibraryCorpus:
         pending = [item for item in items if item.item_id not in self._texts]
         if not pending:
             return
-        self.drive_context()
+        context = self.drive_context()
+        if not context.drive_id:
+            return
         with ThreadPoolExecutor(max_workers=self._workers) as pool:
             list(pool.map(self.text, pending))
 

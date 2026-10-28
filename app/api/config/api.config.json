@@ -40,10 +40,10 @@
   "graph": {
     "baseUrl": "https://graph.microsoft.com/v1.0",
     "pageSize": 200,
-    "timeoutSeconds": 30,
-    "maxRetries": 4,
-    "retryBackoffSeconds": 2,
-    "maxRetryDelaySeconds": 120,
+    "timeoutSeconds": 10,
+    "maxRetries": 2,
+    "retryBackoffSeconds": 1,
+    "maxRetryDelaySeconds": 10,
     "maxConcurrency": 6,
     "maxMembersPerGroup": 5000
   },

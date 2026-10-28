@@ -3,12 +3,14 @@ Reason text comes from api.config.json (hygiene.reasons) and the sample size fro
 
 from __future__ import annotations
 
+import threading
+import time
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 
 from app.analytics.expiry import ExpiryFinding
 from app.core.config import HygieneReasons, Settings
-from app.core.errors import NotFoundError
+from app.core.errors import NotFoundError, UpstreamError
 from app.core.governance import Governance
 from app.domain.snapshot import ItemRecord
 from app.services.analytics import AnalyticsService
@@ -51,20 +53,42 @@ class HygieneService:
         governance: Governance,
         libraries: LibraryService,
         analytics: AnalyticsService,
+        clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self._governance = governance
         self._libraries = libraries
         self._analytics = analytics
         self._reasons: HygieneReasons = settings.api.hygiene.reasons
         self._sample_size = settings.api.hygiene.sampleSize
+        self._ttl = settings.api.cache.libraryTtlSeconds
+        self._clock = clock
+        self._model_cache: tuple[float, HygieneModel] | None = None
+        self._lock = threading.RLock()
 
     def _documents(self) -> tuple[list[HygieneDoc], list[dict[str, Any]]]:
         docs: list[HygieneDoc] = []
         coverage: list[dict[str, Any]] = []
         for library in self._libraries.configured():
-            corpus = self._libraries.corpus(library.id)
-            expiry = self._analytics.expiry(corpus)
-            roles = self._analytics.duplicate_roles(corpus)
+            try:
+                corpus = self._libraries.corpus(library.id)
+            except UpstreamError as exc:
+                coverage.append({
+                    "libraryId": library.id,
+                    "libraryTitle": library.title,
+                    "documentsScanned": 0,
+                    "folders": 0,
+                    "truncated": False,
+                    "warnings": [f"Library '{library.title}' could not be scanned: {exc.message}"],
+                })
+                continue
+            try:
+                expiry = self._analytics.expiry(corpus)
+            except Exception:
+                expiry = {}
+            try:
+                roles = self._analytics.duplicate_roles(corpus)
+            except Exception:
+                roles = {}
             files = corpus.snapshot.files
             for item in files:
                 owner = item.fields.get("knowledgeOwner") or {}
@@ -202,8 +226,17 @@ class HygieneService:
             for metric in governance.metrics
         ]
 
+    def _get_model(self) -> HygieneModel:
+        with self._lock:
+            now = self._clock()
+            if self._model_cache is not None and now - self._model_cache[0] < self._ttl:
+                return self._model_cache[1]
+            model = self._build()
+            self._model_cache = (now, model)
+            return model
+
     def summary(self) -> dict[str, Any]:
-        model = self._build()
+        model = self._get_model()
         return {
             "asOfDate": model.as_of,
             "metrics": model.metrics,
@@ -212,12 +245,12 @@ class HygieneService:
         }
 
     def finding(self, finding_id: str) -> dict[str, Any]:
-        model = self._build()
+        model = self._get_model()
         definition = next((item for item in model.findings if item["id"] == finding_id), None)
         if definition is None:
             raise NotFoundError(f"Hygiene finding '{finding_id}' does not exist.")
         documents = []
-        for match in model.matches[finding_id]:
+        for match in model.matches.get(finding_id, []):
             row = dict(match.doc.view)
             row["reason"] = match.reason
             row["expiry"] = expiry_view(match.doc.expiry)
@@ -234,7 +267,7 @@ class HygieneService:
         }
 
     def matches(self, finding_id: str) -> list[FindingMatch]:
-        model = self._build()
+        model = self._get_model()
         return model.matches.get(finding_id, [])
 
     def known_finding_ids(self) -> list[str]:

@@ -18,6 +18,17 @@ from app.domain.principals import PrincipalClassifier
 from app.domain.snapshot import ItemRecord, LibraryInfo, LibrarySnapshot, item_from_row
 from app.services.corpus import LibraryCorpus
 
+SYSTEM_LIBRARY_TITLES: frozenset[str] = frozenset(
+    {
+        "form templates",
+        "site assets",
+        "style library",
+        "agent assets",
+        "site pages",
+        "maintenance log library",
+    }
+)
+
 BASE_SELECT: tuple[str, ...] = (
     "Id",
     "UniqueId",
@@ -80,7 +91,10 @@ class LibraryService:
             found: list[LibraryInfo] = []
             for row in self._sharepoint.libraries():
                 title = str(row.get("Title") or "")
-                if wanted and title.lower() not in wanted:
+                if wanted:
+                    if title.lower() not in wanted:
+                        continue
+                elif title.lower() in SYSTEM_LIBRARY_TITLES:
                     continue
                 root = (row.get("RootFolder") or {}).get("ServerRelativeUrl") or ""
                 found.append(
@@ -146,7 +160,18 @@ class LibraryService:
         system_names = tuple(self._settings.api.sharePoint.systemFolderNames)
         items: list[ItemRecord] = []
         truncated = False
-        for row in self._sharepoint.list_items(info.id, select=self._select, expand=self._expand):
+        warnings: list[str] = []
+        try:
+            raw_rows = list(self._sharepoint.list_items(info.id, select=self._select, expand=self._expand))
+        except UpstreamError:
+            try:
+                raw_rows = list(self._sharepoint.list_items(info.id, select=list(BASE_SELECT), expand=list(BASE_EXPAND)))
+                warnings.append(f"Governance columns not present on library '{info.title}'.")
+            except UpstreamError as inner:
+                warnings.append(f"Library '{info.title}' could not be crawled: {inner.message}")
+                raw_rows = []
+
+        for row in raw_rows:
             path = str(row.get("FileRef") or "")
             if not is_within(path, info.root_path) or lower_key(path) == lower_key(info.root_path):
                 continue
@@ -159,7 +184,6 @@ class LibraryService:
                 truncated = True
                 break
             items.append(item_from_row(row, library=info, governance=self._governance))
-        warnings: list[str] = []
         if truncated:
             warnings.append(
                 f"The crawl stopped at {crawl.maxItems} items or {crawl.maxDepth} folder levels; results are partial."
@@ -170,6 +194,11 @@ class LibraryService:
                 row = self._sharepoint.folder_item(path, select=self._select, expand=self._expand)
             except UpstreamNotFoundError:
                 return None
+            except UpstreamError:
+                try:
+                    row = self._sharepoint.folder_item(path, select=list(BASE_SELECT), expand=list(BASE_EXPAND))
+                except UpstreamError:
+                    return None
             return item_from_row(row, library=info, governance=self._governance)
 
         return LibrarySnapshot(

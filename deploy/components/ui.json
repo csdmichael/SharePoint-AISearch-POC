@@ -33,7 +33,7 @@
         "file": "www/assets/config/app.config.json",
         "values": {
           "apiBaseUrl": "https://caldova-aiscr-api.azurewebsites.net/api/v1",
-          "requestTimeoutMs": 30000,
+          "requestTimeoutMs": 45000,
           "auth": {
             "clientId": "587adede-d1a1-44be-92ee-57f05536a0bb",
             "authority": "https://login.microsoftonline.com/12a4b86b-e64c-43f9-af05-d9130a72dfd2",

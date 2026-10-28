@@ -5,7 +5,16 @@
       <app-sidebar />
     }
     <main class="app-main" [id]="mainContentId" [attr.aria-label]="mainLabel" data-testid="main-content">
-      <ion-router-outlet />
+      <div class="app-main__outlet">
+        <ion-router-outlet />
+      </div>
+      <footer class="app-footer" data-testid="app-footer">
+        <span class="app-footer__author">Michael Yaacoub</span>
+        <span class="app-footer__sep" aria-hidden="true">|</span>
+        <a class="app-footer__link" href="https://www.linkedin.com/in/michael-yaacoub-7a46436/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <span class="app-footer__sep" aria-hidden="true">|</span>
+        <a class="app-footer__link" href="https://github.com/csdmichael/SharePoint-AISearch-POC" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </footer>
     </main>
   </div>
   <app-tab-bar />
