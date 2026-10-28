@@ -40,6 +40,29 @@ async function setup(page: Page): Promise<void> {
       '/hygiene/findings/expired-documents': { ...finding, documents: [document] },
       '/documents': { items: [document], page: 1, pageSize: 25, total: 1, totalPages: 1, knowledgeCategories: ['Engineering'] },
       [`/documents/${documentId}`]: document,
+      '/site': {
+        name: 'Test site',
+        webUrl: 'https://contoso.sharepoint.com/sites/test',
+        serverRelativeUrl: '/sites/test',
+        hasUniquePermissions: false,
+        libraryCount: 1,
+        selectedSite: {
+          siteId: 'default',
+          displayName: 'Test site',
+          function: null,
+          siteUrl: 'https://contoso.sharepoint.com/sites/test',
+          serverRelativeUrl: '/sites/test',
+        },
+        availableSites: [
+          {
+            siteId: 'default',
+            displayName: 'Test site',
+            function: null,
+            siteUrl: 'https://contoso.sharepoint.com/sites/test',
+            serverRelativeUrl: '/sites/test',
+          },
+        ],
+      },
       '/site/libraries': { items: [library], total: 1 },
       [`/site/libraries/${libraryId}/children`]: {
         library, folder: null, items: [{ ...document, childCount: null, created: '2026-01-01' }], total: 1, truncated: false,
