@@ -15,6 +15,7 @@ SharePoint Online remains the document system of record.
 1. [Solution status](#solution-status)
 2. [Deployed URLs](#deployed-urls)
 3. [Solution guide](#solution-guide)
+   - [Customer setup guide](#customer-setup-guide)
 4. [Architecture](#architecture)
 5. [Data and corpus](#data-and-corpus)
 6. [Repository layout](#repository-layout)
@@ -56,12 +57,12 @@ and related Azure resources are in the configured resource group.
 | --- | --- |
 | SharePoint site | [Semiconductor Knowledge Hub](https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub) |
 | SharePoint library | [Semiconductor Knowledge](https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub/Semiconductor%20Knowledge/Forms/AllItems.aspx) |
-| Azure AI Search portal | [semiconductor-search-myaacoub](https://portal.azure.com/#@caldova37587778.onmicrosoft.com/resource/subscriptions/cf824570-a8ba-497a-a184-0a52f1830aa9/resourceGroups/m365-myaacoub/providers/Microsoft.Search/searchServices/semiconductor-search-myaacoub/overview) |
-| Search endpoint | [semiconductor-search-myaacoub.search.windows.net](https://semiconductor-search-myaacoub.search.windows.net) |
-| Search Explorer | [Open Search Explorer](https://portal.azure.com/#@caldova37587778.onmicrosoft.com/resource/subscriptions/cf824570-a8ba-497a-a184-0a52f1830aa9/resourceGroups/m365-myaacoub/providers/Microsoft.Search/searchServices/semiconductor-search-myaacoub/searchExplorer) |
-| Databricks workspace | [caldova-dbx-westus2](https://portal.azure.com/#@caldova37587778.onmicrosoft.com/resource/subscriptions/cf824570-a8ba-497a-a184-0a52f1830aa9/resourceGroups/m365-myaacoub/providers/Microsoft.Databricks/workspaces/caldova-dbx-westus2/overview) |
-| Foundry resource | [foundry-myaacoub-private](https://portal.azure.com/#@caldova37587778.onmicrosoft.com/resource/subscriptions/cf824570-a8ba-497a-a184-0a52f1830aa9/resourceGroups/m365-myaacoub/providers/Microsoft.CognitiveServices/accounts/foundry-myaacoub-private/overview) |
-| Foundry IQ agent | [Open the deployed SharePoint agent](https://ai.azure.com/nextgen/r/z4JFcKi6SXqhhApS8YMKqQ,m365-myaacoub,,foundry-myaacoub,proj-default/build/agents/sharepoint-agent/build?tid=12a4b86b-e64c-43f9-af05-d9130a72dfd2) |
+| Azure AI Search portal | `https://portal.azure.com/#/resource/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>/providers/Microsoft.Search/searchServices/<SEARCH_SERVICE_NAME>/overview` |
+| Search endpoint | `https://<SEARCH_SERVICE_NAME>.search.windows.net` |
+| Search Explorer | `https://portal.azure.com/#/resource/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>/providers/Microsoft.Search/searchServices/<SEARCH_SERVICE_NAME>/searchExplorer` |
+| Databricks workspace | `https://portal.azure.com/#/resource/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>/providers/Microsoft.Databricks/workspaces/<DATABRICKS_WORKSPACE>/overview` |
+| Foundry resource | `https://portal.azure.com/#/resource/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>/providers/Microsoft.CognitiveServices/accounts/<FOUNDRY_ACCOUNT>/overview` |
+| Foundry IQ agent | `https://ai.azure.com/...` (open from your Foundry project after deployment) |
 
 The deployment scripts write confirmed, non-secret resource identifiers and
 URLs under `.state/`. That folder is intentionally ignored by Git.
@@ -72,12 +73,12 @@ index name. All non-URL placeholders in this document map to
 ### Published endpoints
 
 Status checked on 2026-10-22 against the live hosts. The UI and API run in the
-`caldova-aiscr-ui` and `caldova-aiscr-api` App Service apps, deployed by the GitHub
+`<UI_APP_NAME>` and `<API_APP_NAME>` App Service apps, deployed by the GitHub
 workflows described in [deploy/README.md](deploy/README.md).
 
 | Endpoint | URL | Status |
 | --- | --- | --- |
-| Azure resource group | [m365-myaacoub](https://portal.azure.com/#@caldova37587778.onmicrosoft.com/resource/subscriptions/cf824570-a8ba-497a-a184-0a52f1830aa9/resourceGroups/m365-myaacoub/overview) | Exists (provisioning state Succeeded) |
+| Azure resource group | `<RESOURCE_GROUP>` | Exists (provisioning state Succeeded) |
 | Ionic web UI | [caldova-aiscr-ui.azurewebsites.net](https://caldova-aiscr-ui.azurewebsites.net/) | Live. Governance UI with the Microsoft logo, the agent button on every page and responsive navigation. |
 | Agent page in the UI | [/agent](https://caldova-aiscr-ui.azurewebsites.net/agent) | Live. Foundry agent page with sample prompts grouped by issue. |
 | Python API root | `https://caldova-aiscr-api.azurewebsites.net/api/v1` | Live. Requires a bearer token with the `Auditor` app role. |
@@ -89,7 +90,7 @@ workflows described in [deploy/README.md](deploy/README.md).
 | Trusted Knowledge Foundry agent | Not provisioned yet (`trusted-knowledge-agent`) | Pending `scripts/provision_foundry_agent.ps1`. |
 | Knowledge Hygiene dashboard | `.state/knowledge-hygiene/index.html` (local file) | Generated locally by the dashboard script. Not published. |
 
-The `caldova-aiscr-ui` and `caldova-aiscr-api` apps now run this solution. The approved
+The `<UI_APP_NAME>` and `<API_APP_NAME>` apps now run this solution. The approved
 deployment replaced their earlier code and app settings.
 
 ## Solution guide
@@ -98,6 +99,16 @@ The [solution guide](docs/SOLUTION-README.md) explains the Seagate problem state
 the architecture that addresses each of the three issues, and describes each solution in
 depth with links to the code, configuration and tests. It also states which capabilities
 are built, partly built or not built yet.
+
+### Customer setup guide
+
+Start with the illustrated [customer setup guide](docs/CUSTOMER-SETUP-GUIDE.md)
+to build and deploy the governance website and API in your own tenant. It
+covers prerequisites, Azure RBAC, Entra registrations and Auditor assignment,
+SharePoint managed-identity/site permissions, local builds, App Service,
+Foundry, GitHub Actions, screenshots, acceptance checks and troubleshooting.
+It distinguishes the core website from the optional Search/Foundry IQ pipeline
+and documents the live permission blockers rather than implying setup is complete.
 
 ## Architecture
 
@@ -465,6 +476,12 @@ solution does not implement custom file or index replication.
 
 ## Security model
 
+For the governance website/API, follow the [customer role and permission
+matrix](docs/CUSTOMER-SETUP-GUIDE.md#3-roles-and-permissions-reference) and
+[API managed-identity authorization steps](docs/CUSTOMER-SETUP-GUIDE.md#9-authorize-the-api-managed-identity).
+The Search ingestion permissions below belong to a separate identity and do
+not configure the API's SharePoint permission-auditing access.
+
 The Search service has a system-assigned managed identity. It receives only
 the configured model-inference role on the embedding resource and
 `Cognitive Services User` on the Foundry IQ model provider. The Foundry
@@ -597,7 +614,7 @@ freshness without claiming that the documents are live Databricks results.
 
 ## Sample prompts
 
-Use these prompts in the [deployed Foundry IQ agent](https://ai.azure.com/nextgen/r/z4JFcKi6SXqhhApS8YMKqQ,m365-myaacoub,,foundry-myaacoub,proj-default/build/agents/sharepoint-agent/build?tid=12a4b86b-e64c-43f9-af05-d9130a72dfd2):
+Use these prompts in your deployed Foundry IQ agent:
 
 1. Which wafer-yield results are below target for AI accelerators? Cite the SharePoint documents and include the Databricks source table.
 2. Compare average, best, worst, and target wafer yield by process node. Separate source facts from recommended follow-up actions.

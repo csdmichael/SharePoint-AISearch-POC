@@ -54,12 +54,31 @@ class SiteService:
 
     def info(self) -> dict[str, Any]:
         web = self._sharepoint.web()
+        selected = self._settings.site
+        available = [
+            {
+                "siteId": site.site_id,
+                "displayName": site.display_name,
+                "function": site.function,
+                "siteUrl": site.site_url,
+                "serverRelativeUrl": site.server_relative_path,
+            }
+            for site in self._settings.site_catalog
+        ]
         return {
             "name": web.get("Title"),
             "webUrl": web.get("Url"),
             "serverRelativeUrl": web.get("ServerRelativeUrl"),
             "hasUniquePermissions": bool(web.get("HasUniqueRoleAssignments")),
             "libraryCount": len(self._libraries.configured()),
+            "selectedSite": {
+                "siteId": selected.site_id,
+                "displayName": selected.display_name,
+                "function": selected.function,
+                "siteUrl": selected.site_url,
+                "serverRelativeUrl": selected.server_relative_path,
+            },
+            "availableSites": available,
         }
 
     def libraries(self) -> dict[str, Any]:

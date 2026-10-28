@@ -2,6 +2,7 @@
 
 export const ENDPOINT_KEYS = [
   'health',
+  'siteInfo',
   'policy',
   'hygiene',
   'hygieneFinding',

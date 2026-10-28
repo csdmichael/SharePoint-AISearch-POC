@@ -49,8 +49,11 @@ export class AccessPage {
   readonly searchActive = computed(() => this.searchTerm().length >= this.minQueryLength);
 
   readonly users = rxResource({
-    params: () => (this.session.gate() === 'ready' && this.searchActive() ? this.searchTerm() : undefined),
-    stream: ({ params }) => this.api.searchUsers(params),
+    params: () =>
+      this.session.gate() === 'ready' && this.searchActive()
+        ? `${this.api.siteContext() ?? '__default__'}:${this.searchTerm()}`
+        : undefined,
+    stream: ({ params }) => this.api.searchUsers(params.slice(params.indexOf(':') + 1)),
   });
   readonly searchView = computed<ViewState>(() =>
     resolveViewState(this.session.gate(), {
@@ -63,8 +66,11 @@ export class AccessPage {
 
   readonly selectedUser = signal<UserSearchResult | null>(null);
   readonly items = new CursorList<UserAccessRecord>({
-    key: () => (this.session.gate() === 'ready' ? this.selectedUser()?.userKey : undefined),
-    fetch: (key, cursor) => this.api.userItems(key, cursor),
+    key: () =>
+      this.session.gate() === 'ready' && this.selectedUser()?.userKey
+        ? `${this.api.siteContext() ?? '__default__'}:${this.selectedUser()?.userKey ?? ''}`
+        : undefined,
+    fetch: (key, cursor) => this.api.userItems(key.slice(key.indexOf(':') + 1), cursor),
   });
   readonly itemsView = computed<ViewState>(() =>
     resolveViewState(this.session.gate(), {

@@ -24,6 +24,7 @@ export const REQUIRED_STRING_KEYS = [
   'header.tabBarLabel',
   'header.overlayTitle',
   'header.signedInAs',
+  'header.siteLabel',
   'modeBadges.live',
   'modeBadges.dryRun',
   'modeBadges.offline',

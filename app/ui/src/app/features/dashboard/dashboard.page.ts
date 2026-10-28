@@ -50,7 +50,7 @@ export class DashboardPage {
   readonly icons = this.config.layout.icons;
 
   readonly summary = rxResource({
-    params: () => (this.session.gate() === 'ready' ? true : undefined),
+    params: () => (this.session.gate() === 'ready' ? this.api.siteContext() ?? '__default__' : undefined),
     stream: () => forkJoin({ policy: this.api.policy(), hygiene: this.api.hygiene() }),
   });
   private readonly summaryData = computed(() => this.summary.hasValue() ? this.summary.value() : undefined);

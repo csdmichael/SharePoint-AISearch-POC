@@ -10,6 +10,32 @@
     "mailNickname": "semiconductorknowledgehub",
     "productionLibraryName": "Trusted Knowledge",
     "siteUrl": "https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub",
+    "sites": [
+      {
+        "siteId": "semiconductor",
+        "displayName": "Semiconductor Knowledge Hub",
+        "function": "Engineering",
+        "siteUrl": "https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub"
+      },
+      {
+        "siteId": "hr",
+        "displayName": "HR Knowledge Hub",
+        "function": "HR",
+        "siteUrl": "https://caldova37587778.sharepoint.com/sites/hrknowledgehub"
+      },
+      {
+        "siteId": "manufacturing",
+        "displayName": "Manufacturing Knowledge Hub",
+        "function": "Manufacturing",
+        "siteUrl": "https://caldova37587778.sharepoint.com/sites/manufacturingknowledgehub"
+      },
+      {
+        "siteId": "sales",
+        "displayName": "Sales and Marketing Knowledge Hub",
+        "function": "Sales",
+        "siteUrl": "https://caldova37587778.sharepoint.com/sites/salesmarketingknowledgehub"
+      }
+    ],
     "provisioningApplicationName": "Semiconductor SharePoint Provisioner"
   },
   "search": {

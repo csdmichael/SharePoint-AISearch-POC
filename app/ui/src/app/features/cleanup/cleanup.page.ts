@@ -43,8 +43,8 @@ export class CleanupPage {
 
   readonly segment = signal(this.config.pages.cleanup.defaultSegment);
   readonly records = new CursorList<CleanupRecord>({
-    key: () => (this.session.gate() === 'ready' ? this.segment() : undefined),
-    fetch: (key) => this.api.cleanup(key),
+    key: () => (this.session.gate() === 'ready' ? `${this.api.siteContext() ?? '__default__'}:${this.segment()}` : undefined),
+    fetch: (key) => this.api.cleanup(key.slice(key.indexOf(':') + 1)),
   });
 
   readonly view = computed<ViewState>(() =>

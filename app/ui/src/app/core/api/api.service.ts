@@ -1,5 +1,5 @@
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Observable, catchError, map, of, throwError, timeout } from 'rxjs';
 import { ConfigService } from '../config/config.service';
 import { EndpointKey } from '../config/config.models';
@@ -41,6 +41,7 @@ import {
   Page,
   PermissionsResponse,
   PolicyResponse,
+  SiteInfoResponse,
   UserAccessRecord,
   UserItemsResponse,
   UserSearchResponse,
@@ -51,6 +52,7 @@ interface SendOptions {
   params?: Record<string, string>;
   body?: unknown;
   skipAuth?: boolean;
+  skipSiteContext?: boolean;
 }
 
 /** Typed client for the governance API. Every URL comes from app.config.json and apiBaseUrl. */
@@ -58,9 +60,14 @@ interface SendOptions {
 export class ApiService {
   private readonly http = inject(HttpClient);
   private readonly config = inject(ConfigService);
+  readonly siteContext = signal<string | null>(null);
 
   health(): Observable<HealthResponse> {
     return this.send<HealthResponse>('GET', this.endpoint('health'), { skipAuth: true });
+  }
+
+  siteInfo(): Observable<SiteInfoResponse> {
+    return this.send<SiteInfoResponse>('GET', this.endpoint('siteInfo'));
   }
 
   policy(): Observable<PolicyResponse> {
@@ -167,6 +174,11 @@ export class ApiService {
     }).pipe(map((response) => agentReply(response)));
   }
 
+  setSiteContext(siteId: string | null): void {
+    const next = siteId?.trim() ?? '';
+    this.siteContext.set(next.length > 0 ? next : null);
+  }
+
   private endpoint(key: EndpointKey, values: Record<string, string> = {}): string {
     const template = this.config.app.endpoints[key];
     const path = template.replace(/\{(\w+)\}/g, (_match: string, name: string) => {
@@ -186,7 +198,14 @@ export class ApiService {
 
   private send<T>(method: 'GET' | 'POST', url: string, options: SendOptions = {}): Observable<T> {
     const context = options.skipAuth ? new HttpContext().set(SKIP_AUTH, true) : undefined;
-    const params = options.params ? new HttpParams({ fromObject: options.params }) : undefined;
+    const paramsObject = { ...(options.params ?? {}) };
+    if (!options.skipSiteContext) {
+      const site = this.siteContext();
+      if (site && !paramsObject['site']) {
+        paramsObject['site'] = site;
+      }
+    }
+    const params = Object.keys(paramsObject).length > 0 ? new HttpParams({ fromObject: paramsObject }) : undefined;
     return this.http
       .request<T>(method, url, { params, body: options.body, context, responseType: 'json' })
       .pipe(

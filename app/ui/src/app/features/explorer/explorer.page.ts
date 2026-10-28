@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IonContent, IonIcon, IonSelect, IonSelectOption } from '@ionic/angular';
 import { ApiError, asApiError, toApiError } from '../../core/api/api-error';
@@ -51,7 +51,7 @@ export class ExplorerPage {
   readonly icons = this.config.layout.icons;
 
   readonly libraries = rxResource({
-    params: () => (this.session.gate() === 'ready' ? true : undefined),
+    params: () => (this.session.gate() === 'ready' ? this.api.siteContext() ?? '__default__' : undefined),
     stream: () => this.api.libraries(),
   });
 
@@ -100,8 +100,17 @@ export class ExplorerPage {
   });
 
   readonly permissions = rxResource({
-    params: () => (this.session.gate() === 'ready' ? this.selectedItem()?.id : undefined),
-    stream: ({ params }) => this.api.itemPermissions(params),
+    params: () => {
+      if (this.session.gate() !== 'ready') {
+        return undefined;
+      }
+      const itemId = this.selectedItem()?.id;
+      if (!itemId) {
+        return undefined;
+      }
+      return `${this.api.siteContext() ?? '__default__'}:${itemId}`;
+    },
+    stream: ({ params }) => this.api.itemPermissions(params.slice(params.indexOf(':') + 1)),
   });
   private readonly permissionData = computed(() => this.permissions.hasValue() ? this.permissions.value() : undefined);
 
@@ -135,6 +144,18 @@ export class ExplorerPage {
     () => this.entries().find((entry) => entry.id === this.selectedPermissionId()) ?? null,
   );
   readonly treeTruncated = computed(() => Object.values(this.branches()).some((branch) => branch.truncated));
+
+  constructor() {
+    effect(() => {
+      this.api.siteContext();
+      this.selectedLibrary.set(null);
+      this.branches.set({});
+      this.expandedFolders.set(new Set());
+      this.selectedItem.set(null);
+      this.selectedPermissionId.set(null);
+      this.expandedPrincipals.set(new Set());
+    });
+  }
 
   selectLibrary(library: Library): void {
     this.selectedLibrary.set(library);

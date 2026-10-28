@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import __version__
 from app.api.errors import register_error_handlers
 from app.api.routes import access, agent, analytics, documents, hygiene, notifications, sites, system
-from app.container import Container
+from app.container_manager import ContainerManager
 from app.core.config import Settings
 
 
@@ -25,14 +25,21 @@ def create_app(
     environ: Mapping[str, str] | None = None,
     sleep: Callable[[float], None] = time.sleep,
 ) -> FastAPI:
-    container = Container(settings, transport=transport, credential=credential, environ=environ, sleep=sleep)
+    container_manager = ContainerManager(
+        settings,
+        transport=transport,
+        credential=credential,
+        environ=environ,
+        sleep=sleep,
+    )
+    container = container_manager.default_container
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         try:
             yield
         finally:
-            container.close()
+            container_manager.close()
 
     api = settings.api
     app = FastAPI(
@@ -45,6 +52,7 @@ def create_app(
         lifespan=lifespan,
     )
     app.state.container = container
+    app.state.container_manager = container_manager
     app.add_middleware(
         CORSMiddleware,
         allow_origins=api.cors.allowedOrigins,

@@ -10,7 +10,11 @@ from app.domain.permissions import GRANT_VALUES
 
 
 def get_container(request: Request) -> Container:
-    return request.app.state.container
+    selector = request.query_params.get("site")
+    manager = getattr(request.app.state, "container_manager", None)
+    if manager is None:
+        return request.app.state.container
+    return manager.for_site(selector)
 
 
 def resolve_page_size(container: Container, requested: int | None) -> int:

@@ -4,6 +4,7 @@
   "pageSize": 25,
   "endpoints": {
     "health": "/health",
+    "siteInfo": "/site",
     "policy": "/policy",
     "hygiene": "/hygiene",
     "hygieneFinding": "/hygiene/findings/{id}",

@@ -50,7 +50,7 @@ export class AgentPage {
   private readonly placeholderPattern = this.config.agent.placeholderPattern;
 
   readonly prompts = rxResource({
-    params: () => (this.session.gate() === 'ready' ? true : undefined),
+    params: () => (this.session.gate() === 'ready' ? this.api.siteContext() ?? '__default__' : undefined),
     stream: () => this.api.agentPrompts(),
   });
   private readonly promptData = computed(() => this.prompts.hasValue() ? this.prompts.value() : undefined);
@@ -101,6 +101,9 @@ export class AgentPage {
     }
     if (name === 'userUpn') {
       return this.session.auth.account()?.username ?? '';
+    }
+    if (name === 'siteId') {
+      return this.api.siteContext() ?? '';
     }
     return '';
   }

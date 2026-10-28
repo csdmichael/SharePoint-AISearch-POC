@@ -78,8 +78,8 @@ export class DocumentDetailPage {
   readonly icons = this.config.layout.icons;
 
   readonly document = rxResource({
-    params: () => (this.session.gate() === 'ready' ? this.id() : undefined),
-    stream: ({ params }) => this.api.document(params),
+    params: () => (this.session.gate() === 'ready' ? `${this.api.siteContext() ?? '__default__'}:${this.id()}` : undefined),
+    stream: ({ params }) => this.api.document(params.slice(params.indexOf(':') + 1)),
   });
 
   readonly view = computed<ViewState>(() =>

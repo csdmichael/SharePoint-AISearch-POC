@@ -41,6 +41,28 @@
   flex: 1 1 auto;
 }
 
+.app-header__site {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--surface-muted-text);
+  font-size: 0.8125rem;
+}
+
+.app-header__site-label {
+  white-space: nowrap;
+}
+
+.app-header__site-select {
+  border: 1px solid var(--surface-border);
+  border-radius: 0.5rem;
+  background: var(--surface-page);
+  color: var(--surface-text);
+  font-size: 0.8125rem;
+  padding: 0.25rem 0.5rem;
+  max-width: 15rem;
+}
+
 .app-header__user {
   display: inline-flex;
   align-items: center;
@@ -85,6 +107,14 @@
   --padding-end: 0;
   width: 2.5rem;
   height: 2.5rem;
+}
+
+.app-header--compact .app-header__site-label {
+  display: none;
+}
+
+.app-header--compact .app-header__site-select {
+  max-width: 9rem;
 }
 
 .app-header > app-microsoft-logo,

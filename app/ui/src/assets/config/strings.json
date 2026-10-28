@@ -9,6 +9,7 @@
     "tabBarLabel": "Primary navigation",
     "overlayTitle": "Navigation",
     "signedInAs": "Signed in as {name}",
+    "siteLabel": "Site",
     "authPending": "Checking sign-in"
   },
   "modeBadges": {

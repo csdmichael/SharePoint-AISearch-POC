@@ -34,8 +34,8 @@ export class NotificationsPage {
 
   readonly status = signal(this.config.pages.notifications.defaultStatus);
   readonly outbox = new CursorList<NotificationItem, NotificationPage>({
-    key: () => (this.session.gate() === 'ready' ? this.status() : undefined),
-    fetch: (key) => this.api.notifications(key),
+    key: () => (this.session.gate() === 'ready' ? `${this.api.siteContext() ?? '__default__'}:${this.status()}` : undefined),
+    fetch: (key) => this.api.notifications(key.slice(key.indexOf(':') + 1)),
   });
 
   readonly view = computed<ViewState>(() =>

@@ -20,6 +20,24 @@ export interface HealthResponse {
   mode?: ResponseMode | null;
 }
 
+export interface SiteDescriptor {
+  siteId: string;
+  displayName: string;
+  function: string | null;
+  siteUrl: string;
+  serverRelativeUrl: string | null;
+}
+
+export interface SiteInfoResponse {
+  name: string | null;
+  webUrl: string | null;
+  serverRelativeUrl: string | null;
+  hasUniquePermissions: boolean;
+  libraryCount: number;
+  selectedSite: SiteDescriptor;
+  availableSites: SiteDescriptor[];
+}
+
 export interface PolicyMetricDefinition {
   key: string;
   label: string;

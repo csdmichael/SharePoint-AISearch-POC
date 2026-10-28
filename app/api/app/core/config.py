@@ -676,6 +676,15 @@ class SharedAzure(_SharedModel):
 
 class SharedSharePoint(_SharedModel):
     siteUrl: str = Field(pattern=r"^https://")
+    siteDisplayName: str | None = None
+    sites: list["SharedSiteEntry"] = Field(default_factory=list)
+
+
+class SharedSiteEntry(_SharedModel):
+    siteId: str = Field(min_length=1, pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_-]*$")
+    displayName: str = Field(min_length=1)
+    siteUrl: str = Field(pattern=r"^https://")
+    function: str | None = None
 
 
 class SharedDeployment(_SharedModel):
@@ -685,6 +694,9 @@ class SharedDeployment(_SharedModel):
 
 @dataclass(frozen=True)
 class SiteSettings:
+    site_id: str
+    display_name: str
+    function: str | None
     site_url: str
     host: str
     server_relative_path: str
@@ -720,6 +732,7 @@ class Settings:
     prompts: PromptCatalog
     governance: Governance
     site: SiteSettings
+    site_catalog: tuple[SiteSettings, ...]
     foundry: FoundryTarget
     outbox_path: Path
     applied_overrides: tuple[str, ...]
@@ -908,17 +921,66 @@ def resolve_path(base: Path, configured: str) -> Path:
     return (base / candidate).resolve()
 
 
-def _site_settings(deployment: SharedDeployment) -> SiteSettings:
-    parts = urlsplit(deployment.sharePoint.siteUrl)
+def _site_settings(
+    *,
+    tenant_id: str,
+    site_id: str,
+    display_name: str,
+    site_url: str,
+    function: str | None,
+) -> SiteSettings:
+    parts = urlsplit(site_url)
     path = parts.path.rstrip("/")
     if not path:
         raise ConfigError("trusted-knowledge.json: sharePoint.siteUrl must include the site path, e.g. /sites/<name>")
     return SiteSettings(
+        site_id=site_id,
+        display_name=display_name,
+        function=function.strip() if isinstance(function, str) and function.strip() else None,
         site_url=f"{parts.scheme}://{parts.netloc}{path}",
         host=parts.netloc,
         server_relative_path=path,
-        tenant_id=deployment.azure.tenantId,
+        tenant_id=tenant_id,
     )
+
+
+def _site_catalog(deployment: SharedDeployment) -> tuple[SiteSettings, ...]:
+    tenant_id = deployment.azure.tenantId
+    fallback_url = deployment.sharePoint.siteUrl
+    fallback_name = deployment.sharePoint.siteDisplayName or "Default site"
+    entries: list[SiteSettings] = []
+    seen_ids: set[str] = set()
+    seen_urls: set[str] = set()
+
+    for entry in deployment.sharePoint.sites:
+        site = _site_settings(
+            tenant_id=tenant_id,
+            site_id=entry.siteId.strip().lower(),
+            display_name=entry.displayName.strip(),
+            site_url=entry.siteUrl,
+            function=entry.function,
+        )
+        if site.site_id in seen_ids:
+            raise ConfigError(f"trusted-knowledge.json: duplicate sharePoint.sites siteId '{site.site_id}'")
+        if site.site_url in seen_urls:
+            raise ConfigError(f"trusted-knowledge.json: duplicate sharePoint.sites siteUrl '{site.site_url}'")
+        seen_ids.add(site.site_id)
+        seen_urls.add(site.site_url)
+        entries.append(site)
+
+    fallback_site = _site_settings(
+        tenant_id=tenant_id,
+        site_id="default",
+        display_name=fallback_name.strip() if fallback_name.strip() else "Default site",
+        site_url=fallback_url,
+        function=None,
+    )
+    if fallback_site.site_url not in seen_urls:
+        entries.insert(0, fallback_site)
+
+    if not entries:
+        raise ConfigError("trusted-knowledge.json: no SharePoint sites were configured")
+    return tuple(entries)
 
 
 def _foundry_target(config: FoundryConfig) -> FoundryTarget:
@@ -1010,6 +1072,16 @@ def load_settings(config_path: str | Path, env: Mapping[str, str] | None = None)
     if problems:
         raise ConfigError("\n".join(problems))
 
+    site_catalog = _site_catalog(deployment)
+    default_site_url = _site_settings(
+        tenant_id=deployment.azure.tenantId,
+        site_id="default",
+        display_name=deployment.sharePoint.siteDisplayName or "Default site",
+        site_url=deployment.sharePoint.siteUrl,
+        function=None,
+    ).site_url
+    default_site = next((site for site in site_catalog if site.site_url == default_site_url), site_catalog[0])
+
     return Settings(
         config_path=config_file,
         service_root=service_root,
@@ -1019,7 +1091,8 @@ def load_settings(config_path: str | Path, env: Mapping[str, str] | None = None)
         agent=agent,
         prompts=prompts,
         governance=governance,
-        site=_site_settings(deployment),
+        site=default_site,
+        site_catalog=site_catalog,
         foundry=_foundry_target(agent.foundry),
         outbox_path=resolve_path(service_root, notifications.outboxPath),
         applied_overrides=tuple(applied),

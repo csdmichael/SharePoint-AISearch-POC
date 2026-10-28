@@ -1,5 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { IonButton, IonIcon, MenuController } from '@ionic/angular';
+import { ApiService } from '../../../core/api/api.service';
+import { SiteDescriptor } from '../../../core/api/models/api.models';
 import { ConfigService } from '../../../core/config/config.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { LayoutService } from '../../../core/layout/layout.service';
@@ -23,6 +26,16 @@ import { MicrosoftLogoComponent } from '../microsoft-logo/microsoft-logo.compone
         <app-badge data-testid="mode-badge" [text]="badge.text" [color]="badge.color" />
       }
       <span class="app-header__spacer"></span>
+      @if (session.gate() === 'ready' && siteOptions().length > 0) {
+        <label class="app-header__site">
+          <span class="app-header__site-label">{{ siteLabel }}</span>
+          <select class="app-header__site-select" [value]="selectedSiteId() ?? ''" (change)="changeSite($event)">
+            @for (site of siteOptions(); track site.siteId) {
+              <option [value]="site.siteId">{{ site.displayName }}</option>
+            }
+          </select>
+        </label>
+      }
       @if (session.auth.signedIn()) {
         <span class="app-header__user" data-testid="signed-in-user">
           <span class="app-header__avatar" role="img" [attr.aria-label]="signedInText()" [attr.title]="signedInText()">{{ initials() }}</span>
@@ -59,6 +72,7 @@ import { MicrosoftLogoComponent } from '../microsoft-logo/microsoft-logo.compone
 })
 export class AppHeaderComponent {
   private readonly config = inject(ConfigService);
+  private readonly api = inject(ApiService);
   private readonly i18n = inject(I18nService);
   private readonly display = inject(DisplayService);
   private readonly menu = inject(MenuController);
@@ -68,6 +82,7 @@ export class AppHeaderComponent {
   readonly icons = this.config.layout.icons;
   readonly appName = this.config.strings.appName;
   readonly menuLabel = this.i18n.text('header.menuButtonLabel');
+  readonly siteLabel = this.i18n.text('header.siteLabel');
 
   readonly modeBadge = computed(() => {
     const key = this.session.apiStatus() === 'checking' ? 'checking' : this.session.apiStatus() === 'unreachable' ? 'offline' : this.session.mode();
@@ -81,6 +96,29 @@ export class AppHeaderComponent {
   readonly initials = computed(() => this.display.initials(this.session.auth.displayName()));
   readonly signInLabel = this.i18n.text('buttons.signIn');
   readonly signOutLabel = this.i18n.text('buttons.signOut');
+  readonly siteInfo = rxResource({
+    params: () => (this.session.gate() === 'ready' ? this.api.siteContext() ?? '__default__' : undefined),
+    stream: () => this.api.siteInfo(),
+  });
+  readonly siteOptions = computed<SiteDescriptor[]>(() => this.siteInfo.hasValue() ? this.siteInfo.value().availableSites : []);
+  readonly selectedSiteId = computed(() => this.api.siteContext() ?? (this.siteInfo.hasValue() ? this.siteInfo.value().selectedSite.siteId : null));
+
+  constructor() {
+    effect(() => {
+      if (!this.siteInfo.hasValue()) {
+        return;
+      }
+      const available = this.siteInfo.value().availableSites;
+      if (available.length === 0) {
+        return;
+      }
+      const current = this.api.siteContext();
+      if (current && available.some((site) => site.siteId === current)) {
+        return;
+      }
+      this.api.setSiteContext(this.siteInfo.value().selectedSite.siteId);
+    });
+  }
 
   openMenu(): void {
     void this.menu.open(this.config.layout.overlayMenuId);
@@ -93,5 +131,12 @@ export class AppHeaderComponent {
   signOut(): void {
     void this.session.signOut();
   }
-}
 
+  changeSite(event: Event): void {
+    const target = event.target;
+    if (!(target instanceof HTMLSelectElement)) {
+      return;
+    }
+    this.api.setSiteContext(target.value);
+  }
+}

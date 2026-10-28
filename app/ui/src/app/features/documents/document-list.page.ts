@@ -38,8 +38,8 @@ export class DocumentListPage {
   /** Segment value of the "All" choice. It is not a category name, so it cannot match one. */
   readonly allValue = '__all__';
   readonly documents = new CursorList<DocumentSummary, DocumentPage>({
-    key: () => (this.session.gate() === 'ready' ? this.category() : undefined),
-    fetch: (key, cursor) => this.api.documents(key, cursor),
+    key: () => (this.session.gate() === 'ready' ? `${this.api.siteContext() ?? '__default__'}:${this.category()}` : undefined),
+    fetch: (key, cursor) => this.api.documents(key.slice(key.indexOf(':') + 1), cursor),
   });
 
   readonly view = computed<ViewState>(() =>
