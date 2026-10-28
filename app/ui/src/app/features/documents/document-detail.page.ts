@@ -90,7 +90,7 @@ export class DocumentDetailPage {
     }),
   );
 
-  readonly details = computed<DocumentDetail | null>(() => this.document.value() ?? null);
+  readonly details = computed<DocumentDetail | null>(() => this.document.hasValue() ? this.document.value() : null);
   readonly webLink = computed(() => safeHttpUrl(this.details()?.webUrl ?? null));
   readonly fields = computed<FieldView[]>(() => {
     const doc = this.details();

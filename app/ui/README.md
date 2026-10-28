@@ -39,6 +39,7 @@ Covers:
 - `MicrosoftLogoComponent`: Microsoft logo mark and wordmark rendering
 - `AgentFabComponent`: Foundry agent floating action button visibility and navigation
 - `groupByIssue`: Issue grouping and first-appearance ordering for prompts
+- `CursorList`: Failed requests expose an error without throwing from data signals, and retry can recover
 
 ### End-to-End Tests (Playwright Device Matrix)
 Runs the responsive device matrix across web, desktop, tablet, and mobile profiles:
@@ -54,6 +55,18 @@ To view HTML test reports:
 npx playwright show-report
 ```
 Screenshots for each tested device profile are saved to `test-results/screenshots/`.
+
+The suite also exercises all eight page routes (including document detail),
+signed-out gates, signed-in API failures, retry and timeout recovery, dashboard
+findings, document refresh/category filtering, Explorer permissions, user access
+and CSV export, cleanup segments, notification drafting/approval, and agent
+citations. Synthetic MSAL accounts are installed through its public cache API;
+test API responses are intercepted and no real sign-in or mail delivery occurs.
+These browser tests validate the UI contract, not live SharePoint connectivity.
+
+The static host reads the document route from `pages.json` so composite item
+identifiers containing dots work on direct navigation and refresh. Missing
+JavaScript and other assets still return 404 rather than the SPA shell.
 
 ## Production Build
 

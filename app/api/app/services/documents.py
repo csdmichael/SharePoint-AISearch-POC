@@ -6,7 +6,7 @@ from typing import Any
 
 from app.analytics.expiry import ExpiryFinding
 from app.core.config import Settings
-from app.core.errors import BadRequestError, NotFoundError, UpstreamError
+from app.core.errors import BadRequestError, NotFoundError
 from app.core.governance import Governance, normalize_token
 from app.domain.snapshot import ItemRecord
 from app.services.analytics import AnalyticsService
@@ -110,11 +110,8 @@ class DocumentService:
     def _all(self) -> list[tuple[LibraryCorpus, ItemRecord]]:
         rows: list[tuple[LibraryCorpus, ItemRecord]] = []
         for library in self._libraries.configured():
-            try:
-                corpus = self._libraries.corpus(library.id)
-                rows.extend((corpus, item) for item in corpus.snapshot.files)
-            except UpstreamError:
-                continue
+            corpus = self._libraries.corpus(library.id)
+            rows.extend((corpus, item) for item in corpus.snapshot.files)
         return rows
 
     def list(

@@ -43,6 +43,13 @@ python -m uvicorn app.asgi:app --port 8000
 - `API_CONFIG_PATH` (no prefix) selects another API config file, relative to `app\api`. The default is `config/api.config.json`.
 - Run the tests with `python -m pytest -q`.
 
+Library scans fall back to base metadata when SharePoint rejects governance
+columns that are absent from a library. The hygiene coverage reports that
+fallback as a warning. Permission, connectivity, and failed fallback requests
+return an explicit upstream error rather than an empty successful scan.
+Unexpected server errors retain CORS headers for configured UI origins, and
+their tracebacks are logged on the server.
+
 ## Configuration
 
 | File | Controls |

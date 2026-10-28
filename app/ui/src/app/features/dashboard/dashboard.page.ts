@@ -53,6 +53,7 @@ export class DashboardPage {
     params: () => (this.session.gate() === 'ready' ? true : undefined),
     stream: () => forkJoin({ policy: this.api.policy(), hygiene: this.api.hygiene() }),
   });
+  private readonly summaryData = computed(() => this.summary.hasValue() ? this.summary.value() : undefined);
 
   readonly view = computed<ViewState>(() =>
     resolveViewState(this.session.gate(), {
@@ -63,7 +64,7 @@ export class DashboardPage {
   );
 
   readonly metrics = computed<KpiCard[]>(() => {
-    const data = this.summary.value();
+    const data = this.summaryData();
     if (!data) {
       return [];
     }
@@ -74,9 +75,9 @@ export class DashboardPage {
     }));
   });
 
-  readonly findings = computed<HygieneFinding[]>(() => this.summary.value()?.hygiene.findings ?? []);
+  readonly findings = computed<HygieneFinding[]>(() => this.summaryData()?.hygiene.findings ?? []);
   readonly generatedAt = computed(() => {
-    const value = this.summary.value()?.hygiene.asOfDate;
+    const value = this.summaryData()?.hygiene.asOfDate;
     return value ? this.i18n.text('dashboard.generatedAt', { date: this.i18n.date(value) }) : null;
   });
 

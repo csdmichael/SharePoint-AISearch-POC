@@ -56,10 +56,10 @@ export class AccessPage {
     resolveViewState(this.session.gate(), {
       loading: this.users.isLoading(),
       error: asApiError(this.users.error()),
-      empty: (this.users.value()?.length ?? 0) === 0,
+      empty: this.userList().length === 0,
     }),
   );
-  readonly userList = computed<UserSearchResult[]>(() => this.users.value() ?? []);
+  readonly userList = computed<UserSearchResult[]>(() => this.users.hasValue() ? this.users.value() : []);
 
   readonly selectedUser = signal<UserSearchResult | null>(null);
   readonly items = new CursorList<UserAccessRecord>({

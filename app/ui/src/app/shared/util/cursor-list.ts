@@ -30,11 +30,11 @@ export class CursorList<T, P extends Page<T> = Page<T>> {
   readonly moreError = signal<ApiError | null>(null);
 
   /** The first page for the current key, including any extra response fields such as mode. */
-  readonly page = computed<P | undefined>(() => this.resource.value());
+  readonly page = computed<P | undefined>(() => this.resource.hasValue() ? this.resource.value() : undefined);
   readonly loading = computed(() => this.resource.isLoading() || this.loadingMore());
   readonly error = computed(() => asApiError(this.resource.error()));
   readonly items = computed<T[]>(() => {
-    const page = this.resource.value();
+    const page = this.page();
     if (!page) {
       return [];
     }
@@ -47,7 +47,7 @@ export class CursorList<T, P extends Page<T> = Page<T>> {
     if (more.key !== null && more.key === this.options.key()) {
       return more.nextCursor;
     }
-    return this.resource.value()?.nextCursor ?? null;
+    return this.page()?.nextCursor ?? null;
   });
 
   constructor(options: CursorListOptions<T, P>) {

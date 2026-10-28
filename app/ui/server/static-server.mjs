@@ -13,6 +13,7 @@ const serverDir = path.dirname(fileURLToPath(import.meta.url));
 const appDir = path.resolve(serverDir, '..');
 const config = JSON.parse(await readFile(path.join(serverDir, 'static-server.json'), 'utf8'));
 const rootDir = path.resolve(appDir, config.root);
+const pages = JSON.parse(await readFile(path.join(rootDir, 'assets', 'config', 'pages.json'), 'utf8'));
 const port = resolvePort(process.env.PORT, config.port);
 const host = process.env.HOST?.trim() || config.host;
 
@@ -83,8 +84,12 @@ async function handle(request, response) {
     return;
   }
 
-  // Client-side routes have no extension, so they receive the SPA shell. Missing assets stay 404.
-  if (config.spaFallback && path.extname(relative) === '') {
+  // Composite document ids contain a dot; they are routes, not file extensions.
+  const documentSegments = pages.documentRoute.split('/');
+  const segments = pathname.split('/');
+  const isDocumentRoute = segments.length === documentSegments.length
+    && documentSegments.every((segment, index) => segment.startsWith(':') ? segments[index] !== '' : segment === segments[index]);
+  if (config.spaFallback && (path.extname(relative) === '' || isDocumentRoute)) {
     await sendFile(request, response, path.join(rootDir, config.index));
     return;
   }

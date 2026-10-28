@@ -42,9 +42,17 @@ def register_error_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(Exception)
-    async def unexpected_error(_: Request, exc: Exception) -> JSONResponse:
-        logger.error("Unhandled error: %s", type(exc).__name__)
-        return JSONResponse(
+    async def unexpected_error(request: Request, exc: Exception) -> JSONResponse:
+        logger.error("Unhandled error in %s %s", request.method, request.url.path, exc_info=exc)
+        response = JSONResponse(
             status_code=500,
             content={"error": {"code": "internal_error", "message": "An unexpected error occurred."}},
         )
+        # Starlette's server-error handler runs outside the CORS middleware.
+        origin = request.headers.get("origin")
+        allowed = request.app.state.container.settings.api.cors.allowedOrigins
+        if origin and ("*" in allowed or origin in allowed):
+            response.headers["Access-Control-Allow-Origin"] = "*" if "*" in allowed else origin
+            if "*" not in allowed:
+                response.headers["Vary"] = "Origin"
+        return response

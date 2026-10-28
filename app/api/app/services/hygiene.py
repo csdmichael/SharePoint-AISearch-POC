@@ -10,7 +10,7 @@ from typing import Any, Callable
 
 from app.analytics.expiry import ExpiryFinding
 from app.core.config import HygieneReasons, Settings
-from app.core.errors import NotFoundError, UpstreamError
+from app.core.errors import NotFoundError
 from app.core.governance import Governance
 from app.domain.snapshot import ItemRecord
 from app.services.analytics import AnalyticsService
@@ -69,26 +69,9 @@ class HygieneService:
         docs: list[HygieneDoc] = []
         coverage: list[dict[str, Any]] = []
         for library in self._libraries.configured():
-            try:
-                corpus = self._libraries.corpus(library.id)
-            except UpstreamError as exc:
-                coverage.append({
-                    "libraryId": library.id,
-                    "libraryTitle": library.title,
-                    "documentsScanned": 0,
-                    "folders": 0,
-                    "truncated": False,
-                    "warnings": [f"Library '{library.title}' could not be scanned: {exc.message}"],
-                })
-                continue
-            try:
-                expiry = self._analytics.expiry(corpus)
-            except Exception:
-                expiry = {}
-            try:
-                roles = self._analytics.duplicate_roles(corpus)
-            except Exception:
-                roles = {}
+            corpus = self._libraries.corpus(library.id)
+            expiry = self._analytics.expiry(corpus)
+            roles = self._analytics.duplicate_roles(corpus)
             files = corpus.snapshot.files
             for item in files:
                 owner = item.fields.get("knowledgeOwner") or {}

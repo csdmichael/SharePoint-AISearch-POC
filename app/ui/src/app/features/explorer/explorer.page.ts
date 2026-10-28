@@ -59,10 +59,10 @@ export class ExplorerPage {
     resolveViewState(this.session.gate(), {
       loading: this.libraries.isLoading(),
       error: asApiError(this.libraries.error()),
-      empty: (this.libraries.value()?.items.length ?? 0) === 0,
+      empty: this.libraryItems().length === 0,
     }),
   );
-  readonly libraryItems = computed<Library[]>(() => this.libraries.value()?.items ?? []);
+  readonly libraryItems = computed<Library[]>(() => this.libraries.hasValue() ? this.libraries.value().items : []);
 
   readonly selectedLibrary = signal<Library | null>(null);
   readonly branches = signal<Record<string, TreeBranch>>({});
@@ -103,6 +103,7 @@ export class ExplorerPage {
     params: () => (this.session.gate() === 'ready' ? this.selectedItem()?.id : undefined),
     stream: ({ params }) => this.api.itemPermissions(params),
   });
+  private readonly permissionData = computed(() => this.permissions.hasValue() ? this.permissions.value() : undefined);
 
   readonly grantedViaFilter = signal('');
   readonly roleFilter = signal('');
@@ -110,9 +111,9 @@ export class ExplorerPage {
   readonly expandedPrincipals = signal<ReadonlySet<string>>(new Set());
 
   readonly entries = computed<PermissionRow[]>(() =>
-    (this.permissions.value()?.entries ?? []).map((entry, index) => ({ ...entry, id: String(index) })),
+    (this.permissionData()?.entries ?? []).map((entry, index) => ({ ...entry, id: String(index) })),
   );
-  readonly permissionWarnings = computed<PermissionWarning[]>(() => this.permissions.value()?.warnings ?? []);
+  readonly permissionWarnings = computed<PermissionWarning[]>(() => this.permissionData()?.warnings ?? []);
   readonly grantedViaOptions = computed(() => distinct(this.entries().map((entry) => entry.grantedVia)));
   readonly roleOptions = computed(() => distinct(this.entries().map((entry) => entry.role)));
   readonly filteredPermissions = computed<PermissionRow[]>(() => {
@@ -257,7 +258,7 @@ export class ExplorerPage {
 
   /** Whether the selected item has its own permissions or inherits them, and from which item. */
   scopeText(): string {
-    const inheritance = this.permissions.value()?.inheritance;
+    const inheritance = this.permissionData()?.inheritance;
     if (inheritance?.hasUniquePermissions) {
       return this.i18n.text('explorer.uniquePermissions');
     }

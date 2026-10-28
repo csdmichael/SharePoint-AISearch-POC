@@ -9,7 +9,6 @@ from fastapi import APIRouter, Depends, Query
 from app.api.deps import get_container
 from app.auth.validator import require_auditor
 from app.container import Container
-from app.core.errors import UpstreamError
 from app.services.exposure import unique_findings
 from app.services.documents import document_summary, expiry_view
 
@@ -30,13 +29,7 @@ def _coverage(container: Container, corpora: list[Any]) -> list[dict[str, Any]]:
 
 
 def _corpora(container: Container) -> list[Any]:
-    corpora: list[Any] = []
-    for library in container.libraries.configured():
-        try:
-            corpora.append(container.libraries.corpus(library.id))
-        except UpstreamError:
-            continue
-    return corpora
+    return [container.libraries.corpus(library.id) for library in container.libraries.configured()]
 
 
 @router.get("/analytics/duplicates", summary="Exact and near-duplicate clusters with canonical copies")

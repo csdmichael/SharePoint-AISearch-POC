@@ -53,21 +53,22 @@ export class AgentPage {
     params: () => (this.session.gate() === 'ready' ? true : undefined),
     stream: () => this.api.agentPrompts(),
   });
+  private readonly promptData = computed(() => this.prompts.hasValue() ? this.prompts.value() : undefined);
   readonly promptView = computed<ViewState>(() =>
     resolveViewState(this.session.gate(), {
       loading: this.prompts.isLoading(),
       error: asApiError(this.prompts.error()),
-      empty: (this.prompts.value()?.prompts?.length ?? 0) === 0,
+      empty: (this.promptData()?.prompts.length ?? 0) === 0,
     }),
   );
-  readonly groups = computed<PromptGroup[]>(() => groupByIssue(this.prompts.value()?.prompts ?? []));
+  readonly groups = computed<PromptGroup[]>(() => groupByIssue(this.promptData()?.prompts ?? []));
   readonly placeholders = computed<string[]>(() => {
-    const fromApi = this.prompts.value()?.placeholders;
+    const fromApi = this.promptData()?.placeholders;
     if (fromApi && fromApi.length > 0) {
       return fromApi;
     }
     const names = new Set<string>();
-    for (const prompt of this.prompts.value()?.prompts ?? []) {
+    for (const prompt of this.promptData()?.prompts ?? []) {
       placeholdersIn(prompt.text, this.placeholderPattern).forEach((name) => names.add(name));
     }
     return [...names];

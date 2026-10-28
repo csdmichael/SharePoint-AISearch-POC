@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 from app.clients.graph import GraphClient
 from app.clients.sharepoint import SharePointClient
 from app.core.config import Settings
-from app.core.errors import NotFoundError, UpstreamNotFoundError
+from app.core.errors import NotFoundError, UpstreamError, UpstreamNotFoundError
 from app.core.governance import Governance
 from app.domain.documents import governance_select
 from app.domain.identity import is_system_path, is_within, lower_key, path_depth, split_item_id
@@ -163,13 +163,11 @@ class LibraryService:
         warnings: list[str] = []
         try:
             raw_rows = list(self._sharepoint.list_items(info.id, select=self._select, expand=self._expand))
-        except UpstreamError:
-            try:
-                raw_rows = list(self._sharepoint.list_items(info.id, select=list(BASE_SELECT), expand=list(BASE_EXPAND)))
-                warnings.append(f"Governance columns not present on library '{info.title}'.")
-            except UpstreamError as inner:
-                warnings.append(f"Library '{info.title}' could not be crawled: {inner.message}")
-                raw_rows = []
+        except UpstreamError as exc:
+            if exc.code != "upstream_bad_request":
+                raise
+            raw_rows = list(self._sharepoint.list_items(info.id, select=list(BASE_SELECT), expand=list(BASE_EXPAND)))
+            warnings.append(f"Governance columns not present on library '{info.title}'.")
 
         for row in raw_rows:
             path = str(row.get("FileRef") or "")
@@ -194,11 +192,10 @@ class LibraryService:
                 row = self._sharepoint.folder_item(path, select=self._select, expand=self._expand)
             except UpstreamNotFoundError:
                 return None
-            except UpstreamError:
-                try:
-                    row = self._sharepoint.folder_item(path, select=list(BASE_SELECT), expand=list(BASE_EXPAND))
-                except UpstreamError:
-                    return None
+            except UpstreamError as exc:
+                if exc.code != "upstream_bad_request":
+                    raise
+                row = self._sharepoint.folder_item(path, select=list(BASE_SELECT), expand=list(BASE_EXPAND))
             return item_from_row(row, library=info, governance=self._governance)
 
         return LibrarySnapshot(

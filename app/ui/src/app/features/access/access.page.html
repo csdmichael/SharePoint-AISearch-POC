@@ -12,7 +12,9 @@
           [attr.aria-label]="'access.searchLabel' | t"
           (ionInput)="onSearch($event.detail.value)"
         />
-        @if (!searchActive()) {
+        @if (session.gate() !== 'ready') {
+          <app-state-view [state]="searchView()" (retry)="session.refresh()" />
+        } @else if (!searchActive()) {
           <p class="muted" data-testid="search-hint">{{ 'access.searchHint' | t: { count: minQueryLength } }}</p>
         } @else {
           <app-state-view [state]="searchView()" emptyKey="access.resultsEmpty" (retry)="retrySearch()" />
