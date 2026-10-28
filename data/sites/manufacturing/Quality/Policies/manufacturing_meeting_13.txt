@@ -1,8 +1,16 @@
-Manufacturing Knowledge Hub Meeting Transcript 007
+Manufacturing Knowledge Hub Meeting Transcript 013
 
-Alex: Manufacturing Knowledge Hub meeting 007 reviewed action items from the prior session.
-Jordan: Manufacturing Knowledge Hub meeting 007 walked through quality and compliance checks.
-Priya: Manufacturing Knowledge Hub meeting 007 covered operational throughput and blockers.
-Casey: Manufacturing Knowledge Hub meeting 007 confirmed owners and target completion dates.
-Alex: Manufacturing Knowledge Hub meeting 007 captured decisions and follow-up risks.
-Jordan: Manufacturing Knowledge Hub meeting 007 agreed on documentation updates.
+Alex: Manufacturing Knowledge Hub meeting 013 reviewed line throughput, cycle-time variance, and bottleneck stations.
+Jordan: Manufacturing Knowledge Hub meeting 013 walked through first-pass yield trends and defect Pareto updates.
+Priya: Manufacturing Knowledge Hub meeting 013 covered preventive maintenance windows and downtime recovery tasks.
+Casey: Manufacturing Knowledge Hub meeting 013 validated supplier quality alerts and containment actions.
+Alex: Manufacturing Knowledge Hub meeting 013 confirmed safety observations, incident follow-ups, and training status.
+Jordan: Manufacturing Knowledge Hub meeting 013 aligned production schedule changes with inventory constraints.
+Priya: Manufacturing Knowledge Hub meeting 013 reviewed line throughput, cycle-time variance, and bottleneck stations.
+Casey: Manufacturing Knowledge Hub meeting 013 walked through first-pass yield trends and defect Pareto updates.
+Alex: Manufacturing Knowledge Hub meeting 013 covered preventive maintenance windows and downtime recovery tasks.
+Jordan: Manufacturing Knowledge Hub meeting 013 validated supplier quality alerts and containment actions.
+Priya: Manufacturing Knowledge Hub meeting 013 confirmed safety observations, incident follow-ups, and training status.
+Casey: Manufacturing Knowledge Hub meeting 013 aligned production schedule changes with inventory constraints.
+Alex: Manufacturing Knowledge Hub meeting 013 reviewed line throughput, cycle-time variance, and bottleneck stations.
+Jordan: Manufacturing Knowledge Hub meeting 013 walked through first-pass yield trends and defect Pareto updates.

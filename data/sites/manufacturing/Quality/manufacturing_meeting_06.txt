@@ -1,8 +1,16 @@
-Manufacturing Knowledge Hub Meeting Recording 03 Meeting Transcript 003
+Manufacturing Knowledge Hub Meeting Recording 03 Meeting Transcript 006
 
-Alex: Manufacturing Knowledge Hub Meeting Recording 03 meeting 003 reviewed action items from the prior session.
-Jordan: Manufacturing Knowledge Hub Meeting Recording 03 meeting 003 walked through quality and compliance checks.
-Priya: Manufacturing Knowledge Hub Meeting Recording 03 meeting 003 covered operational throughput and blockers.
-Casey: Manufacturing Knowledge Hub Meeting Recording 03 meeting 003 confirmed owners and target completion dates.
-Alex: Manufacturing Knowledge Hub Meeting Recording 03 meeting 003 captured decisions and follow-up risks.
-Jordan: Manufacturing Knowledge Hub Meeting Recording 03 meeting 003 agreed on documentation updates.
+Alex: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 reviewed line throughput, cycle-time variance, and bottleneck stations.
+Jordan: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 walked through first-pass yield trends and defect Pareto updates.
+Priya: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 covered preventive maintenance windows and downtime recovery tasks.
+Casey: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 validated supplier quality alerts and containment actions.
+Alex: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 confirmed safety observations, incident follow-ups, and training status.
+Jordan: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 aligned production schedule changes with inventory constraints.
+Priya: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 reviewed line throughput, cycle-time variance, and bottleneck stations.
+Casey: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 walked through first-pass yield trends and defect Pareto updates.
+Alex: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 covered preventive maintenance windows and downtime recovery tasks.
+Jordan: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 validated supplier quality alerts and containment actions.
+Priya: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 confirmed safety observations, incident follow-ups, and training status.
+Casey: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 aligned production schedule changes with inventory constraints.
+Alex: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 reviewed line throughput, cycle-time variance, and bottleneck stations.
+Jordan: Manufacturing Knowledge Hub Meeting Recording 03 meeting 006 walked through first-pass yield trends and defect Pareto updates.
