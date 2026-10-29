@@ -276,8 +276,8 @@ export class ExplorerPage {
     return this.i18n.text(this.isExpanded(item.id) ? 'a11y.collapseNode' : 'a11y.expandNode', { name: item.name });
   }
 
-  permissionTypeLabel(value: string): string {
-    return this.display.label('principalType', value);
+  permissionTypeLabel(entry: PermissionRow): string {
+    return this.display.label('principalType', this.inferredPrincipalType(entry));
   }
 
   memberLine(member: MemberView): string {
@@ -294,7 +294,29 @@ export class ExplorerPage {
   }
 
   private isUserPrincipal(entry: PermissionRow): boolean {
-    return entry.principal.type === 'user';
+    return this.inferredPrincipalType(entry) === 'user';
+  }
+
+  private inferredPrincipalType(entry: PermissionRow): string {
+    if (entry.principal.type !== 'user') {
+      return entry.principal.type;
+    }
+    if (entry.principal.email) {
+      return 'user';
+    }
+    const login = (entry.principal.loginName ?? '').toLowerCase();
+    if (
+      login.includes('rolemanager') ||
+      login.includes('federateddirectoryclaimprovider') ||
+      login.includes('spo-grid-all-users')
+    ) {
+      return 'sharePointGroup';
+    }
+    const display = entry.principal.displayName.trim();
+    if (/(owners|members|visitors)$/i.test(display)) {
+      return 'sharePointGroup';
+    }
+    return 'user';
   }
 
   safeLink(value: string | null): string | null {

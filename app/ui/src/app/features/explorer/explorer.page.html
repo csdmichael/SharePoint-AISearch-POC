@@ -150,7 +150,7 @@
                       <tr class="permission-row" data-testid="permission-row" [class.is-selected]="selectedPermissionId() === entry.id" [attr.data-permission-id]="entry.id" (click)="selectPermission(entry)">
                         <td [attr.data-label]="'explorer.columns.principal' | t">
                           {{ entry.principal.displayName }}
-                          <span class="principal__type">{{ permissionTypeLabel(entry.principal.type) }}</span>
+                          <span class="principal__type">{{ permissionTypeLabel(entry) }}</span>
                           @if (entry.accountEnabled === false) {
                             <span class="muted"> · {{ 'explorer.accountDisabled' | t }}</span>
                           }
