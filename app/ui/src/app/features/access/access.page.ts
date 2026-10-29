@@ -62,7 +62,9 @@ export class AccessPage {
       empty: this.userList().length === 0,
     }),
   );
-  readonly userList = computed<UserSearchResult[]>(() => this.users.hasValue() ? this.users.value() : []);
+  readonly userList = computed<UserSearchResult[]>(() =>
+    this.users.hasValue() ? this.deduplicateUsers(this.users.value()) : [],
+  );
 
   readonly selectedUser = signal<UserSearchResult | null>(null);
   readonly items = new CursorList<UserAccessRecord>({
@@ -124,6 +126,30 @@ export class AccessPage {
   private joinVia(via: readonly string[]): string {
     const names = [...new Set(via.map((value) => value.trim()).filter((value) => value !== ''))];
     return names.length > 0 ? names.join(', ') : this.display.notAvailable();
+  }
+
+  private deduplicateUsers(users: readonly UserSearchResult[]): UserSearchResult[] {
+    const byDisplay = new Map<string, UserSearchResult[]>();
+    for (const user of users) {
+      const key = user.displayName.trim().toLowerCase();
+      const list = byDisplay.get(key);
+      if (list) {
+        list.push(user);
+      } else {
+        byDisplay.set(key, [user]);
+      }
+    }
+
+    const deduplicated: UserSearchResult[] = [];
+    for (const matches of byDisplay.values()) {
+      if (matches.length === 1) {
+        deduplicated.push(matches[0]);
+        continue;
+      }
+      const internal = matches.find((candidate) => !candidate.external);
+      deduplicated.push(internal ?? matches[0]);
+    }
+    return deduplicated.sort((a, b) => a.displayName.localeCompare(b.displayName));
   }
 
   recordKey(record: UserAccessRecord): string {
