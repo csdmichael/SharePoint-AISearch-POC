@@ -15,7 +15,7 @@ from app.clients.graph import GraphClient
 from app.core.config import Settings
 from app.core.errors import UpstreamError
 from app.domain.identity import compose_item_id, file_extension
-from app.domain.permissions import GRANT_SHARING_LINK, PermissionEntry, SourceRef
+from app.domain.permissions import GRANT_INHERITED, GRANT_SHARING_LINK, PermissionEntry, SourceRef, grant_mechanism
 from app.domain.principals import Principal, PrincipalKind
 from app.domain.snapshot import ItemRecord, LibraryInfo, LibrarySnapshot
 
@@ -58,6 +58,8 @@ class LibraryCorpus:
         self._drive: DriveContext | None = None
         self._links: dict[str, list[PermissionEntry]] = {}
         self._link_errors: dict[str, str] = {}
+        self._graph_entries: dict[str, list[PermissionEntry]] = {}
+        self._graph_entry_errors: dict[str, str] = {}
         self._texts: dict[str, TextResult] = {}
         self._identities: dict[str, str | None] = {}
         self._memo: dict[Hashable, Any] = {}
@@ -120,6 +122,81 @@ class LibraryCorpus:
     def link_error(self, item_id: str, *, container: bool = False) -> str | None:
         return self._link_errors.get("library" if container else item_id)
 
+    def graph_entries(self, item: ItemRecord | None, *, container: bool = False) -> list[PermissionEntry]:
+        key = "library" if container else item.item_id  # type: ignore[union-attr]
+        with self._lock:
+            if key in self._graph_entries:
+                return self._graph_entries[key]
+        try:
+            entries = self._fetch_graph_entries(item, container=container)
+        except UpstreamError as exc:
+            with self._lock:
+                self._graph_entry_errors[key] = exc.message
+            entries = []
+        with self._lock:
+            self._graph_entries[key] = entries
+        return entries
+
+    def graph_entry_error(self, item_id: str, *, container: bool = False) -> str | None:
+        return self._graph_entry_errors.get("library" if container else item_id)
+
+    def _fetch_graph_entries(self, item: ItemRecord | None, *, container: bool) -> list[PermissionEntry]:
+        context = self.drive_context()
+        if not context.drive_id:
+            return []
+        if container:
+            permissions = self._graph.drive_root_permissions(context.drive_id)
+        else:
+            assert item is not None
+            drive_item = context.by_list_id.get(item.list_item_id)
+            if drive_item is None:
+                return []
+            permissions = self._graph.drive_item_permissions(context.drive_id, str(drive_item["id"]))
+        entries: list[PermissionEntry] = []
+        for permission in permissions:
+            inherited_from = self._inherited_from(permission.get("inheritedFrom"), context)
+            roles = self._permission_roles(permission)
+            link = permission.get("link")
+            if isinstance(link, dict):
+                scope = str(link.get("scope") or "users")
+                link_type = str(link.get("type") or "view")
+                grantees = tuple(
+                    sorted(
+                        {
+                            upn
+                            for identity in permission.get("grantedToIdentitiesV2") or []
+                            if (upn := self._identity_upn(identity))
+                        }
+                    )
+                )
+                principal = Principal(
+                    kind=PrincipalKind.SHARING_LINK,
+                    key=f"link:{permission.get('id')}",
+                    display_name=self._settings.analytics.exposure.linkLabels.get(scope, scope),
+                )
+                entries.append(
+                    PermissionEntry(
+                        principal=principal,
+                        roles=(self._link_role(link_type),),
+                        granted_via=GRANT_SHARING_LINK,
+                        inherited_from=inherited_from,
+                        link_scope=scope,
+                        link_type=link_type,
+                        grantees=grantees,
+                    )
+                )
+                continue
+            for principal in self._permission_principals(permission):
+                entries.append(
+                    PermissionEntry(
+                        principal=principal,
+                        roles=roles,
+                        granted_via=GRANT_INHERITED if inherited_from is not None else grant_mechanism(principal.kind),
+                        inherited_from=inherited_from,
+                    )
+                )
+        return entries
+
     def _fetch_links(self, item: ItemRecord | None, *, container: bool) -> list[PermissionEntry]:
         context = self.drive_context()
         if not context.drive_id:
@@ -160,6 +237,84 @@ class LibraryCorpus:
                 )
             )
         return entries
+
+    def _permission_roles(self, permission: dict[str, Any]) -> tuple[str, ...]:
+        roles = permission.get("roles")
+        if isinstance(roles, list):
+            named = tuple(str(role).strip() for role in roles if isinstance(role, str) and role.strip())
+            if named:
+                return named
+        return ("Unspecified",)
+
+    def _permission_principals(self, permission: dict[str, Any]) -> list[Principal]:
+        identities: list[dict[str, Any]] = []
+        single = permission.get("grantedToV2")
+        if isinstance(single, dict):
+            identities.append(single)
+        multi = permission.get("grantedToIdentitiesV2")
+        if isinstance(multi, list):
+            identities.extend(identity for identity in multi if isinstance(identity, dict))
+        principals: list[Principal] = []
+        seen: set[tuple[PrincipalKind, str]] = set()
+        for identity in identities:
+            principal = self._principal_from_identity(identity)
+            if principal is None:
+                continue
+            key = (principal.kind, principal.identifier)
+            if key in seen:
+                continue
+            seen.add(key)
+            principals.append(principal)
+        return principals
+
+    def _principal_from_identity(self, identity: dict[str, Any]) -> Principal | None:
+        site_group = identity.get("siteGroup")
+        if isinstance(site_group, dict):
+            raw_id = site_group.get("id")
+            sp_id = None
+            if isinstance(raw_id, int):
+                sp_id = raw_id
+            elif isinstance(raw_id, str) and raw_id.isdigit():
+                sp_id = int(raw_id)
+            display = str(site_group.get("displayName") or site_group.get("loginName") or "Unknown SharePoint group")
+            login = site_group.get("loginName")
+            return Principal(
+                kind=PrincipalKind.SHAREPOINT_GROUP,
+                key=f"spgroup:{sp_id if sp_id is not None else display.lower()}",
+                display_name=display,
+                login_name=str(login) if login else None,
+                sp_principal_id=sp_id,
+            )
+        user = identity.get("siteUser")
+        if not isinstance(user, dict):
+            user = identity.get("user")
+        if isinstance(user, dict):
+            upn_raw = user.get("userPrincipalName") or user.get("email") or user.get("id")
+            upn = str(upn_raw).lower() if upn_raw else None
+            display = str(user.get("displayName") or upn or "Unknown user")
+            email_raw = user.get("email")
+            email = str(email_raw).lower() if email_raw else (upn if upn and "@" in upn else None)
+            return Principal(
+                kind=PrincipalKind.USER,
+                key=f"user:{upn or display.lower()}",
+                display_name=display,
+                login_name=upn,
+                email=email,
+                upn=upn,
+            )
+        group = identity.get("group")
+        if isinstance(group, dict):
+            group_id_raw = group.get("id")
+            group_id = str(group_id_raw).lower() if group_id_raw else None
+            display = str(group.get("displayName") or group_id or "Unknown Entra group")
+            return Principal(
+                kind=PrincipalKind.ENTRA_GROUP,
+                key=f"entra:{group_id or display.lower()}",
+                display_name=display,
+                login_name=group_id,
+                entra_group_id=group_id,
+            )
+        return None
 
     def _link_role(self, link_type: str) -> str:
         sharepoint = self._settings.api.sharePoint

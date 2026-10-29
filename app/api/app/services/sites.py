@@ -159,6 +159,8 @@ class SiteService:
 
     def permissions(self, item_id: str) -> dict[str, Any]:
         entries_error: str | None = None
+        graph_entries_error: str | None = None
+        used_graph_fallback = False
         library_id, list_item_id = split_item_id(item_id)
         if list_item_id is None:
             library = self._libraries.find(library_id)
@@ -168,8 +170,15 @@ class SiteService:
             except UpstreamError as exc:
                 entries, source = [], None
                 entries_error = exc.message
+            if entries_error:
+                graph_entries = corpus.graph_entries(None, container=True)
+                graph_entries_error = corpus.graph_entry_error("library", container=True)
+                if graph_entries:
+                    entries = graph_entries
+                    entries_error = None
+                    used_graph_fallback = True
             subject = library_view(corpus, self._origin)
-            link_entries = corpus.links(None, container=True)
+            link_entries = [] if used_graph_fallback else corpus.links(None, container=True)
             link_error = corpus.link_error("library", container=True)
             unique = library.unique
         else:
@@ -181,12 +190,19 @@ class SiteService:
                 entries = []
                 source = None
                 entries_error = exc.message
+            if entries_error:
+                graph_entries = corpus.graph_entries(item)
+                graph_entries_error = corpus.graph_entry_error(item.item_id)
+                if graph_entries:
+                    entries = graph_entries
+                    entries_error = None
+                    used_graph_fallback = True
             subject = item_view(corpus, item)
-            link_entries = corpus.links(item)
+            link_entries = [] if used_graph_fallback else corpus.links(item)
             link_error = corpus.link_error(item.item_id)
             unique = item.unique
         return self._permission_payload(
-            corpus, subject, entries + link_entries, source, unique, link_error, entries_error
+            corpus, subject, entries + link_entries, source, unique, link_error, entries_error, graph_entries_error
         )
 
     def _permission_payload(
@@ -198,6 +214,7 @@ class SiteService:
         unique: bool,
         link_error: str | None,
         entries_error: str | None,
+        graph_entries_error: str | None,
     ) -> dict[str, Any]:
         views: list[dict[str, Any]] = []
         for entry in entries:
@@ -216,6 +233,11 @@ class SiteService:
         if entries_error:
             warnings.append(
                 {"code": "roleAssignmentsUnavailable", "message": f"Role assignments could not be read: {entries_error}"}
+            )
+        if graph_entries_error and not entries_error:
+            warnings.append(
+                {"code": "graphPermissionsUnavailable",
+                 "message": f"Graph permissions fallback could not be read: {graph_entries_error}"}
             )
         if link_error:
             warnings.append({"code": "sharingLinksUnavailable",
