@@ -9,6 +9,7 @@
     "sourceTable": "SourceTable",
     "sourceSystem": "SourceSystem",
     "profileGeneratedAt": "ProfileGeneratedAt",
+    "documentIteration": "DocumentIteration",
     "knowledgeOwner": "KnowledgeOwner",
     "ownerDisplayName": "OwnerDisplayName",
     "lifecycleStatus": "LifecycleStatus",
@@ -34,6 +35,7 @@
   },
   "indexFields": {
     "lifecycleStatus": "lifecycle_status",
+    "documentIteration": "document_iteration",
     "authoritative": "authoritative",
     "aiReady": "ai_ready",
     "sensitivity": "sensitivity"
@@ -158,7 +160,7 @@
     "routing": {
       "trustedTool": "trusted-knowledge",
       "governanceTool": "governance-all",
-      "governanceKeywords": ["draft", "superseded", "expired", "expiry", "histor", "latest", "newest", "most recent", "duplicate", "stale", "unowned", "missing owner", "governance", "attention", "conflict", "archive", "previous version", "old version", "outdated", "needs review"]
+      "governanceKeywords": ["draft", "iteration", "superseded", "expired", "expiry", "histor", "latest", "newest", "most recent", "duplicate", "stale", "unowned", "missing owner", "governance", "attention", "conflict", "archive", "previous version", "old version", "outdated", "needs review"]
     },
     "filterTemplates": {
       "equalsText": "{field} eq '{value}'",

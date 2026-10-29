@@ -30,9 +30,9 @@ function Assert-Throws {
 $json = & $generator
 $template = $json | ConvertFrom-Json
 $policy = Get-Content -LiteralPath $policyPath -Raw | ConvertFrom-Json
-Assert-True ($policy.sharePointColumns.Count -eq 27) 'All 27 additional columns are defined'
 Assert-True ($template.actions.Count -eq 1) 'One library action'
 $library = $template.actions[0]
+Assert-True ($policy.sharePointColumns.Count -eq 28) 'All 28 additional columns are defined'
 Assert-True ($library.verb -eq 'createSPList' -and $library.templateType -eq 101) 'Document library, not generic list'
 $fields = @($library.subactions | Where-Object verb -eq 'addSPFieldXml')
 Assert-True ($fields.Count -eq $policy.sharePointColumns.Count) 'Every policy column is exported'
@@ -44,12 +44,14 @@ foreach ($action in $fields) {
     $ids += [Guid]$field.ID
     Assert-True (-not $action.addToDefaultView) 'Views are defined explicitly'
 }
-Assert-True (@($ids | Sort-Object -Unique).Count -eq 27) 'Unique valid field IDs'
+Assert-True (@($ids | Sort-Object -Unique).Count -eq $policy.sharePointColumns.Count) 'Unique valid field IDs'
 foreach ($column in $policy.sharePointColumns) {
     $field = $byName[$column.name]
     Assert-True ($null -ne $field) "Internal name $($column.name)"
     Assert-True ($field.StaticName -eq $column.name -and $field.DisplayName -eq $column.displayName) 'Names match policy'
-    Assert-True ($field.Description -eq $column.description -and $field.Required -eq 'FALSE') 'Descriptions and optional upload fields'
+    $isRequired = $column.PSObject.Properties.Name -contains 'required' -and [bool]$column.required
+    $expectedRequired = ([string]$isRequired).ToUpperInvariant()
+    Assert-True ($field.Description -eq $column.description -and $field.Required -eq $expectedRequired) 'Descriptions and required field settings'
     Assert-True ($field.Indexed -eq ([string]$column.indexed).ToUpperInvariant()) 'Indexing preserved'
     Assert-True ($field.EnforceUniqueValues -eq ([string]$column.enforceUniqueValues).ToUpperInvariant()) 'Uniqueness preserved'
     $type = @('text', 'choice', 'dateTime', 'personOrGroup', 'boolean', 'number') |
@@ -87,6 +89,7 @@ foreach ($column in $policy.sharePointColumns) {
     }
 }
 Assert-True ($byName.LifecycleStatus.Default -eq 'Draft') 'Draft by default'
+Assert-True ($byName.DocumentIteration.Default -eq 'Draft' -and $byName.DocumentIteration.Required -eq 'TRUE') 'Document iteration defaults and required flag'
 Assert-True ($byName.Authoritative.Default -eq '0' -and $byName.AIReady.Default -eq '0') 'No automatic trust'
 $views = @($library.subactions | Where-Object verb -eq 'addSPView')
 Assert-True ($views.Count -eq 2 -and $views[0].makeDefault -and -not $views[1].makeDefault) 'Owner and all-metadata views'

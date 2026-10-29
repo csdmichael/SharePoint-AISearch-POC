@@ -47,6 +47,11 @@
         },
         {
           "verb": "addSPFieldXml",
+          "schemaXml": "<Field ID=\"{1fe5ea21-dac0-58a9-8ca7-1191c0dd3c0c}\" Name=\"DocumentIteration\" StaticName=\"DocumentIteration\" DisplayName=\"Document Iteration\" Description=\"Required for uploads and updates. Draft content is excluded from retrieval until promoted.\" Required=\"TRUE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"Choice\" Format=\"Dropdown\" FillInChoice=\"FALSE\"><CHOICES><CHOICE>Draft</CHOICE><CHOICE>Ready</CHOICE><CHOICE>In Review</CHOICE><CHOICE>Approved</CHOICE><CHOICE>Archived</CHOICE></CHOICES><Default>Draft</Default></Field>",
+          "addToDefaultView": false
+        },
+        {
+          "verb": "addSPFieldXml",
           "schemaXml": "<Field ID=\"{253aa91d-46c0-8496-8296-c7ae7ad70718}\" Name=\"Authoritative\" StaticName=\"Authoritative\" DisplayName=\"Authoritative\" Description=\"Required when published. Set by the knowledge owner, never by the AI.\" Required=\"FALSE\" Indexed=\"TRUE\" EnforceUniqueValues=\"FALSE\" Type=\"Boolean\"><Default>0</Default></Field>",
           "addToDefaultView": false
         },
@@ -153,6 +158,7 @@
             "LinkFilename",
             "KnowledgeOwner",
             "LifecycleStatus",
+            "DocumentIteration",
             "Authoritative",
             "ReviewDate",
             "DocumentType",
@@ -181,6 +187,7 @@
             "ProfileGeneratedAt",
             "KnowledgeOwner",
             "LifecycleStatus",
+            "DocumentIteration",
             "Authoritative",
             "ReviewDate",
             "DocumentType",

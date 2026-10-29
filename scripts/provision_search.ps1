@@ -376,6 +376,7 @@ $indexDefinition = @{
         @{ name = 'category'; type = 'Edm.String'; searchable = $true; filterable = $true; facetable = $true; retrievable = $true },
         @{ name = 'source_table'; type = 'Edm.String'; searchable = $true; filterable = $true; facetable = $true; retrievable = $true },
         @{ name = 'source_system'; type = 'Edm.String'; searchable = $true; filterable = $true; retrievable = $true },
+        @{ name = 'document_iteration'; type = 'Edm.String'; searchable = $true; filterable = $true; facetable = $true; retrievable = $true },
         @{ name = 'profile_generated_at'; type = 'Edm.DateTimeOffset'; filterable = $true; sortable = $true; retrievable = $true }
     )
     vectorSearch = @{
@@ -458,6 +459,7 @@ $projectionMappings = @(
     @{ name = 'category'; source = '/document/KnowledgeCategory' },
     @{ name = 'source_table'; source = '/document/SourceTable' },
     @{ name = 'source_system'; source = '/document/SourceSystem' },
+    @{ name = 'document_iteration'; source = '/document/DocumentIteration' },
     @{ name = 'profile_generated_at'; source = '/document/ProfileGeneratedAt' }
 )
 $skillsetDefinition = @{
@@ -505,7 +507,7 @@ $skillsetDefinition = @{
 }
 Invoke-Search -Method PUT -Path "skillsets/$skillsetName" -Body $skillsetDefinition | Out-Null
 
-$libraryQuery = "includeLibrary=$($sharePoint.libraryUrl);additionalColumns=ArtifactId,KnowledgeCategory,SourceTable,SourceSystem,ProfileGeneratedAt"
+$libraryQuery = "includeLibrary=$($sharePoint.libraryUrl);additionalColumns=ArtifactId,KnowledgeCategory,SourceTable,SourceSystem,DocumentIteration,ProfileGeneratedAt"
 $connectionString = "SharePointOnlineEndpoint=$($sharePoint.siteUrl);ApplicationId=$($application.appId);TenantId=$TenantId;FederatedCredentialApplicationId=$($managedIdentity.appId)"
 $dataSourceDefinition = @{
     name = $dataSourceName

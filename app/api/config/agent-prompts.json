@@ -19,6 +19,7 @@
     {"id": "prompt-11", "issueId": "decisions-in-inboxes", "issueLabel": "3. Decisions live in email, where AI cannot reach them", "intent": "conflicts", "text": "Which authoritative documents contradict each other and need an owner decision?"},
     {"id": "prompt-12", "issueId": "decisions-in-inboxes", "issueLabel": "3. Decisions live in email, where AI cannot reach them", "intent": "owner-notification", "text": "Draft approval requests to the owners of expired or unowned documents"},
     {"id": "prompt-13", "issueId": "meeting-transcripts", "issueLabel": "4. Meeting transcripts and recordings are searchable", "intent": "meeting-transcripts", "text": "Summarize meeting 12 transcript and provide citations to the transcript and corresponding recording."},
-    {"id": "prompt-14", "issueId": "meeting-transcripts", "issueLabel": "4. Meeting transcripts and recordings are searchable", "intent": "meeting-transcripts", "text": "Check whether draft meeting transcript for meeting 3 appears in results (it should be excluded)."}
+    {"id": "prompt-14", "issueId": "meeting-transcripts", "issueLabel": "4. Meeting transcripts and recordings are searchable", "intent": "meeting-transcripts", "text": "Check whether draft meeting transcript for meeting 3 appears in results (it should be excluded)."},
+    {"id": "prompt-15", "issueId": "meeting-transcripts", "issueLabel": "4. Meeting transcripts and recordings are searchable", "intent": "meeting-transcripts", "text": "For meeting 3, verify that only non-Draft Document Iteration transcript content is returned, and cite both the transcript and recording."}
   ]
 }

@@ -412,6 +412,11 @@ $columnDefinitions = @(
         text = @{ allowMultipleLines = $false; appendChangesToExistingText = $false; linesForEditing = 1; maxLength = 255 }
     },
     @{
+        name = 'DocumentIteration'; displayName = 'Document Iteration'; description = 'Required document iteration state for upload and revision workflows.'
+        enforceUniqueValues = $false; indexed = $true; required = $true
+        choice = @{ allowTextEntry = $false; choices = @('Draft', 'Ready', 'In Review', 'Approved', 'Archived'); displayAs = 'dropDownMenu' }
+    },
+    @{
         name = 'ProfileGeneratedAt'; displayName = 'Profile Generated At'; description = 'UTC timestamp of the source profile.'
         enforceUniqueValues = $false; indexed = $false
         dateTime = @{ displayAs = 'default'; format = 'dateTime' }
@@ -462,12 +467,17 @@ if (-not $SiteOnly) {
         }
         $drivePath = ConvertTo-DrivePath -RelativePath $relativePath
         $uploaded = Invoke-Graph -Method PUT -Uri "/drives/$($drive.id)/root:/$drivePath`:/content" -InFile $localPath
+        $documentIteration = 'Draft'
+        if ($item.PSObject.Properties.Name -contains 'document_iteration' -and -not [string]::IsNullOrWhiteSpace([string]$item.document_iteration)) {
+            $documentIteration = [string]$item.document_iteration
+        }
         Invoke-Graph -Method PATCH -Uri "/drives/$($drive.id)/items/$($uploaded.id)/listItem/fields" -Body @{
             Title              = $item.title
             ArtifactId         = $item.artifact_id
             KnowledgeCategory  = $item.category
             SourceTable        = $item.source_table
             SourceSystem       = $item.source_system
+            DocumentIteration  = $documentIteration
             ProfileGeneratedAt = $item.profile_generated_at
         } | Out-Null
         $uploadedCount++
@@ -495,10 +505,15 @@ if (-not $SiteOnly) {
             $expected = $expectedByPath[$remotePath]
             $remote = $remoteByPath[$remotePath]
             $fields = Invoke-Graph -Method GET -Uri "/drives/$($drive.id)/items/$($remote.id)/listItem/fields"
+            $expectedIteration = 'Draft'
+            if ($expected.PSObject.Properties.Name -contains 'document_iteration' -and -not [string]::IsNullOrWhiteSpace([string]$expected.document_iteration)) {
+                $expectedIteration = [string]$expected.document_iteration
+            }
             $metadataMatches = $fields.ArtifactId -eq $expected.artifact_id -and
                 $fields.KnowledgeCategory -eq $expected.category -and
                 $fields.SourceTable -eq $expected.source_table -and
-                $fields.SourceSystem -eq $expected.source_system
+                $fields.SourceSystem -eq $expected.source_system -and
+                $fields.DocumentIteration -eq $expectedIteration
             $expectedTimestamp = [DateTimeOffset]::Parse($expected.profile_generated_at)
             $actualTimestamp = [DateTimeOffset]::Parse($fields.ProfileGeneratedAt)
             if (-not $metadataMatches -or [Math]::Abs(($actualTimestamp - $expectedTimestamp).TotalSeconds) -gt 1) {

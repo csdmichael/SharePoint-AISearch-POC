@@ -1,7 +1,7 @@
 # Governed Knowledge document library template
 
 This template gives site owners a reusable **document library**, not a list,
-with all 27 additional columns from
+with all 28 additional columns from
 [the governance policy](../config/governance-policy.json). Built-in file name,
 title, created/modified dates and author/editor columns remain available.
 No documents, sample data, credentials or tenant-specific URLs are included.
@@ -55,10 +55,11 @@ Template visibility is separate from library permissions.
 4. Preview the template, select **Use template**, give the new library a unique
    name, and create it.
 5. Open **Knowledge Documents**, the default view for everyday ownership,
-   publication and classification work. Use **All Metadata** to see all 27
+   publication and classification work. Use **All Metadata** to see all 28
    additional fields, including lineage and governance results.
-6. Upload a test document and open its details. Confirm **Lifecycle Status =
-   Draft**, **Authoritative = No**, **AI Ready = No**, and the choice values below.
+6. Upload a test document and open its details. Confirm **Document Iteration =
+   Draft**, **Lifecycle Status = Draft**, **Authoritative = No**, **AI Ready = No**,
+   and the choice values below.
    Repeat with a second, differently named library to verify independent reuse.
 
 The library name selected in the picker is specific to that library. Do not
@@ -68,7 +69,8 @@ picker: `createSPList` can update a library with the same name.
 ## Included columns
 
 Internal names are preserved so existing governance and search mappings work.
-All fields are optional at the library schema level to allow drafts and uploads.
+`DocumentIteration` is required with a default of `Draft`; all other added
+fields remain optional at the library schema level to allow drafts and uploads.
 
 | Display name | Internal name | Type / choices |
 | --- | --- | --- |
@@ -76,6 +78,7 @@ All fields are optional at the library schema level to allow drafts and uploads.
 | Knowledge Category | `KnowledgeCategory` | Choice: Quality, Engineering |
 | Source Table | `SourceTable` | Text, 255 characters |
 | Source System | `SourceSystem` | Text, 255 characters |
+| Document Iteration | `DocumentIteration` | Draft, Ready, In Review, Approved, Archived; default Draft; required |
 | Profile Generated At | `ProfileGeneratedAt` | Date and time |
 | Knowledge Owner | `KnowledgeOwner` | Single person or group |
 | Lifecycle Status | `LifecycleStatus` | Draft, Published, Superseded, Archived; default Draft |
@@ -150,7 +153,7 @@ libraries already created from it; plan existing-library migrations separately.
 
 ## Validation
 
-The offline PowerShell tests verify all 27 policy definitions against the
+The offline PowerShell tests verify all 28 policy definitions against the
 generated and checked-in template, stable IDs, XML escaping, safe defaults,
 views, invalid inputs and publication using mocked SharePoint commands.
 They do not connect to SharePoint. Administrator publication and the two-library

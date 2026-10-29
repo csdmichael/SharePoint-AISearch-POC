@@ -50,12 +50,14 @@ def trusted_base_filter(policy: Policy) -> str:
         ),
         templates["equalsBoolean"].format(field=policy.index_field("aiReady"), value=ODATA_BOOLEAN[True]),
         _sensitivity_clause(policy),
+        _non_draft_iteration_clause(policy),
     ]
     return templates["combine"].join(clauses)
 
 
 def governance_base_filter(policy: Policy) -> str:
-    return _sensitivity_clause(policy)
+    templates = policy.retrieval_block()["filterTemplates"]
+    return templates["combine"].join([_sensitivity_clause(policy), _non_draft_iteration_clause(policy)])
 
 
 def _sensitivity_clause(policy: Policy) -> str:
@@ -74,9 +76,16 @@ def _escape_text(value: str) -> str:
     return value.replace(ODATA_QUOTE, ODATA_QUOTE_ESCAPE)
 
 
+def _non_draft_iteration_clause(policy: Policy) -> str:
+    field_name = policy.index_field("documentIteration")
+    draft_value = _escape_text("Draft")
+    return f"({field_name} eq null or {field_name} ne '{draft_value}')"
+
+
 def is_trusted(source: Mapping[str, Any], policy: Policy) -> bool:
     return (
         source.get(policy.search_field("lifecycleStatus")) == policy.required_lifecycle()
+        and source.get(policy.search_field("documentIteration")) != "Draft"
         and bool(source.get(policy.search_field("authoritative"))) == policy.required_authoritative()
         and bool(source.get(policy.search_field("aiReady")))
         and source.get(policy.search_field("sensitivity")) in policy.trusted_sensitivity()
@@ -88,6 +97,8 @@ def exclusion_reasons(source: Mapping[str, Any], as_of: date, policy: Policy) ->
     lifecycle = source.get(policy.search_field("lifecycleStatus"))
     if lifecycle != policy.required_lifecycle():
         reasons.append(policy.render(policy.message("exclusions", "lifecycle"), value=lifecycle))
+    if source.get(policy.search_field("documentIteration")) == "Draft":
+        reasons.append("DocumentIteration = Draft")
     if not source.get(policy.search_field("authoritative")):
         reasons.append(policy.message("exclusions", "notAuthoritative"))
     duplicate_of = source.get(policy.search_field("duplicateOf"))

@@ -150,9 +150,9 @@ Sales, Supply Chain, and Yield. Every artifact includes:
   with a chart and conditional formatting.
 
 SharePoint metadata columns are `ArtifactId`, `KnowledgeCategory`,
-`SourceTable`, `SourceSystem`, and `ProfileGeneratedAt`. The Search data source
-requests these columns with `additionalColumns`, and each projected chunk
-inherits them.
+`SourceTable`, `SourceSystem`, `DocumentIteration`, and
+`ProfileGeneratedAt`. The Search data source requests these columns with
+`additionalColumns`, and each projected chunk inherits them.
 
 ## Repository layout
 
@@ -309,7 +309,7 @@ credentials and MFA only on the Microsoft sign-in page.
 
 For reusable, empty libraries that site owners create from **From your
 organization**, use the [Governed Knowledge library template](docs/knowledge-library-template.md).
-It includes all 27 additional governance metadata columns and a one-time
+It includes all 28 additional governance metadata columns and a one-time
 administrator publishing script. This is separate from the corpus provisioning
 command below.
 

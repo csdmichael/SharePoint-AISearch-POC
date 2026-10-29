@@ -41,7 +41,7 @@ foreach ($column in $columns) {
         StaticName = $column.name
         DisplayName = $column.displayName
         Description = $column.description
-        Required = 'FALSE'
+        Required = ([string][bool]($column.PSObject.Properties.Name -contains 'required' -and $column.required)).ToUpperInvariant()
         Indexed = ([string][bool]$column.indexed).ToUpperInvariant()
         EnforceUniqueValues = ([string][bool]$column.enforceUniqueValues).ToUpperInvariant()
     }
@@ -95,13 +95,21 @@ foreach ($column in $columns) {
     foreach ($attribute in $attributes.GetEnumerator()) {
         $field.SetAttribute($attribute.Key, [string]$attribute.Value)
     }
-    $defaultValue = switch ($column.name) {
+    $defaultValue = if ($column.PSObject.Properties.Name -contains 'defaultValue') {
+        [string]$column.defaultValue
+    }
+    else {
+        switch ($column.name) {
         'LifecycleStatus' {
             if ($column.choice.choices -notcontains 'Draft') { throw 'LifecycleStatus must allow Draft.' }
             'Draft'
         }
         'Authoritative' { '0' }
         'AIReady' { '0' }
+        }
+    }
+    if ($null -ne $defaultValue -and $type -eq 'choice' -and $column.choice.choices -notcontains $defaultValue) {
+        throw "$($column.name) default value '$defaultValue' is not in the choice list."
     }
     if ($null -ne $defaultValue) {
         $default = $xml.CreateElement('Default')
@@ -115,7 +123,7 @@ foreach ($column in $columns) {
     }
 }
 $ownerFields = @(
-    'KnowledgeOwner', 'LifecycleStatus', 'Authoritative', 'ReviewDate',
+    'KnowledgeOwner', 'LifecycleStatus', 'DocumentIteration', 'Authoritative', 'ReviewDate',
     'DocumentType', 'ProductFamily', 'ProcessArea', 'Sensitivity', 'AIReady'
 ) | Where-Object { $names -contains $_ }
 $subactions += [ordered]@{

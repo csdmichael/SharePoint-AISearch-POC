@@ -166,8 +166,8 @@
     {"question": "How reliable is this answer?", "tool": "trusted-knowledge"}
   ],
   "filters": {
-    "trusted": "lifecycle_status eq 'Published' and authoritative eq true and ai_ready eq true and sensitivity eq 'General'",
-    "governance": "sensitivity eq 'General'"
+    "trusted": "lifecycle_status eq 'Published' and authoritative eq true and ai_ready eq true and sensitivity eq 'General' and (document_iteration eq null or document_iteration ne 'Draft')",
+    "governance": "sensitivity eq 'General' and (document_iteration eq null or document_iteration ne 'Draft')"
   },
   "cards": [
     {

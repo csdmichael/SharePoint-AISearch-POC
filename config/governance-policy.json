@@ -80,6 +80,13 @@
       "choice": { "allowTextEntry": false, "choices": ["Draft", "Published", "Superseded", "Archived"], "displayAs": "dropDownMenu" }
     },
     {
+      "name": "DocumentIteration", "displayName": "Document Iteration", "indexed": true, "enforceUniqueValues": false,
+      "description": "Required for uploads and updates. Draft content is excluded from retrieval until promoted.",
+      "required": true,
+      "defaultValue": "Draft",
+      "choice": { "allowTextEntry": false, "choices": ["Draft", "Ready", "In Review", "Approved", "Archived"], "displayAs": "dropDownMenu" }
+    },
+    {
       "name": "Authoritative", "displayName": "Authoritative", "indexed": true, "enforceUniqueValues": false,
       "description": "Required when published. Set by the knowledge owner, never by the AI.",
       "boolean": {}
@@ -183,6 +190,7 @@
   "searchIndexFields": [
     { "name": "knowledge_owner", "type": "Edm.String", "searchable": true, "filterable": true, "retrievable": true },
     { "name": "lifecycle_status", "type": "Edm.String", "filterable": true, "facetable": true, "retrievable": true },
+    { "name": "document_iteration", "type": "Edm.String", "filterable": true, "facetable": true, "retrievable": true },
     { "name": "authoritative", "type": "Edm.Boolean", "filterable": true, "facetable": true, "retrievable": true },
     { "name": "ai_ready", "type": "Edm.Boolean", "filterable": true, "facetable": true, "retrievable": true },
     { "name": "review_date", "type": "Edm.DateTimeOffset", "filterable": true, "sortable": true, "retrievable": true },
@@ -206,6 +214,7 @@
   "searchProjection": [
     { "name": "knowledge_owner", "column": "OwnerDisplayName" },
     { "name": "lifecycle_status", "column": "LifecycleStatus" },
+    { "name": "document_iteration", "column": "DocumentIteration" },
     { "name": "authoritative", "column": "Authoritative" },
     { "name": "ai_ready", "column": "AIReady" },
     { "name": "review_date", "column": "ReviewDate" },
@@ -227,7 +236,7 @@
     { "name": "last_validated_date", "column": "LastValidatedDate" }
   ],
   "knowledgeSourceDataFields": [
-    "knowledge_owner", "lifecycle_status", "authoritative", "ai_ready", "review_date", "effective_date",
+    "knowledge_owner", "lifecycle_status", "document_iteration", "authoritative", "ai_ready", "review_date", "effective_date",
     "expiration_date", "document_type", "product_family", "process_area", "sensitivity", "business_unit",
     "supersedes_document", "trust_score", "trust_reasons", "data_quality_status", "conflict_status",
     "conflict_with", "duplicate_of", "content_hash", "last_validated_date"
