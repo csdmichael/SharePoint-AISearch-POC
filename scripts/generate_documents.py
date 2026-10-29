@@ -380,9 +380,9 @@ def create_rich_pdf(filename, category, doc_number):
     story.append(Paragraph(summary, styles['BodyText']))
     story.append(Spacer(1, 0.2*inch))
     
-    # Add multiple sections to reach 100+ pages
+    # Add multiple sections to ensure a long-form, multi-page report.
     for section_num in range(50):
-        if section_num % 10 == 0 and section_num > 0:
+        if section_num % 5 == 0 and section_num > 0:
             story.append(PageBreak())
         
         story.append(Paragraph(f"Section {section_num + 1}: Detailed Analysis", styles['Heading2']))
@@ -413,8 +413,8 @@ def create_rich_pdf(filename, category, doc_number):
         
         # Bullet points
         bullets = [
-            f"Analysis point {i + 1}: Key finding from operational review",
-            f"Supporting evidence: {75 + i}% correlation with industry standards",
+            f"Analysis point {section_num + 1}: Key finding from operational review",
+            f"Supporting evidence: {75 + section_num}% correlation with industry standards",
             f"Recommendation: Implement process improvement initiative",
         ]
         
