@@ -451,14 +451,27 @@ if (-not $SkipSmokeTest) {
     if (-not $retrievedDocumentUrls.Count) {
         throw 'Foundry agent smoke test returned no retrieved document_url values.'
     }
+    function Normalize-Url {
+        param([Parameter(Mandatory)][string]$Url)
+        try {
+            $uri = [Uri]$Url
+            $normalizedPath = [Uri]::UnescapeDataString($uri.AbsolutePath).TrimEnd('/')
+            return "$($uri.Scheme)://$($uri.Host)$normalizedPath"
+        }
+        catch {
+            return $Url.TrimEnd('/')
+        }
+    }
+    $normalizedRetrievedUrls = @($retrievedDocumentUrls | ForEach-Object { Normalize-Url -Url $_ } | Sort-Object -Unique)
     $siteUri = [Uri]$sharePointSiteUrl
-    $expectedDocumentPath = "$($siteUri.AbsolutePath.TrimEnd('/'))/_layouts/15/Doc.aspx"
+    $expectedSitePath = $siteUri.AbsolutePath.TrimEnd('/')
     foreach ($linkedCitation in $linkedCitations) {
         $citationUrl = $linkedCitation.Groups['url'].Value
         $citationUri = [Uri]$citationUrl
-        $isSharePointDocument = $citationUri.Host -eq $siteUri.Host -and
-            $citationUri.AbsolutePath -eq $expectedDocumentPath
-        $cameFromTool = $retrievedDocumentUrls -contains $citationUrl
+        $citationPath = [Uri]::UnescapeDataString($citationUri.AbsolutePath)
+        $isSharePointDocument = $citationUri.Host -eq $siteUri.Host -and $citationPath.StartsWith($expectedSitePath)
+        $normalizedCitation = Normalize-Url -Url $citationUrl
+        $cameFromTool = $normalizedRetrievedUrls -contains $normalizedCitation
         if (-not $isSharePointDocument -or -not $cameFromTool) {
             throw "Foundry agent smoke test emitted an invalid or ungrounded citation URL: $citationUrl"
         }

@@ -79,6 +79,20 @@ function Invoke-Graph {
             if ($AllowNotFound -and $status -eq 404) { return $null }
             $details = if ($_.ErrorDetails.Message) { $_.ErrorDetails.Message } else { $_.Exception.Message }
             $identityIsPropagating = $status -eq 401 -and $details -match 'Authorization_IdentityNotFound'
+            $tokenRevoked = $status -eq 401 -and $details -match 'TokenIssuedBeforeRevocationTimestamp'
+            if ($tokenRevoked -and $attempt -lt 5) {
+                $refreshedToken = Get-AzBearerToken -ResourceUrl 'https://graph.microsoft.com'
+                if ($Token -eq $script:AdminGraphToken) {
+                    $script:AdminGraphToken = $refreshedToken
+                    $Token = $script:AdminGraphToken
+                }
+                else {
+                    $script:GraphToken = $refreshedToken
+                    $Token = $script:GraphToken
+                }
+                [Threading.Thread]::Sleep([Math]::Pow(2, $attempt) * 1000)
+                continue
+            }
             if (($status -eq 429 -or $status -ge 500 -or $identityIsPropagating) -and $attempt -lt 5) {
                 [Threading.Thread]::Sleep([Math]::Pow(2, $attempt) * 1000)
                 continue
@@ -91,11 +105,31 @@ function Invoke-Graph {
 function Get-AzBearerToken {
     param([Parameter(Mandatory)][string]$ResourceUrl)
 
-    $result = Get-AzAccessToken -ResourceUrl $ResourceUrl -TenantId $TenantId
-    if ($result.Token -is [Security.SecureString]) {
-        return [Net.NetworkCredential]::new('', $result.Token).Password
+    if ($ResourceUrl -eq 'https://graph.microsoft.com') {
+        $graphToken = az account get-access-token --tenant $TenantId --resource https://graph.microsoft.com --query accessToken -o tsv
+        if ([string]::IsNullOrWhiteSpace($graphToken)) {
+            throw 'Could not acquire Microsoft Graph access token from Azure CLI.'
+        }
+        return $graphToken
     }
-    return [string]$result.Token
+
+    try {
+        $result = Get-AzAccessToken -ResourceUrl $ResourceUrl -TenantId $TenantId
+        if ($result.Token -is [Security.SecureString]) {
+            return [Net.NetworkCredential]::new('', $result.Token).Password
+        }
+        if (-not [string]::IsNullOrWhiteSpace([string]$result.Token)) {
+            return [string]$result.Token
+        }
+    }
+    catch {
+    }
+
+    $cliToken = az account get-access-token --tenant $TenantId --resource $ResourceUrl --query accessToken -o tsv
+    if ([string]::IsNullOrWhiteSpace($cliToken)) {
+        throw "Could not acquire bearer token for $ResourceUrl."
+    }
+    return $cliToken
 }
 
 function ConvertTo-DrivePath {
@@ -158,10 +192,12 @@ function Get-DriveFilesRecursively {
         $response = Invoke-Graph -Method GET -Uri "/drives/$DriveId/root:/$encodedFolder`:/children?`$select=id,name,file,folder"
         foreach ($child in @($response.value)) {
             $childPath = ConvertTo-RelativePath -Path "$currentFolder/$($child.name)"
-            if ($child.file) {
+            $hasFileFacet = $child.PSObject.Properties.Name -contains 'file' -and $null -ne $child.file
+            $hasFolderFacet = $child.PSObject.Properties.Name -contains 'folder' -and $null -ne $child.folder
+            if ($hasFileFacet) {
                 $results[$childPath] = $child
             }
-            elseif ($child.folder) {
+            elseif ($hasFolderFacet) {
                 $pending.Enqueue($childPath)
             }
         }
