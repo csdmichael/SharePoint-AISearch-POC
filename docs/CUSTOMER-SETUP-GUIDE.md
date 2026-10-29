@@ -320,10 +320,22 @@ Sign out/in after changing role assignment or consent.
 5. On the site, **Site contents > New > Document library > From your
    organization > Governed Knowledge > Use template**. Choose a unique name.
    Open **Knowledge Documents** and **All Metadata** views.
-6. Populate stable Artifact IDs, owners, categories, lifecycle, review dates,
+6. **Document Iteration governance column:** All document libraries across all
+   SharePoint sites must include the required **Document Iteration** column
+   (`DocumentIteration`).
+   - Allowed choices: `Draft`, `Ready`, `In Review`, `Approved`, `Archived`.
+   - New uploads default to `Draft`, but the field is required.
+   - When updating or revising a document, authors update this field to reflect
+     its active iteration (e.g. promoting from `Draft` to `Ready`).
+   - To apply or verify this column across all libraries in all provisioned sites
+     at once, run:
+     ```powershell
+     powershell -ExecutionPolicy Bypass -File .\scripts\Add-DocumentIterationToLibraries.ps1
+     ```
+7. Populate stable Artifact IDs, owners, categories, lifecycle, review dates,
    and other approved metadata. The template creates schema; it does not run
    a governance workflow or calculate trust scores.
-7. Update `sharePoint.siteUrl` and the API's library allowlist.
+8. Update `sharePoint.siteUrl` and the API's library allowlist.
 
 Existing libraries without governance columns can still be browsed with base
 metadata. Expect **Not available** fields and a coverage warning; do not treat
@@ -761,12 +773,12 @@ flows.**
 | --- | --- | --- |
 | `/dashboard` | Metrics/findings load; opening a nonempty finding lists documents | SharePoint site/library reads; metadata for meaningful counts |
 | `/explorer` | Libraries, folder expansion, file details, permission entries | Selected-site Full Control plus Graph link/directory access |
-| `/documents` | Titles, pagination, sorting and populated category filters work | File reads and governance schema |
+| `/documents` | Titles, pagination, sorting, category and **Document Iteration** filters (`Draft`, `Ready`, etc.) with quick "Drafts Only" toggle | File reads, governance schema, and `DocumentIteration` column |
 | `/documents/<library-guid>.<item-number>` | Open a real document link, then refresh; still renders detail | Static SPA deep-link fallback and an actual file ID, not a folder ID |
-| `/access/by-user` | Search at least two characters, choose a user, load access records, export CSV | SharePoint permission enumeration, group membership and user reads |
-| `/cleanup` | Check **Duplicates, Expiry, Anomalies and Exposure** individually | Content reads; anomalies/exposure also need permission analysis |
+| `/access/by-user` | Slick compact view with key fields, expandable row details, client-side pagination, user deduplication, and CSV export | SharePoint permission enumeration, group membership and user reads |
+| `/cleanup` | Check **Duplicates, Expiry, Anomalies and Exposure** individually; test **Side-by-Side Duplicate Viewer** for Word, PPT, Excel, and PDF files | Content reads, deduplication analysis, and Office/PDF web preview integration |
 | `/notifications` | All status tabs load; draft/preview/approve only against test data | Writable outbox and dry-run mode |
-| `/agent` | Prompts load; a read-only question returns evidence/citations | Same live data grants; optional Foundry project/model/role |
+| `/agent` | Prompts load; answers render markdown tables, visual metrics charts, positive/negative draft filtering tests, and direct export to Excel, Word, and PowerPoint | Same live data grants; optional Foundry project/model/role |
 | Signed out / unauthorized | Data is gated; missing token gets 401, missing Auditor role gets 403 | Incoming API authentication and role assignment |
 | Failed request / retry | Explicit error and retry, not endless Loading | Error-state handling; working CORS |
 

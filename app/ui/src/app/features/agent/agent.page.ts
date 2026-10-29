@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { IonContent, IonIcon, IonInput, IonTextarea } from '@ionic/angular';
@@ -11,6 +12,7 @@ import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { StateViewComponent } from '../../shared/components/state-view/state-view.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { DisplayService } from '../../shared/util/display.service';
+import { exportToExcel, exportToWord, exportToPpt } from '../../shared/util/export-doc';
 import { safeHttpUrl } from '../../shared/util/url';
 
 interface ChatMessage {
@@ -40,6 +42,7 @@ interface PromptGroup {
 export class AgentPage {
   private readonly api = inject(ApiService);
   private readonly config = inject(ConfigService);
+  private readonly document = inject(DOCUMENT);
   readonly display = inject(DisplayService);
   readonly i18n = inject(I18nService);
   readonly session = inject(SessionService);
@@ -48,6 +51,7 @@ export class AgentPage {
   readonly foundryIconPath = this.config.theme.foundryIconPath;
   readonly maxInputChars = this.config.agent.maxInputChars;
   private readonly placeholderPattern = this.config.agent.placeholderPattern;
+  readonly copiedMessageId = signal<number | null>(null);
 
   readonly prompts = rxResource({
     params: () => (this.session.gate() === 'ready' ? this.api.siteContext() ?? '__default__' : undefined),
@@ -199,6 +203,157 @@ export class AgentPage {
   retryPrompts(): void {
     this.session.refresh();
     this.prompts.reload();
+  }
+
+  exportExcel(message: ChatMessage): void {
+    if (!message.reply) return;
+    const evidence = message.reply.evidence;
+    const headers = evidence?.columns ?? ['Summary'];
+    const rows = evidence?.rows ?? [[message.reply.answer]];
+    const title = `Agent Reply - ${message.reply.intent ?? 'Governance'}`;
+    exportToExcel(
+      this.document,
+      `governance-agent-${message.reply.intent ?? 'export'}`,
+      title,
+      headers,
+      rows,
+      message.reply.facts as Record<string, unknown> | undefined,
+    );
+  }
+
+  exportWord(message: ChatMessage): void {
+    if (!message.reply) return;
+    const title = `SharePoint Governance Agent - ${message.reply.intent ?? 'Analysis'}`;
+    exportToWord(
+      this.document,
+      `governance-agent-${message.reply.intent ?? 'export'}`,
+      title,
+      message.reply.answer,
+      message.reply.citations,
+      message.reply.evidence,
+    );
+  }
+
+  exportPpt(message: ChatMessage): void {
+    if (!message.reply) return;
+    const title = `Governance Insights - ${message.reply.intent ?? 'Summary'}`;
+    exportToPpt(
+      this.document,
+      `governance-agent-${message.reply.intent ?? 'export'}`,
+      title,
+      message.reply.answer,
+      message.reply.citations,
+      message.reply.facts as Record<string, unknown> | undefined,
+    );
+  }
+
+  async copyAnswer(message: ChatMessage): Promise<void> {
+    if (!message.reply) return;
+    try {
+      await navigator.clipboard.writeText(message.reply.answer);
+      this.copiedMessageId.set(message.id);
+      setTimeout(() => {
+        if (this.copiedMessageId() === message.id) {
+          this.copiedMessageId.set(null);
+        }
+      }, 2000);
+    } catch {
+      // fallback
+    }
+  }
+
+  getChartBars(reply: AgentReply): { label: string; value: number; percent: number; color: string }[] {
+    const bars: { label: string; value: number; color: string }[] = [];
+    const facts = reply.facts;
+    if (facts) {
+      if (typeof facts['byType'] === 'object' && facts['byType'] !== null) {
+        for (const [key, val] of Object.entries(facts['byType'] as Record<string, number>)) {
+          if (typeof val === 'number' && val > 0) {
+            bars.push({ label: this.formatChartLabel(key), value: val, color: this.chartColor(key) });
+          }
+        }
+      }
+      if (typeof facts['byGrantedVia'] === 'object' && facts['byGrantedVia'] !== null) {
+        for (const [key, val] of Object.entries(facts['byGrantedVia'] as Record<string, number>)) {
+          if (typeof val === 'number' && val > 0) {
+            bars.push({ label: this.formatChartLabel(key), value: val, color: this.chartColor(key) });
+          }
+        }
+      }
+      if (typeof facts['expired'] === 'number' || typeof facts['reviewOverdue'] === 'number') {
+        if ((facts['expired'] as number) > 0) {
+          bars.push({ label: 'Expired', value: facts['expired'] as number, color: '#D13438' });
+        }
+        if ((facts['reviewOverdue'] as number) > 0) {
+          bars.push({ label: 'Review Overdue', value: facts['reviewOverdue'] as number, color: '#FF8C00' });
+        }
+      }
+      if (typeof facts['drafted'] === 'number') {
+        if ((facts['drafted'] as number) > 0) {
+          bars.push({ label: 'Drafted Notifications', value: facts['drafted'] as number, color: '#107C41' });
+        }
+      }
+    }
+
+    if (bars.length === 0 && reply.evidence && reply.evidence.rows.length > 0 && reply.evidence.rows.length <= 15) {
+      const counts = new Map<string, number>();
+      for (const row of reply.evidence.rows) {
+        const val = String(row[1] ?? row[0] ?? '');
+        if (val) counts.set(val, (counts.get(val) ?? 0) + 1);
+      }
+      for (const [k, v] of counts.entries()) {
+        bars.push({ label: k, value: v, color: '#0078D4' });
+      }
+    }
+
+    const max = Math.max(...bars.map((b) => b.value), 1);
+    return bars.map((b) => ({ ...b, percent: Math.max(8, Math.round((b.value / max) * 100)) }));
+  }
+
+  parsedBlocks(text: string): { type: 'text' | 'table'; content?: string; headers?: string[]; rows?: string[][] }[] {
+    const lines = text.split('\n');
+    const blocks: { type: 'text' | 'table'; content?: string; headers?: string[]; rows?: string[][] }[] = [];
+    let textBuffer: string[] = [];
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+      if (line.trim().startsWith('|') && line.trim().endsWith('|') && i + 1 < lines.length && lines[i + 1].includes('---')) {
+        if (textBuffer.length > 0) {
+          blocks.push({ type: 'text', content: textBuffer.join('\n') });
+          textBuffer = [];
+        }
+        const headers = line.split('|').map((s) => s.trim()).filter((s, idx, arr) => idx > 0 && idx < arr.length - 1);
+        i += 2;
+        const rows: string[][] = [];
+        while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
+          const cells = lines[i].split('|').map((s) => s.trim()).filter((s, idx, arr) => idx > 0 && idx < arr.length - 1);
+          rows.push(cells);
+          i++;
+        }
+        blocks.push({ type: 'table', headers, rows });
+      } else {
+        textBuffer.push(line);
+        i++;
+      }
+    }
+    if (textBuffer.length > 0) {
+      blocks.push({ type: 'text', content: textBuffer.join('\n') });
+    }
+    return blocks;
+  }
+
+  private formatChartLabel(key: string): string {
+    return key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
+  }
+
+  private chartColor(key: string): string {
+    const k = key.toLowerCase();
+    if (k.includes('critical') || k.includes('everyone') || k.includes('anonymous')) return '#D13438';
+    if (k.includes('high') || k.includes('warning') || k.includes('direct')) return '#FF8C00';
+    if (k.includes('medium') || k.includes('group')) return '#0078D4';
+    if (k.includes('good') || k.includes('success')) return '#107C41';
+    return '#5C2D91';
   }
 
   private append(message: Omit<ChatMessage, 'id'>): void {

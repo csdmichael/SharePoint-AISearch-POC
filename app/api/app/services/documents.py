@@ -60,6 +60,7 @@ def document_summary(corpus: LibraryCorpus, item: ItemRecord) -> dict[str, Any]:
         "artifactId": fields.get("artifactId"),
         "knowledgeCategory": fields.get("knowledgeCategory"),
         "lifecycleStatus": fields.get("lifecycleStatus"),
+        "documentIteration": fields.get("documentIteration"),
         "authoritative": fields.get("authoritative"),
         "aiReady": fields.get("aiReady"),
         "reviewDate": iso(fields.get("reviewDate")),
@@ -85,6 +86,7 @@ SORT_FIELDS: dict[str, str] = {
     "modified": "modified",
     "artifactId": "artifactId",
     "lifecycleStatus": "lifecycleStatus",
+    "documentIteration": "documentIteration",
     "dataQualityStatus": "dataQualityStatus",
     "trustScore": "trustScore",
     "reviewDate": "reviewDate",
@@ -118,6 +120,7 @@ class DocumentService:
         self,
         *,
         lifecycle: str | None,
+        iteration: str | None = None,
         data_quality: str | None,
         authoritative: bool | None,
         category: str | None,
@@ -130,11 +133,16 @@ class DocumentService:
             raise BadRequestError(f"sort must be one of {', '.join(self._settings.api.api.sortableFields)}.")
         documents: list[dict[str, Any]] = []
         categories: set[str] = set()
+        iterations: set[str] = set()
         for corpus, item in self._all():
             fields = item.fields
             if fields.get("knowledgeCategory"):
                 categories.add(str(fields["knowledgeCategory"]))
+            if fields.get("documentIteration"):
+                iterations.add(str(fields["documentIteration"]))
             if category and not category_matches(fields.get("knowledgeCategory"), category):
+                continue
+            if iteration and (fields.get("documentIteration") or "").strip().lower() != iteration.strip().lower():
                 continue
             if lifecycle and not label_matches(self._governance, "lifecycleStatus", fields.get("lifecycleStatus"),
                                                lifecycle):
@@ -162,6 +170,7 @@ class DocumentService:
             "sort": sort,
             "order": order,
             "knowledgeCategories": sorted(categories, key=str.lower),
+            "documentIterations": sorted(iterations, key=str.lower),
         }
 
     def detail(self, item_id: str) -> dict[str, Any]:

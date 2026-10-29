@@ -10,6 +10,7 @@ import { ConfigService } from '../../core/config/config.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { LayoutService } from '../../core/layout/layout.service';
 import { SessionService, ViewState, resolveViewState } from '../../core/session/session.service';
+import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { StateViewComponent } from '../../shared/components/state-view/state-view.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { CursorList } from '../../shared/util/cursor-list';
@@ -20,7 +21,7 @@ import { DisplayService } from '../../shared/util/display.service';
 @Component({
   selector: 'app-access-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonIcon, IonSearchbar, StateViewComponent, TranslatePipe],
+  imports: [IonContent, IonIcon, IonSearchbar, BadgeComponent, StateViewComponent, TranslatePipe],
   templateUrl: './access.page.html',
   styleUrl: './access.page.scss',
   host: { class: 'ion-page' },
@@ -82,12 +83,40 @@ export class AccessPage {
     }),
   );
 
+  readonly itemFilter = signal('');
+  readonly expandedKeys = signal<Set<string>>(new Set());
+  readonly pageSize = signal(25);
+  readonly currentPage = signal(1);
+
+  readonly filteredItems = computed<UserAccessRecord[]>(() => {
+    const query = this.itemFilter().trim().toLowerCase();
+    const all = this.items.items();
+    if (!query) return all;
+    return all.filter(
+      (r) =>
+        (r.item.name || '').toLowerCase().includes(query) ||
+        (r.item.path || '').toLowerCase().includes(query) ||
+        (r.role || '').toLowerCase().includes(query) ||
+        (r.grantedVia || '').toLowerCase().includes(query) ||
+        r.via.some((v) => v.toLowerCase().includes(query)),
+    );
+  });
+
+  readonly totalFilteredCount = computed(() => this.filteredItems().length);
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.totalFilteredCount() / this.pageSize())));
+  readonly paginatedItems = computed<UserAccessRecord[]>(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.filteredItems().slice(start, start + this.pageSize());
+  });
+
   onSearch(value: string | null | undefined): void {
     this.queryInput.next(value ?? '');
   }
 
   selectUser(user: UserSearchResult): void {
     this.selectedUser.set(user);
+    this.currentPage.set(1);
+    this.expandedKeys.set(new Set());
   }
 
   isSelected(user: UserSearchResult): boolean {
@@ -97,6 +126,91 @@ export class AccessPage {
   retrySearch(): void {
     this.session.refresh();
     this.users.reload();
+  }
+
+  isExpanded(record: UserAccessRecord): boolean {
+    return this.expandedKeys().has(this.recordKey(record));
+  }
+
+  toggleExpand(record: UserAccessRecord): void {
+    const key = this.recordKey(record);
+    const next = new Set(this.expandedKeys());
+    if (next.has(key)) {
+      next.delete(key);
+    } else {
+      next.add(key);
+    }
+    this.expandedKeys.set(next);
+  }
+
+  expandAll(): void {
+    const next = new Set<string>();
+    for (const r of this.paginatedItems()) {
+      next.add(this.recordKey(r));
+    }
+    this.expandedKeys.set(next);
+  }
+
+  collapseAll(): void {
+    this.expandedKeys.set(new Set());
+  }
+
+  updateItemFilter(val: string | null | undefined): void {
+    this.itemFilter.set(val ?? '');
+    this.currentPage.set(1);
+  }
+
+  prevPage(): void {
+    if (this.currentPage() > 1) {
+      this.currentPage.update((p) => p - 1);
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update((p) => p + 1);
+    }
+  }
+
+  setPageSize(size: number): void {
+    this.pageSize.set(size);
+    this.currentPage.set(1);
+  }
+
+  roleColor(role: string): string {
+    const r = role.toLowerCase();
+    if (r.includes('full control') || r.includes('manage')) return 'danger';
+    if (r.includes('edit') || r.includes('contribute')) return 'primary';
+    if (r.includes('read') || r.includes('view')) return 'success';
+    if (r.includes('limited access')) return 'neutral';
+    return 'neutral';
+  }
+
+  grantSummary(record: UserAccessRecord): string {
+    if (record.grantedVia === 'direct') return 'Direct';
+    if (record.grantedVia === 'sharePointGroup') {
+      const g = this.joinVia(record.via);
+      return `SP Group: ${g}`;
+    }
+    if (record.grantedVia === 'entraGroup') {
+      const g = this.joinVia(record.via);
+      return `Entra ID: ${g}`;
+    }
+    if (record.grantedVia === 'sharingLink') return 'Sharing Link';
+    if (record.grantedVia === 'everyone') return 'Everyone';
+    return record.grantedVia;
+  }
+
+  fileIcon(record: UserAccessRecord): string {
+    if (record.item.kind === 'folder') return 'folder-outline';
+    const name = record.item.name.toLowerCase();
+    if (name.endsWith('.docx') || name.endsWith('.doc')) return 'document-text-outline';
+    if (name.endsWith('.pptx') || name.endsWith('.ppt')) return 'easel-outline';
+    if (name.endsWith('.xlsx') || name.endsWith('.xls')) return 'grid-outline';
+    if (name.endsWith('.pdf')) return 'document-outline';
+    if (name.endsWith('.vtt') || name.endsWith('.txt')) return 'reader-outline';
+    if (name.endsWith('.mp4')) return 'videocam-outline';
+    return 'document-outline';
   }
 
   kindLabel(kind: string): string {

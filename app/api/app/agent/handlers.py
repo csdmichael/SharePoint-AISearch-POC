@@ -110,7 +110,8 @@ def _draft_or_incomplete(view: dict[str, Any]) -> bool:
     title = str(view.get("title") or "").lower()
     path = str(view.get("path") or "").lower()
     lifecycle = str(view.get("lifecycleStatus") or "").lower()
-    return any(flag in f"{title} {path} {lifecycle}" for flag in ("draft", "incomplete", "wip"))
+    iteration = str(view.get("documentIteration") or "").lower()
+    return any(flag in f"{title} {path} {lifecycle} {iteration}" for flag in ("draft", "incomplete", "wip"))
 
 
 def _transcript_excerpt(text: str) -> str:

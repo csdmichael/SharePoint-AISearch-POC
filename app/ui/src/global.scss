@@ -62,9 +62,13 @@ body {
   min-width: 0;
 }
 
-:root[data-layout='tablet'] .page-frame,
+:root[data-layout='tablet'] .page-frame {
+  padding: var(--space-md) var(--space-md) calc(var(--space-xl) * 1.5);
+}
+
 :root[data-layout='desktop'] .page-frame {
-  padding: var(--space-xl) var(--space-xl) calc(var(--space-xl) * 2);
+  padding: var(--space-md) var(--space-lg) calc(var(--space-xl) * 1.5);
+  max-width: 98vw;
 }
 
 .page-title {
@@ -118,7 +122,7 @@ body {
 .pane {
   box-sizing: border-box;
   min-width: 0;
-  padding: var(--space-lg);
+  padding: var(--space-md);
   background: var(--surface-card);
   border: 1px solid var(--surface-border);
   border-radius: var(--radius);

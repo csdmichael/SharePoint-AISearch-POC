@@ -154,6 +154,43 @@ SharePoint metadata columns are `ArtifactId`, `KnowledgeCategory`,
 `ProfileGeneratedAt`. The Search data source requests these columns with
 `additionalColumns`, and each projected chunk inherits them.
 
+### Document Iteration and Draft Filtering
+
+All provisioned SharePoint document libraries include the mandatory
+**Document Iteration** column (`DocumentIteration`):
+- **Choices:** `Draft`, `Ready`, `In Review`, `Approved`, `Archived`.
+- **Default value:** `Draft`.
+- **Enforcement:** Required on upload and revision workflows. Authors must
+  update this column when publishing or updating a document.
+- **Search index filtering:** The Azure AI Search SharePoint indexers ingest
+  `DocumentIteration`, and retrieval filters explicitly exclude `Draft` items
+  (`(document_iteration eq null or document_iteration ne 'Draft')`) to ensure
+  in-progress drafts are never served as authoritative answers.
+- **One-time provisioning script:** `scripts/Add-DocumentIterationToLibraries.ps1`
+  provisions this required choice column across all document libraries in all
+  provisioned SharePoint sites (`Semiconductor`, `HR`, `Manufacturing`, `Sales`).
+- **Index rebuild script:** `scripts/Update-SearchIndexersAndRebuild.ps1`
+  updates search index fields, skillset projections, and data source queries,
+  then triggers indexer reset and rebuild.
+
+### Enhanced Governance UI and UX Capabilities
+
+The governance web application includes responsive, high-density layouts optimized
+for desktop, web, tablet, and mobile displays:
+- **Documents Iteration Filtering (`/documents`):** Filter documents by iteration
+  status with a dedicated segment bar and a one-click **"Show Drafts Only"** toggle.
+- **Side-by-Side Duplicate Viewer (`/cleanup`):** Under the Duplicates segment,
+  inspect canonical documents and candidate duplicates side-by-side with embedded
+  viewers for Word (`.docx`), PowerPoint (`.pptx`), Excel (`.xlsx`), and PDF (`.pdf`).
+- **Compact & Expandable Access Review (`/access/by-user`):** High-density user
+  access table displaying essential fields (Item Name, Kind, Access Level badge,
+  and Grant Path badge) with expandable drawer rows for full lineage paths, plus
+  client-side pagination (10/25/50/100 items per page) and in-table filtering.
+- **Agent Chat Analytics & Document Export (`/agent`):** Chat agent output renders
+  structured markdown tables, interactive visual metrics charts/graphs, positive/negative
+  draft test prompts, and one-click export to **Excel** (`.xls`), **Word** (`.doc`),
+  and **PowerPoint** (`.ppt`).
+
 ## Repository layout
 
 ```text

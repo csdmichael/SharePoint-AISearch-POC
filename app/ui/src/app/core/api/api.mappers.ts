@@ -151,6 +151,7 @@ export function agentReply(response: AgentMessageResponse): AgentReply {
     mode: response.mode,
     intent: response.intent,
     evidence: response.evidence ? evidenceTable(response.evidence.items) : null,
+    facts: (response.evidence as unknown as { facts?: Record<string, unknown> })?.facts ?? null,
     citations: response.citations,
   };
 }

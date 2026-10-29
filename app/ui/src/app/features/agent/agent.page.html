@@ -64,7 +64,79 @@
             <article class="message" [attr.data-role]="message.role">
               <p class="message__author">{{ authorLabel(message) }}</p>
               @if (message.role === 'assistant' && message.reply; as reply) {
-                <p class="pre-wrap message__text" data-testid="agent-answer">{{ reply.answer }}</p>
+                <!-- Render parsed blocks (text and markdown tables) -->
+                @for (block of parsedBlocks(reply.answer); track $index) {
+                  @if (block.type === 'table') {
+                    <div class="table-scroll" style="margin: var(--space-sm) 0;">
+                      <table class="data-table" style="background: var(--surface-card);">
+                        <thead>
+                          <tr>
+                            @for (col of block.headers; track $index) {
+                              <th scope="col">{{ col }}</th>
+                            }
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (r of block.rows; track $index) {
+                            <tr>
+                              @for (c of r; track $index) {
+                                <td>{{ c }}</td>
+                              }
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  } @else {
+                    <p class="pre-wrap message__text" data-testid="agent-answer">{{ block.content }}</p>
+                  }
+                }
+
+                <!-- Visual Charts & Graphs when quantitative metrics are detected -->
+                @if (getChartBars(reply); as chartBars) {
+                  @if (chartBars.length > 0) {
+                    <div class="agent-chart-container" style="margin: var(--space-md) 0; padding: var(--space-sm) var(--space-md); background: var(--surface-card); border-radius: var(--radius); border: 1px solid var(--surface-border);">
+                      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-xs);">
+                        <span style="font-weight: 600; font-size: 0.8125rem; color: var(--surface-muted-text); text-transform: uppercase; letter-spacing: 0.05em;">Visual Metrics Breakdown</span>
+                        <span class="muted" style="font-size: 0.75rem;">{{ chartBars.length }} categories</span>
+                      </div>
+                      <div class="chart-bars" style="display: flex; flex-direction: column; gap: var(--space-xs);">
+                        @for (bar of chartBars; track bar.label) {
+                          <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.8125rem;">
+                              <span>{{ bar.label }}</span>
+                              <strong>{{ bar.value }}</strong>
+                            </div>
+                            <div style="height: 10px; background: var(--surface-table-header); border-radius: 5px; overflow: hidden; width: 100%;">
+                              <div [style.width.%]="bar.percent" [style.background-color]="bar.color" style="height: 100%; border-radius: 5px; transition: width 0.4s ease;"></div>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                }
+
+                <!-- Export & Actions Toolbar -->
+                <div class="agent-export-toolbar" style="display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: center; margin: var(--space-sm) 0; padding-top: var(--space-xs); border-top: 1px solid var(--surface-border);">
+                  <button type="button" class="action action--sm" (click)="exportExcel(message)" title="Download response and data as Microsoft Excel spreadsheet">
+                    <ion-icon name="document-text-outline" aria-hidden="true" />
+                    <span>Export Excel</span>
+                  </button>
+                  <button type="button" class="action action--sm" (click)="exportWord(message)" title="Download formatted report as Microsoft Word document">
+                    <ion-icon name="document-outline" aria-hidden="true" />
+                    <span>Export Word</span>
+                  </button>
+                  <button type="button" class="action action--sm" (click)="exportPpt(message)" title="Download presentation outline as Microsoft PowerPoint slide">
+                    <ion-icon name="easel-outline" aria-hidden="true" />
+                    <span>Export PPT</span>
+                  </button>
+                  <button type="button" class="action action--sm" (click)="copyAnswer(message)" title="Copy answer text to clipboard">
+                    <ion-icon [name]="copiedMessageId() === message.id ? 'checkmark-outline' : 'copy-outline'" aria-hidden="true" />
+                    <span>{{ copiedMessageId() === message.id ? 'Copied!' : 'Copy' }}</span>
+                  </button>
+                </div>
+
                 @if (modeBadge(reply); as badge) {
                   <app-badge data-testid="agent-mode-badge" [text]="badge.text" [color]="badge.color" />
                 }

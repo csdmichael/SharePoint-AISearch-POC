@@ -20,6 +20,38 @@
         </ion-segment-button>
       }
     </ion-segment>
+
+    <div class="iteration-filter-bar">
+      <span class="filter-label">Document Iteration:</span>
+      <ion-segment
+        class="segments segments--sub"
+        data-testid="iteration-segments"
+        scrollable="true"
+        [value]="iterationSegmentValue()"
+        aria-label="Filter documents by iteration"
+        (ionChange)="selectIteration(selectValue($event))"
+      >
+        <ion-segment-button [value]="allValue">
+          <ion-label>All Iterations</ion-label>
+        </ion-segment-button>
+        @for (iter of iterations(); track iter) {
+          <ion-segment-button [value]="iter">
+            <ion-label>{{ iter }}</ion-label>
+          </ion-segment-button>
+        }
+      </ion-segment>
+      <button 
+        type="button" 
+        class="action action--sm" 
+        [class.action--primary]="iteration().toLowerCase() === 'draft'"
+        (click)="toggleDraftsOnly()"
+        title="Quickly filter draft documents"
+      >
+        <ion-icon name="funnel-outline" aria-hidden="true" />
+        {{ iteration().toLowerCase() === 'draft' ? 'Showing Drafts Only' : 'Show Drafts Only' }}
+      </button>
+    </div>
+
     <p class="muted document-count" data-testid="document-count">{{ countText() }}</p>
     <ion-input
       class="folder-filter"
@@ -39,6 +71,7 @@
           <thead>
             <tr>
               <th scope="col">{{ 'documents.columns.title' | t }}</th>
+              <th scope="col">Iteration</th>
               <th scope="col">{{ 'documents.columns.category' | t }}</th>
               <th scope="col">{{ 'documents.columns.artifactId' | t }}</th>
               <th scope="col">{{ 'documents.columns.lifecycle' | t }}</th>
@@ -52,7 +85,10 @@
             @for (doc of filteredDocuments(); track doc.id) {
               <tr data-testid="document-row" [attr.data-document-id]="doc.id">
                 <td [attr.data-label]="'documents.columns.title' | t">
-                                  <a class="document-title" [routerLink]="documentPath(doc.id)" data-testid="document-link">{{ doc.title }}</a>
+                  <a class="document-title" [routerLink]="documentPath(doc.id)" data-testid="document-link">{{ doc.title }}</a>
+                </td>
+                <td data-label="Iteration">
+                  <app-badge [text]="iterationLabel(doc.documentIteration)" [color]="iterationColor(doc.documentIteration)" />
                 </td>
                 <td [attr.data-label]="'documents.columns.category' | t">{{ doc.knowledgeCategory ?? ('states.notAvailable' | t) }}</td>
                 <td [attr.data-label]="'documents.columns.artifactId' | t">{{ doc.artifactId ?? ('states.notAvailable' | t) }}</td>

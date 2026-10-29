@@ -49,41 +49,134 @@
       </section>
 
       <section class="pane pane--primary" data-testid="access-items">
-        <h2 class="section-title">{{ 'access.itemsHeading' | t }}</h2>
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-xs); margin-bottom: var(--space-xs);">
+          <h2 class="section-title" style="margin: 0;">{{ 'access.itemsHeading' | t }}</h2>
+          @if (selectedUser() && itemsView().kind === 'ready') {
+            <span class="muted" style="font-size: 0.8125rem;">
+              Showing {{ paginatedItems().length }} of {{ totalFilteredCount() }} items
+            </span>
+          }
+        </div>
+
         @if (!selectedUser()) {
           <p class="muted" data-testid="access-hint">{{ 'access.selectUser' | t }}</p>
         } @else {
           <app-state-view [state]="itemsView()" emptyKey="access.itemsEmpty" (retry)="items.reload()" />
           @if (itemsView().kind === 'ready') {
+            <!-- Slick Filter and Pagination Toolbar -->
+            <div class="access-table-toolbar" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-xs); margin-bottom: var(--space-xs); padding: var(--space-xs) var(--space-sm); background: var(--surface-table-header); border-radius: var(--radius); border: 1px solid var(--surface-border);">
+              <div style="display: flex; align-items: center; gap: var(--space-xs); flex: 1 1 200px;">
+                <input
+                  type="text"
+                  class="action action--sm"
+                  style="flex: 1 1 auto; text-align: left; cursor: text; background: var(--surface-card);"
+                  placeholder="Filter items by name, path, or role..."
+                  [value]="itemFilter()"
+                  (input)="updateItemFilter($any($event.target).value)"
+                />
+                @if (itemFilter()) {
+                  <button type="button" class="action action--sm" (click)="updateItemFilter('')">Clear</button>
+                }
+              </div>
+
+              <div style="display: flex; align-items: center; gap: var(--space-xs);">
+                <button type="button" class="action action--sm" (click)="expandAll()" title="Expand all rows to view full details">
+                  Expand All
+                </button>
+                <button type="button" class="action action--sm" (click)="collapseAll()" title="Collapse all rows to compact view">
+                  Collapse All
+                </button>
+                <div style="display: flex; align-items: center; gap: 4px; margin-left: var(--space-xs);">
+                  <button type="button" class="action action--sm" [disabled]="currentPage() <= 1" (click)="prevPage()">
+                    <ion-icon name="chevron-back-outline" aria-hidden="true" />
+                  </button>
+                  <span style="font-size: 0.8125rem; font-weight: 500;">
+                    {{ currentPage() }} / {{ totalPages() }}
+                  </span>
+                  <button type="button" class="action action--sm" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">
+                    <ion-icon name="chevron-forward-outline" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sleek Compact Data Table with Expandable Details -->
             <div class="table-scroll">
               <table class="data-table data-table--cards" data-testid="access-table">
                 <thead>
                   <tr>
+                    <th scope="col" style="width: 28px;"></th>
                     <th scope="col">{{ 'access.columns.name' | t }}</th>
-                    <th scope="col">{{ 'access.columns.path' | t }}</th>
-                    <th scope="col">{{ 'access.columns.kind' | t }}</th>
-                    <th scope="col">{{ 'access.columns.accessLevel' | t }}</th>
+                    <th scope="col" style="width: 70px;">{{ 'access.columns.kind' | t }}</th>
+                    <th scope="col" style="width: 130px;">{{ 'access.columns.accessLevel' | t }}</th>
                     <th scope="col">{{ 'access.columns.accessVia' | t }}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @for (record of items.items(); track recordKey(record)) {
-                    <tr data-testid="access-row">
-                      <td [attr.data-label]="'access.columns.name' | t">{{ record.item.name }}</td>
-                      <td [attr.data-label]="'access.columns.path' | t">{{ record.item.path ?? ('states.notAvailable' | t) }}</td>
-                      <td [attr.data-label]="'access.columns.kind' | t">{{ kindLabel(record.item.kind) }}</td>
-                      <td [attr.data-label]="'access.columns.accessLevel' | t">{{ record.role }}</td>
-                      <td [attr.data-label]="'access.columns.accessVia' | t">{{ accessViaText(record) }}</td>
+                  @for (record of paginatedItems(); track recordKey(record)) {
+                    <tr data-testid="access-row" [class.is-expanded]="isExpanded(record)" (click)="toggleExpand(record)" style="cursor: pointer;">
+                      <td style="text-align: center; padding: 4px;">
+                        <ion-icon [name]="isExpanded(record) ? 'chevron-down-outline' : 'chevron-forward-outline'" style="font-size: 1rem; color: var(--surface-muted-text);" aria-hidden="true" />
+                      </td>
+                      <td [attr.data-label]="'access.columns.name' | t">
+                        <div style="display: flex; align-items: center; gap: var(--space-xs);">
+                          <ion-icon [name]="fileIcon(record)" style="font-size: 1.1rem; color: var(--surface-accent-strong);" aria-hidden="true" />
+                          <span style="font-weight: 600;">{{ record.item.name }}</span>
+                        </div>
+                      </td>
+                      <td [attr.data-label]="'access.columns.kind' | t">
+                        <span class="muted" style="font-size: 0.75rem; text-transform: uppercase;">{{ kindLabel(record.item.kind) }}</span>
+                      </td>
+                      <td [attr.data-label]="'access.columns.accessLevel' | t">
+                        <app-badge [text]="record.role" [color]="roleColor(record.role)" />
+                      </td>
+                      <td [attr.data-label]="'access.columns.accessVia' | t">
+                        <span style="font-size: 0.8125rem;">{{ grantSummary(record) }}</span>
+                      </td>
                     </tr>
+                    @if (isExpanded(record)) {
+                      <tr class="access-expanded-row" style="background: var(--surface-table-header);">
+                        <td colspan="5" style="padding: var(--space-sm) var(--space-md); border-bottom: 2px solid var(--surface-border);">
+                          <div style="display: flex; flex-direction: column; gap: var(--space-xs); font-size: 0.8125rem;">
+                            <div style="display: flex; align-items: flex-start; gap: var(--space-sm);">
+                              <strong style="min-width: 90px; color: var(--surface-muted-text);">Full Path:</strong>
+                              <span style="word-break: break-all; font-family: monospace;">{{ record.item.path ?? ('states.notAvailable' | t) }}</span>
+                            </div>
+                            <div style="display: flex; align-items: flex-start; gap: var(--space-sm);">
+                              <strong style="min-width: 90px; color: var(--surface-muted-text);">Access Via:</strong>
+                              <span>{{ accessViaText(record) }}</span>
+                            </div>
+                            @if (record.item.webUrl) {
+                              <div style="display: flex; align-items: center; gap: var(--space-sm); margin-top: 4px;">
+                                <strong style="min-width: 90px; color: var(--surface-muted-text);">Link:</strong>
+                                <a [href]="record.item.webUrl" target="_blank" rel="noopener noreferrer" class="action action--sm" (click)="$event.stopPropagation()">
+                                  <ion-icon name="open-outline" aria-hidden="true" />
+                                  <span>Open in SharePoint</span>
+                                </a>
+                              </div>
+                            }
+                          </div>
+                        </td>
+                      </tr>
+                    }
                   }
                 </tbody>
               </table>
             </div>
-            @if (items.nextCursor()) {
-              <button type="button" class="load-more" data-testid="access-load-more" [disabled]="items.loadingMore()" (click)="items.loadMore()">
-                {{ 'buttons.loadMore' | t }}
-              </button>
-            }
+
+            <!-- Bottom pagination info -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: var(--space-xs); font-size: 0.8125rem;">
+              <span class="muted">
+                Showing {{ paginatedItems().length }} of {{ totalFilteredCount() }} records
+              </span>
+              <div style="display: flex; align-items: center; gap: var(--space-xs);">
+                @if (items.nextCursor()) {
+                  <button type="button" class="action action--sm" [disabled]="items.loadingMore()" (click)="items.loadMore()">
+                    {{ 'buttons.loadMore' | t }}
+                  </button>
+                }
+              </div>
+            </div>
           }
         }
       </section>

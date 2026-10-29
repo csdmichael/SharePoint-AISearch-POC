@@ -63,3 +63,34 @@
 .export-button {
   margin-top: var(--space-md);
 }
+
+.access-table-toolbar {
+  transition: all 0.2s ease;
+}
+
+tr[data-testid="access-row"] {
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--surface-hover);
+  }
+
+  &.is-expanded {
+    background-color: var(--surface-selected);
+  }
+}
+
+.access-expanded-row {
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

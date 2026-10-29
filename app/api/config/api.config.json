@@ -78,6 +78,7 @@
       "modified",
       "artifactId",
       "lifecycleStatus",
+      "documentIteration",
       "dataQualityStatus",
       "trustScore",
       "reviewDate",

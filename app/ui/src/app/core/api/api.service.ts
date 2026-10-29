@@ -109,16 +109,20 @@ export class ApiService {
   }
 
   /** Governance documents in one knowledge category ("" lists all), page by page. */
-  documents(category: string, cursor: string | null = null): Observable<DocumentPage> {
+  documents(category: string, cursor: string | null = null, iteration: string | null = null): Observable<DocumentPage> {
     const params: Record<string, string> = { ...this.pageParams(cursor) };
     if (category) {
       params['knowledgeCategory'] = category;
+    }
+    if (iteration) {
+      params['documentIteration'] = iteration;
     }
     return this.send<DocumentListResponse>('GET', this.endpoint('documents'), { params }).pipe(
       map((response) => ({
         ...cursorPage(response),
         total: response.total,
         knowledgeCategories: response.knowledgeCategories,
+        documentIterations: response.documentIterations ?? [],
       })),
     );
   }

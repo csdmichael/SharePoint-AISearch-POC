@@ -18,6 +18,7 @@ ITEM_PATTERN = GUID_RE.pattern.replace("$", "") + r"(\.[0-9]{1,10})?$"
 @router.get("/documents", summary="Governance list of documents, filtered and paged")
 def list_documents(
     lifecycle_status: str | None = Query(default=None, alias="lifecycleStatus", max_length=50),
+    document_iteration: str | None = Query(default=None, alias="documentIteration", max_length=50),
     data_quality_status: str | None = Query(default=None, alias="dataQualityStatus", max_length=50),
     authoritative: bool | None = Query(default=None),
     knowledge_category: str | None = Query(default=None, alias="knowledgeCategory", max_length=100),
@@ -29,6 +30,7 @@ def list_documents(
 ) -> dict[str, Any]:
     return container.documents.list(
         lifecycle=lifecycle_status,
+        iteration=document_iteration,
         data_quality=data_quality_status,
         authoritative=authoritative,
         category=knowledge_category,

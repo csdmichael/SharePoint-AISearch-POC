@@ -246,6 +246,7 @@ export interface DocumentSummary extends ItemView {
   artifactId: string | null;
   knowledgeCategory: string | null;
   lifecycleStatus: string | null;
+  documentIteration?: string | null;
   authoritative: boolean | null;
   aiReady: boolean | null;
   reviewDate: string | null;
@@ -481,6 +482,7 @@ export interface AgentReply {
   mode: ResponseMode;
   intent: string | null;
   evidence: AgentEvidence | null;
+  facts?: Record<string, unknown> | null;
   citations: AgentCitation[];
 }
 
@@ -506,10 +508,12 @@ export interface DocumentListResponse {
   sort: string;
   order: string;
   knowledgeCategories: string[];
+  documentIterations?: string[];
 }
 
 /** One page of the document list as CursorList reads it, with the total and the category choices. */
 export interface DocumentPage extends Page<DocumentSummary> {
   total: number;
   knowledgeCategories: string[];
+  documentIterations?: string[];
 }

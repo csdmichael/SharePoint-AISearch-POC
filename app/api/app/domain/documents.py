@@ -94,6 +94,7 @@ def parse_governance(row: Mapping[str, Any], governance: Governance) -> dict[str
         "knowledgeCategory": _text(raw("knowledgeCategory")),
         "sourceSystem": _text(raw("sourceSystem")),
         "lifecycleStatus": _text(raw("lifecycleStatus")),
+        "documentIteration": _text(raw("documentIteration")),
         "authoritative": _bool(raw("authoritative")),
         "reviewDate": parse_date(raw("reviewDate")),
         "expirationDate": parse_date(raw("expirationDate")),

@@ -6,7 +6,7 @@
   "sidebarWidthPx": 264,
   "headerHeightPx": 60,
   "tabBarHeightPx": 64,
-  "maxContentWidthPx": 1440,
+  "maxContentWidthPx": 1800,
   "paneWidths": {
     "listPercent": 24,
     "detailPercent": 26

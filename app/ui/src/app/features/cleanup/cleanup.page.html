@@ -83,8 +83,27 @@
                       />
                     </td>
                     <td [attr.data-label]="'cleanup.columns.document' | t">
-                      <span>{{ member.name }}</span>
-                      <a class="row-link" [routerLink]="documentPath(member.id)">{{ 'buttons.openDocument' | t }}</a>
+                      <div class="document-row-content" style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: var(--space-xs);">
+                          <ion-icon [name]="fileTypeInfo(member.name).icon" [style.color]="fileTypeInfo(member.name).color" aria-hidden="true" />
+                          <span style="font-weight: 500;">{{ member.name }}</span>
+                          <app-badge [text]="member.role === 'canonical' ? 'Canonical' : 'Duplicate'" [color]="member.role === 'canonical' ? 'success' : 'warning'" />
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--space-xs);">
+                          <a class="row-link" [routerLink]="documentPath(member.id)">{{ 'buttons.openDocument' | t }}</a>
+                          @if (member.id !== record.canonical.id) {
+                            <button
+                              type="button"
+                              class="action action--sm action--primary"
+                              (click)="openComparison(record.canonical, member)"
+                              title="Compare duplicate against canonical side-by-side"
+                            >
+                              <ion-icon name="git-compare-outline" aria-hidden="true" />
+                              <span>Compare Side-by-Side</span>
+                            </button>
+                          }
+                        </div>
+                      </div>
                     </td>
                     <td [attr.data-label]="'cleanup.columns.detail' | t">{{ canonicalOf(record.canonical) }}</td>
                   </tr>
@@ -118,6 +137,139 @@
           {{ 'buttons.loadMore' | t }}
         </button>
       }
+    }
+
+    <!-- Side-by-Side Document Comparison Modal -->
+    @if (selectedComparison(); as pair) {
+      <div class="comparison-overlay" role="dialog" aria-modal="true" aria-labelledby="comparison-title">
+        <div class="comparison-modal">
+          <header class="comparison-modal__header">
+            <div style="display: flex; align-items: center; gap: var(--space-sm);">
+              <ion-icon name="git-compare-outline" style="font-size: 1.5rem; color: var(--surface-accent-strong);" aria-hidden="true" />
+              <div>
+                <h2 id="comparison-title" class="comparison-modal__title">Side-by-Side Duplicate Document Comparison</h2>
+                <p class="muted" style="margin: 0; font-size: 0.8125rem;">Compare canonical and candidate duplicate documents side-by-side</p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--space-sm);">
+              <button type="button" class="action action--sm" [class.action--primary]="viewerTab() === 'viewer'" (click)="setViewerTab('viewer')">
+                Document Viewers
+              </button>
+              <button type="button" class="action action--sm" [class.action--primary]="viewerTab() === 'metadata'" (click)="setViewerTab('metadata')">
+                Metadata Details
+              </button>
+              <button type="button" class="action action--sm" (click)="closeComparison()" aria-label="Close comparison">
+                <ion-icon name="close-outline" aria-hidden="true" />
+              </button>
+            </div>
+          </header>
+
+          <div class="comparison-modal__body">
+            <!-- Left: Canonical -->
+            <div class="comparison-pane">
+              <div class="comparison-pane__header">
+                <div style="display: flex; align-items: center; gap: var(--space-xs);">
+                  <ion-icon [name]="fileTypeInfo(pair.canonical.name).icon" [style.color]="fileTypeInfo(pair.canonical.name).color" aria-hidden="true" />
+                  <strong>{{ pair.canonical.name }}</strong>
+                </div>
+                <app-badge text="Canonical Copy (Keep)" color="success" />
+              </div>
+              <p class="muted comparison-path">{{ pair.canonical.path ?? 'Path not recorded' }}</p>
+
+              @if (viewerTab() === 'viewer') {
+                <div class="viewer-container">
+                  @if (getSafeEmbedUrl(pair.canonical.webUrl); as embedUrl) {
+                    <iframe [src]="embedUrl" class="doc-viewer-frame" title="Canonical Document Viewer"></iframe>
+                  } @else {
+                    <div class="viewer-fallback">
+                      <ion-icon [name]="fileTypeInfo(pair.canonical.name).icon" style="font-size: 3rem; color: var(--surface-muted-text);" aria-hidden="true" />
+                      <p>Preview in iframe not available without direct webUrl.</p>
+                    </div>
+                  }
+                  <div class="viewer-actions">
+                    <span class="file-type-pill">{{ fileTypeInfo(pair.canonical.name).label }}</span>
+                    @if (pair.canonical.webUrl) {
+                      <a [href]="pair.canonical.webUrl" target="_blank" rel="noopener noreferrer" class="action action--sm action--primary">
+                        <ion-icon name="open-outline" aria-hidden="true" />
+                        <span>Open in SharePoint / Office</span>
+                      </a>
+                    }
+                  </div>
+                </div>
+              } @else {
+                <div class="metadata-table-container">
+                  <table class="data-table">
+                    <tbody>
+                      <tr><th>Document ID</th><td>{{ pair.canonical.id }}</td></tr>
+                      <tr><th>File Name</th><td>{{ pair.canonical.name }}</td></tr>
+                      <tr><th>Path</th><td>{{ pair.canonical.path }}</td></tr>
+                      <tr><th>Role</th><td>Canonical Master Copy</td></tr>
+                      <tr><th>File Format</th><td>{{ fileTypeInfo(pair.canonical.name).label }}</td></tr>
+                      <tr><th>SharePoint Link</th><td><a [href]="pair.canonical.webUrl" target="_blank">Open in SharePoint</a></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+
+            <!-- Right: Duplicate -->
+            <div class="comparison-pane">
+              <div class="comparison-pane__header">
+                <div style="display: flex; align-items: center; gap: var(--space-xs);">
+                  <ion-icon [name]="fileTypeInfo(pair.duplicate.name).icon" [style.color]="fileTypeInfo(pair.duplicate.name).color" aria-hidden="true" />
+                  <strong>{{ pair.duplicate.name }}</strong>
+                </div>
+                <app-badge text="Candidate Duplicate" color="warning" />
+              </div>
+              <p class="muted comparison-path">{{ pair.duplicate.path ?? 'Path not recorded' }}</p>
+
+              @if (viewerTab() === 'viewer') {
+                <div class="viewer-container">
+                  @if (getSafeEmbedUrl(pair.duplicate.webUrl); as embedUrl) {
+                    <iframe [src]="embedUrl" class="doc-viewer-frame" title="Duplicate Document Viewer"></iframe>
+                  } @else {
+                    <div class="viewer-fallback">
+                      <ion-icon [name]="fileTypeInfo(pair.duplicate.name).icon" style="font-size: 3rem; color: var(--surface-muted-text);" aria-hidden="true" />
+                      <p>Preview in iframe not available without direct webUrl.</p>
+                    </div>
+                  }
+                  <div class="viewer-actions">
+                    <span class="file-type-pill">{{ fileTypeInfo(pair.duplicate.name).label }}</span>
+                    @if (pair.duplicate.webUrl) {
+                      <a [href]="pair.duplicate.webUrl" target="_blank" rel="noopener noreferrer" class="action action--sm action--primary">
+                        <ion-icon name="open-outline" aria-hidden="true" />
+                        <span>Open in SharePoint / Office</span>
+                      </a>
+                    }
+                  </div>
+                </div>
+              } @else {
+                <div class="metadata-table-container">
+                  <table class="data-table">
+                    <tbody>
+                      <tr><th>Document ID</th><td>{{ pair.duplicate.id }}</td></tr>
+                      <tr><th>File Name</th><td>{{ pair.duplicate.name }}</td></tr>
+                      <tr><th>Path</th><td>{{ pair.duplicate.path }}</td></tr>
+                      <tr><th>Role</th><td>Duplicate Candidate for Archival/Cleanup</td></tr>
+                      <tr><th>File Format</th><td>{{ fileTypeInfo(pair.duplicate.name).label }}</td></tr>
+                      <tr><th>SharePoint Link</th><td><a [href]="pair.duplicate.webUrl" target="_blank">Open in SharePoint</a></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+
+          <footer class="comparison-modal__footer">
+            <span class="muted" style="font-size: 0.8125rem;">
+              Retain the canonical document and deprecate or remove the duplicate copy to prevent indexing stale or conflicting content.
+            </span>
+            <div style="display: flex; gap: var(--space-xs);">
+              <button type="button" class="action" (click)="closeComparison()">Close Comparison</button>
+            </div>
+          </footer>
+        </div>
+      </div>
     }
   </div>
 </ion-content>

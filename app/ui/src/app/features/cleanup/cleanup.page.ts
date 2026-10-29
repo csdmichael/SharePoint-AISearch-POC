@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonIcon, IonLabel, IonSegment, IonSegmentButton } from '@ionic/angular';
 import { forkJoin } from 'rxjs';
@@ -21,6 +22,11 @@ interface DraftSummary {
   count: number;
 }
 
+export interface ComparisonPair {
+  canonical: DocumentRef;
+  duplicate: DocumentRef;
+}
+
 /** Cleanup segments (duplicates, expiry, anomalies, exposure). Rows can be selected and drafted as notifications. */
 @Component({
   selector: 'app-cleanup-page',
@@ -33,6 +39,7 @@ interface DraftSummary {
 export class CleanupPage {
   private readonly api = inject(ApiService);
   private readonly config = inject(ConfigService);
+  private readonly sanitizer = inject(DomSanitizer);
   readonly display = inject(DisplayService);
   readonly i18n = inject(I18nService);
   readonly navigation = inject(NavigationService);
@@ -40,6 +47,9 @@ export class CleanupPage {
 
   readonly icons = this.config.layout.icons;
   readonly segments = this.config.pages.cleanup.segments;
+
+  readonly selectedComparison = signal<ComparisonPair | null>(null);
+  readonly viewerTab = signal<'viewer' | 'metadata'>('viewer');
 
   readonly segment = signal(this.config.pages.cleanup.defaultSegment);
   readonly records = new CursorList<CleanupRecord>({
@@ -117,6 +127,58 @@ export class CleanupPage {
       next.add(id);
     }
     this.selectedIds.set(next);
+  }
+
+  openComparison(canonical: DocumentRef, duplicate: DocumentRef): void {
+    this.selectedComparison.set({ canonical, duplicate });
+    this.viewerTab.set('viewer');
+  }
+
+  closeComparison(): void {
+    this.selectedComparison.set(null);
+  }
+
+  setViewerTab(tab: 'viewer' | 'metadata'): void {
+    this.viewerTab.set(tab);
+  }
+
+  fileExtension(name: string): string {
+    const idx = name.lastIndexOf('.');
+    return idx >= 0 ? name.substring(idx).toLowerCase() : '';
+  }
+
+  fileTypeInfo(name: string): { label: string; icon: string; color: string; viewerType: 'pdf' | 'office' | 'text' | 'media' | 'other' } {
+    const ext = this.fileExtension(name);
+    switch (ext) {
+      case '.docx':
+      case '.doc':
+        return { label: 'Word Document', icon: 'document-text-outline', color: '#2B579A', viewerType: 'office' };
+      case '.pptx':
+      case '.ppt':
+        return { label: 'PowerPoint Slide', icon: 'easel-outline', color: '#D24726', viewerType: 'office' };
+      case '.xlsx':
+      case '.xls':
+        return { label: 'Excel Workbook', icon: 'grid-outline', color: '#217346', viewerType: 'office' };
+      case '.pdf':
+        return { label: 'PDF Document', icon: 'document-outline', color: '#E81123', viewerType: 'pdf' };
+      case '.vtt':
+      case '.txt':
+        return { label: 'Transcript / Text', icon: 'reader-outline', color: '#0078D4', viewerType: 'text' };
+      case '.mp4':
+        return { label: 'Video Recording', icon: 'videocam-outline', color: '#5C2D91', viewerType: 'media' };
+      default:
+        return { label: 'File Document', icon: 'document-outline', color: '#6B7280', viewerType: 'other' };
+    }
+  }
+
+  getSafeEmbedUrl(webUrl: string | null): SafeResourceUrl | null {
+    if (!webUrl) return null;
+    let url = webUrl;
+    if (!url.includes('action=embedview') && !url.includes('web=1')) {
+      const sep = url.includes('?') ? '&' : '?';
+      url = `${url}${sep}action=embedview`;
+    }
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
   selectAll(): void {
