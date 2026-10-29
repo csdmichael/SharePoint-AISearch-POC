@@ -33,6 +33,7 @@ def ask(client: TestClient, headers: dict[str, str], prompt: str, **extra: Any) 
         ("What can you do?", "help"),
         ("What can alice@contoso.com access?", "access-review"),
         ("Can you summarize the cleanup backlog?", "backlog-summary"),
+        ("Summarize meeting 12 transcript and cite the recording", "meeting-transcripts"),
     ],
 )
 def test_help_and_access_questions_are_not_confused(prompt: str, intent: str, settings: Settings) -> None:
@@ -46,9 +47,9 @@ def test_prompts_endpoint_publishes_the_prompt_file(client: TestClient, auth_hea
     assert body["schemaVersion"] == "sp-acl-agent-prompts/v1"
     assert body["provisional"] is False
     assert "{userUpn}" in body["placeholders"]
-    assert len(body["prompts"]) == 12
+    assert len(body["prompts"]) == 14
     assert {prompt["issueId"] for prompt in body["prompts"]} == {
-        "scattered-content", "permissions-vs-audience", "decisions-in-inboxes"}
+        "scattered-content", "permissions-vs-audience", "decisions-in-inboxes", "meeting-transcripts"}
     assert all(prompt["issueLabel"] for prompt in body["prompts"])
 
 
@@ -160,4 +161,4 @@ def test_owner_notification_prompt_drafts_and_sends_nothing(
 def test_help_lists_the_sample_prompts(client: TestClient, auth_headers: dict[str, str]) -> None:
     body = ask(client, auth_headers, "What can you do? Examples please")
     assert body["intent"] == "help"
-    assert body["evidence"]["facts"]["examples"] == 12
+    assert body["evidence"]["facts"]["examples"] == 14

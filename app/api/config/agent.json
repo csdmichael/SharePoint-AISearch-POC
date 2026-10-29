@@ -70,10 +70,15 @@
     "orphanExample": "- {item} ({path}): {who} [{status}]",
     "conflictsSummary": "{stored} document(s) carry a stored conflict status; {live} live conflict candidate(s) found by analysis.",
     "conflictExample": "- \"{first}\" vs \"{second}\": similarity {similarity}",
+    "meetingSummary": "Meeting {meeting}: transcript \"{transcript}\" with recording \"{recording}\".",
+    "meetingExcerpt": "Transcript excerpt: {excerpt}",
+    "meetingNotFound": "I could not find a non-draft transcript for meeting {meeting} in this site.",
+    "meetingDraftExcluded": "Meeting {meeting} content exists only as draft or incomplete items, so it is excluded from evidence.",
     "helpIntro": "I answer governance questions from live SharePoint and Graph evidence. Examples:",
     "helpExample": "- {example}"
   },
   "intents": [
+    {"id": "meeting-transcripts", "keywords": ["meeting", "transcript", "recording", "video", "vtt"], "handler": "meetingTranscripts"},
     {"id": "overexposure", "keywords": ["who can access", "through which group", "everyone", "anonymous", "anyone with the link", "shared with", "external users", "sharing link", "overexposed", "over-exposed", "overexposure", "exposure"], "handler": "exposure"},
     {"id": "access-review", "keywords": ["what can", "can access", "access in this site", "how was each permission", "permissions for", "granted"], "handler": "userAccess"},
     {"id": "broken-inheritance", "keywords": ["broken inheritance", "inheritance", "unique permission", "direct user grant", "direct grant"], "handler": "brokenInheritance"},

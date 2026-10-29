@@ -12,6 +12,7 @@ from typing import Any, Callable
 
 from app.core.config import AgentFindingIds, AgentLimits, AnswerText, DraftNotificationConfig
 from app.core.errors import BadRequestError
+from app.domain.identity import file_extension
 from app.services.access import AccessService
 from app.services.analytics import AnalyticsService
 from app.services.documents import document_summary
@@ -22,6 +23,8 @@ from app.services.membership import STATUS_UNKNOWN
 from app.services.notifications import NotificationService
 
 EMAIL = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
+MEETING_NUMBER = re.compile(r"\bmeeting[\s_-]*(\d{1,3})\b", re.IGNORECASE)
+WEBVTT_TIMESTAMP = re.compile(r"^\d{2}:\d{2}:\d{2}\.\d{3}\s+-->\s+\d{2}:\d{2}:\d{2}\.\d{3}")
 # Exposure finding types are the vocabulary of analytics.exposure.severities (protocol names, not text).
 EXPOSURE_TYPES: tuple[str, ...] = ("everyoneIncludingExternal", "everyoneExceptExternal", "anonymousLink",
                                    "organizationLink")
@@ -87,6 +90,42 @@ def _user_from_prompt(ctx: HandlerContext, prompt: str) -> str:
     if ctx.caller_upn:
         return ctx.caller_upn.lower()
     raise BadRequestError("Name the user by UPN in the question; the signed-in token carries no UPN.")
+
+
+def _meeting_number_from_prompt(prompt: str) -> int | None:
+    match = MEETING_NUMBER.search(prompt)
+    if match is None:
+        return None
+    return int(match.group(1))
+
+
+def _meeting_matcher(meeting_number: int | None) -> Callable[[str], bool]:
+    if meeting_number is None:
+        return lambda text: "meeting" in text
+    pattern = re.compile(rf"\bmeeting[\s_-]*0*{meeting_number}\b")
+    return lambda text: bool(pattern.search(text))
+
+
+def _draft_or_incomplete(view: dict[str, Any]) -> bool:
+    title = str(view.get("title") or "").lower()
+    path = str(view.get("path") or "").lower()
+    lifecycle = str(view.get("lifecycleStatus") or "").lower()
+    return any(flag in f"{title} {path} {lifecycle}" for flag in ("draft", "incomplete", "wip"))
+
+
+def _transcript_excerpt(text: str) -> str:
+    lines: list[str] = []
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line == "WEBVTT" or WEBVTT_TIMESTAMP.match(line) or line.isdigit():
+            continue
+        if line.startswith("NOTE "):
+            continue
+        lines.append(line)
+        if len(lines) >= 4:
+            break
+    excerpt = " ".join(lines)
+    return excerpt[:600] + ("..." if len(excerpt) > 600 else "")
 
 
 def _exposure_findings(ctx: HandlerContext) -> list[dict[str, Any]]:
@@ -405,6 +444,76 @@ def handle_conflicts(ctx: HandlerContext, prompt: str) -> Evidence:
     }
 
 
+def handle_meeting_transcripts(ctx: HandlerContext, prompt: str) -> Evidence:
+    answers = ctx.answers
+    meeting_number = _meeting_number_from_prompt(prompt)
+    matches_meeting = _meeting_matcher(meeting_number)
+    transcript_views: list[dict[str, Any]] = []
+    transcript_rows: list[tuple[Any, Any, dict[str, Any]]] = []
+    recording_views: list[dict[str, Any]] = []
+    skipped_drafts = 0
+
+    for corpus in ctx.corpora():
+        for item in corpus.snapshot.files:
+            ext = file_extension(item.name)
+            if ext not in {".vtt", ".txt", ".mp4"}:
+                continue
+            view = ctx.summary(item.item_id)
+            haystack = f"{item.name} {view.get('title', '')} {view.get('path', '')}".lower()
+            if not matches_meeting(haystack):
+                continue
+            if _draft_or_incomplete(view):
+                skipped_drafts += 1
+                continue
+            if ext in {".vtt", ".txt"}:
+                transcript_views.append(view)
+                transcript_rows.append((corpus, item, view))
+            else:
+                recording_views.append(view)
+
+    meeting_label = f"{meeting_number:02d}" if meeting_number is not None else "requested"
+    if not transcript_rows:
+        lines = [
+            answers.meetingDraftExcluded.format(meeting=meeting_label)
+            if skipped_drafts > 0
+            else answers.meetingNotFound.format(meeting=meeting_label)
+        ]
+        return {
+            "lines": lines,
+            "facts": {"meeting": meeting_number, "transcripts": 0, "recordings": len(recording_views),
+                      "draftsExcluded": skipped_drafts},
+            "items": [],
+            "citations": [],
+        }
+
+    transcript_rows.sort(key=lambda row: (file_extension(row[1].name) != ".vtt", str(row[2].get("path") or "")))
+    transcript_corpus, transcript_item, transcript_view = transcript_rows[0]
+    transcript_text = transcript_corpus.text(transcript_item).text or ""
+    excerpt = _transcript_excerpt(transcript_text)
+    transcript_stem = transcript_item.name.rsplit(".", 1)[0].lower()
+    recording = next((view for view in recording_views if str(view.get("name", "")).lower().startswith(transcript_stem)), None)
+    if recording is None and recording_views:
+        recording = recording_views[0]
+    recording_name = str(recording.get("title") or recording.get("name")) if recording else "no matching recording found"
+    lines = [
+        answers.meetingSummary.format(
+            meeting=meeting_label,
+            transcript=transcript_view.get("title") or transcript_view.get("name"),
+            recording=recording_name,
+        )
+    ]
+    if excerpt:
+        lines.append(answers.meetingExcerpt.format(excerpt=excerpt))
+    citations_source = [transcript_view] + ([recording] if recording is not None else [])
+    return {
+        "lines": lines,
+        "facts": {"meeting": meeting_number, "transcripts": len(transcript_rows), "recordings": len(recording_views),
+                  "draftsExcluded": skipped_drafts},
+        "items": [ctx.citation(view) for view in citations_source][: ctx.evidence_limit],
+        "citations": _unique_citations(ctx, citations_source),
+    }
+
+
 def handle_help(ctx: HandlerContext, prompt: str) -> Evidence:
     answers = ctx.answers
     samples = [str(entry["text"]).replace("{userUpn}", ctx.caller_upn or ctx.signed_in_user)
@@ -426,5 +535,6 @@ HANDLERS: dict[str, Handler] = {
     "backlog": handle_backlog,
     "orphans": handle_orphans,
     "conflicts": handle_conflicts,
+    "meetingTranscripts": handle_meeting_transcripts,
     "help": handle_help,
 }

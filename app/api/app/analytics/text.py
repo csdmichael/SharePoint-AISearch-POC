@@ -1,4 +1,4 @@
-"""Text extraction and normalization for DOCX, PPTX and XLSX content.
+"""Text extraction and normalization for office docs and transcript text content.
 
 Normalization, hashing and the numeric fingerprint follow the shared policy (similarity.* in
 governance-policy.json). The extractors read only the document content that Microsoft Graph returns.
@@ -60,10 +60,16 @@ def _xlsx_text(content: bytes) -> str:
         workbook.close()
 
 
+def _plain_text(content: bytes) -> str:
+    return content.decode("utf-8", errors="replace")
+
+
 EXTRACTORS: dict[str, Callable[[bytes], str]] = {
     ".docx": _docx_text,
     ".pptx": _pptx_text,
     ".xlsx": _xlsx_text,
+    ".txt": _plain_text,
+    ".vtt": _plain_text,
 }
 
 

@@ -73,7 +73,7 @@
     }
   },
   "extraction": {
-    "supportedExtensions": [".docx", ".pptx", ".xlsx"],
+    "supportedExtensions": [".docx", ".pptx", ".xlsx", ".txt", ".vtt"],
     "maxFileBytes": 26214400
   },
   "loginNamePatterns": {

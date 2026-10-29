@@ -45,6 +45,7 @@ KNOWN_HANDLERS: frozenset[str] = frozenset(
         "backlog",
         "orphans",
         "conflicts",
+        "meetingTranscripts",
         "help",
     }
 )
@@ -148,6 +149,10 @@ ANSWER_PLACEHOLDERS: dict[str, frozenset[str]] = {
     "orphanExample": frozenset({"item", "path", "who", "status"}),
     "conflictsSummary": frozenset({"stored", "live"}),
     "conflictExample": frozenset({"first", "second", "similarity"}),
+    "meetingSummary": frozenset({"meeting", "transcript", "recording"}),
+    "meetingExcerpt": frozenset({"excerpt"}),
+    "meetingNotFound": frozenset({"meeting"}),
+    "meetingDraftExcluded": frozenset({"meeting"}),
     "helpIntro": frozenset(),
     "helpExample": frozenset({"example"}),
 }
@@ -609,6 +614,10 @@ class AnswerText(_Model):
     orphanExample: str = Field(min_length=1)
     conflictsSummary: str = Field(min_length=1)
     conflictExample: str = Field(min_length=1)
+    meetingSummary: str = Field(min_length=1)
+    meetingExcerpt: str = Field(min_length=1)
+    meetingNotFound: str = Field(min_length=1)
+    meetingDraftExcluded: str = Field(min_length=1)
     helpIntro: str = Field(min_length=1)
     helpExample: str = Field(min_length=1)
 
