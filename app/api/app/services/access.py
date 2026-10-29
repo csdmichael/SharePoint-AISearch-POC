@@ -109,10 +109,22 @@ class AccessService:
         corpus.prefetch_links(items)
         for item in items:
             view = item_view(corpus, item)
+            entries: list[PermissionEntry] = []
+            role_assignments_unavailable = False
             try:
-                entries = corpus.snapshot.entries_for(item) + corpus.links(item)
+                entries.extend(corpus.snapshot.entries_for(item))
             except UpstreamError:
-                continue
+                role_assignments_unavailable = True
+            if role_assignments_unavailable:
+                try:
+                    entries.extend(corpus.graph_entries(item))
+                except UpstreamError:
+                    continue
+            else:
+                try:
+                    entries.extend(corpus.links(item))
+                except UpstreamError:
+                    pass
             for entry in entries:
                 self._index_entry(index, view, entry)
         return index

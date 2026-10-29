@@ -176,3 +176,12 @@ def test_grant_filter_and_paging_for_a_user(client: TestClient, auth_headers: di
 def test_an_unknown_granted_via_value_is_a_bad_request(client: TestClient, auth_headers: dict[str, str]) -> None:
     response = client.get("/api/v1/access/users/alice@contoso.com/items?grantedVia=magic", headers=auth_headers)
     assert response.status_code == 400
+
+
+def test_access_by_user_falls_back_to_graph_permissions_when_role_assignments_are_denied(
+    client: TestClient, auth_headers: dict[str, str], tenant: FakeTenant
+) -> None:
+    tenant.add_rule("/roleassignments", 403, times=100, body={"error": {"code": "accessDenied"}})
+    body = client.get("/api/v1/access/users/alice@contoso.com/items?pageSize=200", headers=auth_headers).json()
+    assert body["total"] > 0
+    assert any(record["item"]["name"] == "Anomalous Export.xlsx" for record in body["items"])
