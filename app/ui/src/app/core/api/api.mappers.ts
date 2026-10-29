@@ -146,12 +146,16 @@ export function evidenceValue(value: unknown): EvidenceValue {
 }
 
 export function agentReply(response: AgentMessageResponse): AgentReply {
-  return {
+  const reply: AgentReply = {
     answer: response.answer,
     mode: response.mode,
     intent: response.intent,
     evidence: response.evidence ? evidenceTable(response.evidence.items) : null,
-    facts: (response.evidence as unknown as { facts?: Record<string, unknown> })?.facts ?? null,
     citations: response.citations,
   };
+  const facts = (response.evidence as unknown as { facts?: Record<string, unknown> })?.facts;
+  if (facts) {
+    reply.facts = facts;
+  }
+  return reply;
 }
