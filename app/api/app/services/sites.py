@@ -7,7 +7,7 @@ from typing import Any
 
 from app.clients.sharepoint import SharePointClient, odata_string
 from app.core.config import Settings
-from app.core.errors import BadRequestError, NotFoundError, UpstreamNotFoundError
+from app.core.errors import BadRequestError, NotFoundError, UpstreamError, UpstreamNotFoundError
 from app.domain.identity import is_system_path, split_item_id, web_url
 from app.domain.permissions import PermissionEntry
 from app.domain.principals import PrincipalKind
@@ -158,24 +158,36 @@ class SiteService:
         }
 
     def permissions(self, item_id: str) -> dict[str, Any]:
+        entries_error: str | None = None
         library_id, list_item_id = split_item_id(item_id)
         if list_item_id is None:
             library = self._libraries.find(library_id)
             corpus = self._libraries.corpus(library.id)
-            entries, source = corpus.snapshot.library_entries()
+            try:
+                entries, source = corpus.snapshot.library_entries()
+            except UpstreamError as exc:
+                entries, source = [], None
+                entries_error = exc.message
             subject = library_view(corpus, self._origin)
             link_entries = corpus.links(None, container=True)
             link_error = corpus.link_error("library", container=True)
             unique = library.unique
         else:
             corpus, item = self._libraries.item(item_id)
-            entries = corpus.snapshot.entries_for(item)
-            source = corpus.snapshot.inheritance_source(item)
+            try:
+                entries = corpus.snapshot.entries_for(item)
+                source = corpus.snapshot.inheritance_source(item)
+            except UpstreamError as exc:
+                entries = []
+                source = None
+                entries_error = exc.message
             subject = item_view(corpus, item)
             link_entries = corpus.links(item)
             link_error = corpus.link_error(item.item_id)
             unique = item.unique
-        return self._permission_payload(corpus, subject, entries + link_entries, source, unique, link_error)
+        return self._permission_payload(
+            corpus, subject, entries + link_entries, source, unique, link_error, entries_error
+        )
 
     def _permission_payload(
         self,
@@ -185,6 +197,7 @@ class SiteService:
         source: Any,
         unique: bool,
         link_error: str | None,
+        entries_error: str | None,
     ) -> dict[str, Any]:
         views: list[dict[str, Any]] = []
         for entry in entries:
@@ -200,6 +213,10 @@ class SiteService:
                 account = {"accountEnabled": enabled, "status": status}
             views.append(entry_view(entry, members, account))
         warnings: list[dict[str, str]] = []
+        if entries_error:
+            warnings.append(
+                {"code": "roleAssignmentsUnavailable", "message": f"Role assignments could not be read: {entries_error}"}
+            )
         if link_error:
             warnings.append({"code": "sharingLinksUnavailable",
                              "message": f"Sharing links could not be read: {link_error}"})

@@ -8,6 +8,7 @@ from typing import Any
 
 from app.clients.sharepoint import SharePointClient
 from app.core.config import Settings
+from app.core.errors import UpstreamError
 from app.domain.permissions import PermissionEntry
 from app.domain.principals import PrincipalKind
 from app.services.corpus import LibraryCorpus
@@ -108,7 +109,11 @@ class AccessService:
         corpus.prefetch_links(items)
         for item in items:
             view = item_view(corpus, item)
-            for entry in corpus.snapshot.entries_for(item) + corpus.links(item):
+            try:
+                entries = corpus.snapshot.entries_for(item) + corpus.links(item)
+            except UpstreamError:
+                continue
+            for entry in entries:
                 self._index_entry(index, view, entry)
         return index
 
