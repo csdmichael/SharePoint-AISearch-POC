@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { IonContent, IonIcon, IonSelect, IonSelectOption } from '@ionic/angular';
+import { IonContent, IonIcon, IonLabel, IonSegment, IonSegmentButton, IonSelect, IonSelectOption } from '@ionic/angular';
 import { ApiError, asApiError, toApiError } from '../../core/api/api-error';
 import { ApiService } from '../../core/api/api.service';
 import { DriveItem, Library, MemberView, PermissionEntry, PermissionWarning } from '../../core/api/models/api.models';
@@ -27,6 +27,7 @@ interface TreeRow {
 
 /** A permission entry with the row key used for selection. The API does not number its entries. */
 type PermissionRow = PermissionEntry & { id: string };
+type PermissionTab = 'users' | 'groups';
 
 const ROOT_KEY = '';
 
@@ -34,7 +35,7 @@ const ROOT_KEY = '';
 @Component({
   selector: 'app-explorer-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonIcon, IonSelect, IonSelectOption, StateViewComponent, TranslatePipe],
+  imports: [IonContent, IonIcon, IonLabel, IonSegment, IonSegmentButton, IonSelect, IonSelectOption, StateViewComponent, TranslatePipe],
   templateUrl: './explorer.page.html',
   styleUrl: './explorer.page.scss',
   host: { class: 'ion-page' },
@@ -116,6 +117,7 @@ export class ExplorerPage {
 
   readonly grantedViaFilter = signal('');
   readonly roleFilter = signal('');
+  readonly permissionTab = signal<PermissionTab>('users');
   readonly selectedPermissionId = signal<string | null>(null);
   readonly expandedPrincipals = signal<ReadonlySet<string>>(new Set());
 
@@ -132,8 +134,16 @@ export class ExplorerPage {
       (entry) => (grantedVia === '' || entry.grantedVia === grantedVia) && (role === '' || entry.role === role),
     );
   });
+  readonly tabbedPermissions = computed<PermissionRow[]>(() => {
+    const tab = this.permissionTab();
+    return this.filteredPermissions().filter((entry) =>
+      tab === 'users' ? this.isUserPrincipal(entry) : !this.isUserPrincipal(entry),
+    );
+  });
+  readonly userPermissionCount = computed(() => this.filteredPermissions().filter((entry) => this.isUserPrincipal(entry)).length);
+  readonly groupPermissionCount = computed(() => this.filteredPermissions().filter((entry) => !this.isUserPrincipal(entry)).length);
   readonly permissionView = computed<ViewState>(() => {
-    const total = this.entries().length;
+    const total = this.tabbedPermissions().length;
     return resolveViewState(this.session.gate(), {
       loading: this.permissions.isLoading(),
       error: asApiError(this.permissions.error()),
@@ -154,6 +164,15 @@ export class ExplorerPage {
       this.selectedItem.set(null);
       this.selectedPermissionId.set(null);
       this.expandedPrincipals.set(new Set());
+    });
+    effect(() => {
+      const selectedId = this.selectedPermissionId();
+      if (!selectedId) {
+        return;
+      }
+      if (!this.tabbedPermissions().some((entry) => entry.id === selectedId)) {
+        this.selectedPermissionId.set(null);
+      }
     });
   }
 
@@ -188,6 +207,11 @@ export class ExplorerPage {
   selectValue(event: { detail: { value?: unknown } }): string {
     const value = event.detail.value;
     return typeof value === 'string' ? value : '';
+  }
+
+  selectPermissionTab(event: { detail: { value?: unknown } }): void {
+    const value = event.detail.value;
+    this.permissionTab.set(value === 'groups' ? 'groups' : 'users');
   }
 
   rowKey(row: TreeRow): string {
@@ -267,6 +291,10 @@ export class ExplorerPage {
 
   grantedViaLabel(value: string): string {
     return this.display.label('grantedVia', value);
+  }
+
+  private isUserPrincipal(entry: PermissionRow): boolean {
+    return entry.principal.type === 'user';
   }
 
   safeLink(value: string | null): string | null {

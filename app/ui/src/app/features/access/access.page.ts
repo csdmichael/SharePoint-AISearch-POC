@@ -101,16 +101,29 @@ export class AccessPage {
     return this.display.label('kind', kind);
   }
 
-  /** Groups the access came through, then how the role was granted: the item it was inherited from, or the grant type. */
-  grantPath(record: UserAccessRecord): string[] {
-    const how = record.inheritedFrom
-      ? this.i18n.text('access.inheritedFrom', { path: record.inheritedFrom.path })
-      : this.display.label('grantedVia', record.grantedVia);
-    return [...record.via, how];
+  accessViaText(record: UserAccessRecord): string {
+    const viaNames = this.joinVia(record.via);
+    const base =
+      record.grantedVia === 'direct'
+        ? this.i18n.text('access.via.direct')
+        : record.grantedVia === 'sharePointGroup'
+          ? this.i18n.text('access.via.sharePointGroup', { groups: viaNames })
+          : record.grantedVia === 'entraGroup'
+            ? this.i18n.text('access.via.entraGroup', { groups: viaNames })
+            : record.grantedVia === 'sharingLink'
+              ? this.i18n.text('access.via.sharingLink')
+              : record.grantedVia === 'everyone'
+                ? this.i18n.text('access.via.everyone')
+                : this.display.label('grantedVia', record.grantedVia);
+    if (!record.inheritedFrom) {
+      return base;
+    }
+    return `${base}${this.config.pages.access.grantPathSeparator}${this.i18n.text('access.inheritedFrom', { path: record.inheritedFrom.path })}`;
   }
 
-  grantPathText(record: UserAccessRecord): string {
-    return this.grantPath(record).join(this.config.pages.access.grantPathSeparator);
+  private joinVia(via: readonly string[]): string {
+    const names = [...new Set(via.map((value) => value.trim()).filter((value) => value !== ''))];
+    return names.length > 0 ? names.join(', ') : this.display.notAvailable();
   }
 
   recordKey(record: UserAccessRecord): string {
@@ -123,15 +136,15 @@ export class AccessPage {
       this.i18n.text('access.columns.name'),
       this.i18n.text('access.columns.path'),
       this.i18n.text('access.columns.kind'),
-      this.i18n.text('access.columns.role'),
-      this.i18n.text('access.columns.grantPath'),
+      this.i18n.text('access.columns.accessLevel'),
+      this.i18n.text('access.columns.accessVia'),
     ];
     const rows = this.items.items().map((record) => [
       record.item.name,
       record.item.path ?? '',
       record.item.kind,
       record.role,
-      this.grantPathText(record),
+      this.accessViaText(record),
     ]);
     const content = toCsv(headers, rows, exportConfig.csvDelimiter, exportConfig.csvIncludeBom);
     downloadText(this.document, exportConfig.csvFileName, content, 'text/csv;charset=utf-8');

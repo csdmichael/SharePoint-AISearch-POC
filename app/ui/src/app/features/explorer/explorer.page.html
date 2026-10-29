@@ -84,6 +84,20 @@
           @for (warning of permissionWarnings(); track $index) {
             <p class="inline-note" role="status" data-testid="permission-warning">{{ warning.message }}</p>
           }
+          <ion-segment
+            class="segments"
+            data-testid="permissions-tabs"
+            [value]="permissionTab()"
+            [attr.aria-label]="'explorer.permissionsTabsLabel' | t"
+            (ionChange)="selectPermissionTab($event)"
+          >
+            <ion-segment-button value="users" data-testid="permissions-tab-users">
+              <ion-label>{{ 'explorer.permissionsUsersTab' | t: { count: i18n.number(userPermissionCount()) } }}</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="groups" data-testid="permissions-tab-groups">
+              <ion-label>{{ 'explorer.permissionsGroupsTab' | t: { count: i18n.number(groupPermissionCount()) } }}</ion-label>
+            </ion-segment-button>
+          </ion-segment>
           <div class="toolbar-row filters">
             <ion-select
               class="filter"
@@ -117,7 +131,7 @@
 
           <app-state-view [state]="permissionView()" emptyKey="explorer.permissionsEmpty" (retry)="permissions.reload()" />
           @if (permissionView().kind === 'ready') {
-            @if (filteredPermissions().length === 0) {
+            @if (tabbedPermissions().length === 0) {
               <p class="muted" data-testid="permissions-filtered-empty">{{ 'explorer.permissionsFilteredEmpty' | t }}</p>
             } @else {
               <div class="table-scroll">
@@ -132,7 +146,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for (entry of filteredPermissions(); track entry.id) {
+                    @for (entry of tabbedPermissions(); track entry.id) {
                       <tr class="permission-row" data-testid="permission-row" [class.is-selected]="selectedPermissionId() === entry.id" [attr.data-permission-id]="entry.id" (click)="selectPermission(entry)">
                         <td [attr.data-label]="'explorer.columns.principal' | t">
                           {{ entry.principal.displayName }}

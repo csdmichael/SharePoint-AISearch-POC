@@ -120,6 +120,9 @@
     "treeHeading": "Folders and files",
     "treeEmpty": "This library has no items.",
     "permissionsHeading": "Permissions",
+    "permissionsTabsLabel": "Permission principal types",
+    "permissionsUsersTab": "Users ({count})",
+    "permissionsGroupsTab": "Groups and links ({count})",
     "permissionsEmpty": "No permissions were returned for this item.",
     "permissionsFilteredEmpty": "No permissions match the selected filters.",
     "detailHeading": "Item details",
@@ -167,7 +170,16 @@
       "path": "Path",
       "kind": "Kind",
       "role": "Role",
+      "accessLevel": "Access level",
+      "accessVia": "Access via",
       "grantPath": "Grant path"
+    },
+    "via": {
+      "direct": "Direct",
+      "sharePointGroup": "Via SharePoint group: {groups}",
+      "entraGroup": "Via Entra ID group: {groups}",
+      "sharingLink": "Via sharing link",
+      "everyone": "Via everyone"
     }
   },
   "cleanup": {

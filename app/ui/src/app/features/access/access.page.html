@@ -62,8 +62,8 @@
                     <th scope="col">{{ 'access.columns.name' | t }}</th>
                     <th scope="col">{{ 'access.columns.path' | t }}</th>
                     <th scope="col">{{ 'access.columns.kind' | t }}</th>
-                    <th scope="col">{{ 'access.columns.role' | t }}</th>
-                    <th scope="col">{{ 'access.columns.grantPath' | t }}</th>
+                    <th scope="col">{{ 'access.columns.accessLevel' | t }}</th>
+                    <th scope="col">{{ 'access.columns.accessVia' | t }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -72,8 +72,8 @@
                       <td [attr.data-label]="'access.columns.name' | t">{{ record.item.name }}</td>
                       <td [attr.data-label]="'access.columns.path' | t">{{ record.item.path ?? ('states.notAvailable' | t) }}</td>
                       <td [attr.data-label]="'access.columns.kind' | t">{{ kindLabel(record.item.kind) }}</td>
-                      <td [attr.data-label]="'access.columns.role' | t">{{ record.role }}</td>
-                      <td [attr.data-label]="'access.columns.grantPath' | t">{{ grantPathText(record) }}</td>
+                      <td [attr.data-label]="'access.columns.accessLevel' | t">{{ record.role }}</td>
+                      <td [attr.data-label]="'access.columns.accessVia' | t">{{ accessViaText(record) }}</td>
                     </tr>
                   }
                 </tbody>
