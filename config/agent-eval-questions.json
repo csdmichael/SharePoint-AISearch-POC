@@ -1,0 +1,29 @@
+{
+  "description": "Natural, user-style questions with hand-written expectations. 'cite' is a file stem the answer must link; 'expect' substrings must all appear (case-insensitive); 'forbid' substrings must not appear; 'hidden' stems must not be cited.",
+  "questions": [
+    { "q": "What does the flexible work and remote work policy say about eligibility and approvals?",
+      "cite": "flexible-work-and-remote-work-policy", "expect": ["two in-office days"], "forbid": [] },
+    { "q": "How much is the home office stipend for remote employees?",
+      "cite": "flexible-work-and-remote-work-policy", "expect": ["$750"], "forbid": [] },
+    { "q": "How many weeks of paid parental leave does the primary caregiver get, and which document says so?",
+      "cite": "parental-and-family-leave-policy", "expect": ["16 weeks"], "forbid": ["12 weeks"], "hidden": ["paid-time-off-and-leave-of-absence-policy"] },
+    { "q": "How many weeks of parental leave does the secondary caregiver get?",
+      "cite": "parental-and-family-leave-policy", "expect": ["8 weeks"], "forbid": ["6 weeks"], "hidden": ["paid-time-off-and-leave-of-absence-policy"] },
+    { "q": "What does the discovery call guide say about qualifying an economic buyer?",
+      "cite": "discovery-call-guide", "expect": ["economic buyer"], "forbid": [] },
+    { "q": "What should happen before scheduling a technical demo?",
+      "cite": "discovery-call-guide", "expect": ["budget"], "forbid": [] },
+    { "q": "What does the changeover standard operating procedure cover?",
+      "cite": "changeover-standard-operating-procedure", "expect": [], "forbid": ["couldn't locate", "could not locate"] },
+    { "q": "What did the Line 3 yield improvement tollgate meeting say about seal leak defects?",
+      "cite": "line-3-yield-improvement-weekly-tollgate", "expect": ["seal"], "forbid": [] },
+    { "q": "In the 401(k) plan vendor check-in meeting, what did the team say about the auto-enrollment opt-out rate?",
+      "cite": "401-k-plan-vendor-check-in", "expect": ["opt-out"], "forbid": [] },
+    { "q": "In the discovery call coaching session, what should happen before scheduling a demo?",
+      "cite": "discovery-call-coaching-session", "expect": ["budget"], "forbid": [] },
+    { "q": "What did the competitive win-loss debrief meeting conclude?",
+      "cite": null, "expect": [], "forbid": [], "hidden": ["competitive-win-loss-debrief"] },
+    { "q": "Summarize the proposal and pricing template guide.",
+      "cite": null, "expect": [], "forbid": [], "hidden": ["proposal-and-pricing-template-guide"] }
+  ]
+}

@@ -117,6 +117,19 @@ HR_DEPARTMENTS = [
                 "Devon Russell",
             ),
             _doc(
+                "Parental and Family Leave Policy",
+                "policy",
+                "Replaces the parental leave section of the Paid Time Off and Leave of Absence Policy with "
+                "expanded paid leave for new parents and family caregivers.",
+                [
+                    "Parental leave provides 16 weeks paid for the primary caregiver and 8 weeks for the secondary caregiver.",
+                    "Parental leave may be taken in one block or split into two blocks within 12 months of the birth or placement.",
+                    "Family caregiver leave provides up to 4 weeks paid per year to care for an immediate family member.",
+                    "Employees must notify their manager and HR Business Partner at least 30 days before planned leave.",
+                ],
+                "Devon Russell",
+            ),
+            _doc(
                 "Workplace Safety and Incident Reporting Policy",
                 "policy",
                 "Sets expectations for a safe office and lab environment and the steps for reporting "

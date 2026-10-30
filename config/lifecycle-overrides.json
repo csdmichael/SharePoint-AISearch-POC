@@ -1,0 +1,51 @@
+{
+  "description": "Named lifecycle stories for Seed-RichGovernanceData.ps1. Keys are lower-case file names without extension (a meeting's .mp4/.vtt/.txt share one key). Everything not listed follows the repeating lifecycle pattern in the script: mostly approved, with a minority of drafts, documents in review, archived or superseded items, and a few approved ones that carry a governance flaw (expired, no owner, confidential) for the cleanup demo.",
+  "hr": {
+    "approved": [
+      "employee-handbook-code-of-conduct",
+      "flexible-work-and-remote-work-policy",
+      "parental-and-family-leave-policy",
+      "workplace-safety-and-incident-reporting-policy",
+      "data-privacy-and-confidentiality-policy",
+      "health-plan-comparison-guide",
+      "401-k-enrollment-and-employer-match-guide",
+      "annual-merit-increase-cycle-guide",
+      "grievance-and-appeals-procedure",
+      "remote-work-policy-exceptions-review",
+      "q1-open-enrollment-planning-review",
+      "401-k-plan-vendor-check-in"
+    ],
+    "draft": ["employee-referral-program-guide", "referral-program-performance-review"],
+    "superseded": [
+      { "old": "paid-time-off-and-leave-of-absence-policy", "by": "parental-and-family-leave-policy" }
+    ]
+  },
+  "manufacturing": {
+    "approved": [
+      "incoming-material-inspection-procedure",
+      "changeover-standard-operating-procedure",
+      "shift-handover-log-template-and-guide",
+      "inventory-cycle-count-procedure",
+      "iso-9001-internal-audit-checklist",
+      "statistical-process-control-plan-line-3",
+      "line-3-yield-improvement-weekly-tollgate",
+      "capa-review-board",
+      "incoming-inspection-process-improvement-session"
+    ],
+    "draft": ["freight-cost-reduction-working-session"],
+    "inReview": ["line-balancing-study-assembly-line-2"]
+  },
+  "sales": {
+    "approved": [
+      "discovery-call-guide",
+      "objection-handling-guide",
+      "deal-desk-approval-process",
+      "renewal-playbook",
+      "brand-and-messaging-guidelines",
+      "discovery-call-coaching-session",
+      "deal-desk-exception-review"
+    ],
+    "draft": ["proposal-and-pricing-template-guide", "competitive-win-loss-debrief"],
+    "inReview": ["market-positioning-brief-review"]
+  }
+}

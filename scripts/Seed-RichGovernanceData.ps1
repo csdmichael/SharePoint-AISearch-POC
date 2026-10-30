@@ -60,6 +60,9 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $iterationCycle = @('Draft', 'Ready', 'In Review', 'Approved', 'Archived')
+# Per-document lifecycle pattern (repeats): most documents are approved; slots 7 and 11 are approved but flawed.
+$lifecycleCycle = @('Approved', 'Approved', 'Draft', 'Approved', 'Ready', 'Approved', 'In Review', 'Approved', 'Archived', 'Approved', 'Ready', 'Approved')
+$flawedSlots = @(7, 11)
 $documentTypes = @('Procedure', 'Specification', 'Test Report', 'Decision Record', 'Meeting Summary', 'Technical Guide')
 $productFamily = 'ApexDrive X500'
 $today = [DateTime]::UtcNow.Date
@@ -213,43 +216,98 @@ function Build-Plan {
     $baseNames = @($names | ForEach-Object { Get-BaseName $_ } | Sort-Object -Unique)
     $copyBaseNames = @($names | Where-Object { $_ -match '\s\((edited\s)?copy\)\.[^.]+$' } | ForEach-Object { Get-BaseName $_ })
     $rows = [System.Collections.Generic.List[object]]::new()
-    $readyIndex = 0
-    $publishedIndex = 0
+
+    # Optional named stories (core approved documents, drafts, superseded policies with their successor).
+    $overridesPath = Join-Path $PSScriptRoot '..\config\lifecycle-overrides.json'
+    $siteOverrides = $null
+    if (Test-Path $overridesPath) {
+        $siteOverrides = Get-Prop (Get-Content -Raw -Path $overridesPath | ConvertFrom-Json) $SiteKey
+    }
+    function Get-OverrideList([string]$Key) {
+        if ($null -eq $siteOverrides) { return @() }
+        $list = Get-Prop $siteOverrides $Key
+        if ($null -eq $list) { return @() }
+        return @($list)
+    }
+
+    # One state per document (all files of a meeting share it). Most documents are approved and clean; a defined minority
+    # are drafts, in review, archived or superseded, and a few approved ones carry a governance flaw for the cleanup demo.
+    $baseState = @{}
+    $readyCount = 0
+    $flawCount = 0
+    $draftCount = 0
+    for ($b = 0; $b -lt $baseNames.Count; $b++) {
+        $base = $baseNames[$b]
+        $slot = $b % $lifecycleCycle.Count
+        $iteration = $lifecycleCycle[$slot]
+        $flaw = $null
+        if ($slot -in $flawedSlots) {
+            $flaw = @('expired', 'noOwner', 'confidential')[$flawCount % 3]
+            $flawCount++
+        }
+        if ((Get-OverrideList 'draft') -contains $base) { $iteration = 'Draft'; $flaw = $null }
+        elseif ((Get-OverrideList 'inReview') -contains $base) { $iteration = 'In Review'; $flaw = $null }
+        elseif ((Get-OverrideList 'archived') -contains $base) { $iteration = 'Archived'; $flaw = $null }
+        elseif ((Get-OverrideList 'approved') -contains $base -or $copyBaseNames -contains $base) { $iteration = 'Approved'; $flaw = $null }
+        $lifecycle = 'Published'
+        $authoritative = $false
+        $supersedesName = $null
+        switch ($iteration) {
+            'Draft' { $lifecycle = 'Draft' }
+            'In Review' { $lifecycle = 'Draft' }
+            'Archived' { $lifecycle = 'Archived' }
+            'Approved' { $authoritative = $true }
+            'Ready' {
+                if (($readyCount % 2) -eq 0) { $authoritative = $true }
+                else {
+                    $lifecycle = 'Superseded'
+                    $supersedesName = if ($b -gt 0) { $baseNames[$b - 1] } else { $baseNames[$baseNames.Count - 1] }
+                }
+                $readyCount++
+            }
+        }
+        $draftOwnerMissing = $false
+        if ($lifecycle -eq 'Draft') { $draftOwnerMissing = (($draftCount % 4) -eq 3); $draftCount++ }
+        $baseState[$base] = [pscustomobject]@{
+            Iteration = $iteration; Lifecycle = $lifecycle; Authoritative = $authoritative; SupersedesBase = $supersedesName
+            Flaw = $flaw; NoOwner = ($flaw -eq 'noOwner' -or $draftOwnerMissing)
+        }
+    }
+    # A superseded policy keeps its history; its approved successor records what it supersedes.
+    foreach ($story in (Get-OverrideList 'superseded')) {
+        $old = [string](Get-Prop $story 'old')
+        $by = [string](Get-Prop $story 'by')
+        if ($baseState.ContainsKey($old) -and $baseState.ContainsKey($by)) {
+            $baseState[$old] = [pscustomobject]@{ Iteration = 'Archived'; Lifecycle = 'Superseded'; Authoritative = $false; SupersedesBase = $null; Flaw = $null; NoOwner = $false }
+            $baseState[$by] = [pscustomobject]@{ Iteration = 'Approved'; Lifecycle = 'Published'; Authoritative = $true; SupersedesBase = $old; Flaw = $null; NoOwner = $false }
+        }
+    }
+    $nameByBase = @{}
+    for ($n = 0; $n -lt $names.Count; $n++) {
+        $key = Get-BaseName $names[$n]
+        if (-not $nameByBase.ContainsKey($key) -or $names[$n] -notmatch '\s\((edited\s)?copy\)\.[^.]+$') { $nameByBase[$key] = $names[$n] }
+    }
+
     for ($i = 0; $i -lt $Files.Count; $i++) {
         $name = $names[$i]
-        $iteration = $iterationCycle[$i % $iterationCycle.Count]
-        $lifecycle = switch ($iteration) {
-            'Draft' { 'Draft' }
-            'In Review' { 'Draft' }
-            'Ready' { 'Published' }
-            'Approved' { 'Published' }
-            default { 'Archived' }
-        }
-        $authoritative = $false
-        if ($iteration -eq 'Approved') { $authoritative = $true }
-        elseif ($iteration -eq 'Ready') { $authoritative = (($readyIndex % 2) -eq 0); $readyIndex++ }
-        $supersedes = $null
-        if ($lifecycle -eq 'Published') {
-            if (($publishedIndex % 12) -eq 11) {
-                $lifecycle = 'Superseded'
-                $supersedes = if ($i -eq 0) { $names[$names.Count - 1] } else { $names[$i - 1] }
-            }
-            $publishedIndex++
-        }
+        $base = Get-BaseName $name
+        $state = $baseState[$base]
+        $iteration = $state.Iteration
+        $lifecycle = $state.Lifecycle
+        $authoritative = $state.Authoritative
+        $flaw = $state.Flaw
+        $supersedes = if ($state.SupersedesBase -and $nameByBase.ContainsKey($state.SupersedesBase)) { $nameByBase[$state.SupersedesBase] } else { $null }
+        $hasOwner = -not $state.NoOwner
         # A stray copy is never the approved, authoritative document: keep it Draft so it cannot reach the agent.
         if ($name -match '\s\((edited\s)?copy\)\.[^.]+$') {
             $iteration = 'Draft'
             $lifecycle = 'Draft'
             $authoritative = $false
             $supersedes = $null
+            $flaw = $null
         }
-        elseif ($copyBaseNames -contains (Get-BaseName $name)) {
-            # The original behind a copy is the canonical, approved document.
-            $iteration = 'Approved'
-            $lifecycle = 'Published'
-            $authoritative = $true
-            $supersedes = $null
-        }
+        $sensitivity = 'General'
+        if ($flaw -eq 'confidential') { $sensitivity = $(if ((($flawCount + $i) % 2) -eq 0) { 'Confidential' } else { 'Highly Confidential' }) }
         $existingArtifact = [string](Get-Prop $Files[$i].fields 'ArtifactId')
         $artifactId = if ($existingArtifact) { $existingArtifact } else { "ART-$($SiteKey.ToUpperInvariant())-$($Files[$i].id)" }
         $rows.Add([pscustomobject]@{
@@ -264,8 +322,9 @@ function Build-Plan {
                 Review            = $null
                 Expiration        = $null
                 Expired           = $false
-                HasOwner          = (($i % 10) -ne 9)
-                Sensitivity       = $(if ($i % 20 -eq 7) { 'Highly Confidential' } elseif ($i % 10 -eq 4) { 'Confidential' } else { 'General' })
+                Flaw              = $flaw
+                HasOwner          = $hasOwner
+                Sensitivity       = $sensitivity
                 DocumentType      = $documentTypes[[Array]::IndexOf($baseNames, (Get-BaseName $name)) % $documentTypes.Count]
                 ProcessArea       = $(
                     if ($name -match 'Failure') { 'Failure Analysis' }
@@ -277,13 +336,12 @@ function Build-Plan {
             })
     }
 
+    # Expiry: only documents flagged 'expired' and archived documents are past expiry; a third of the rest carry a future date.
     $expIndex = 0
     foreach ($row in $rows) {
-        if ($row.Lifecycle -in 'Published', 'Archived') {
-            if (($expIndex % 7) -eq 3) {
-                $row.Expiration = Get-DateText (-(10 + (($expIndex * 11) % 51)))
-                $row.Expired = $true
-            }
+        if ($row.Flaw -eq 'expired' -or $row.Lifecycle -eq 'Archived') {
+            $row.Expiration = Get-DateText (-(10 + (($expIndex * 11) % 51)))
+            $row.Expired = $true
             $expIndex++
         }
     }
@@ -297,7 +355,8 @@ function Build-Plan {
     $reviewIndex = 0
     foreach ($row in $rows) {
         if ($row.Lifecycle -eq 'Published') {
-            if (($reviewIndex % 5) -eq 2) { $row.Review = Get-DateText (-(30 + (($reviewIndex * 7) % 61))) }
+            # Approved documents are reviewed on schedule; published "Ready" ones are the ones that slip past review.
+            if ($row.Iteration -ne 'Approved' -and (($reviewIndex % 2) -eq 0)) { $row.Review = Get-DateText (-(30 + (($reviewIndex * 7) % 61))) }
             else { $row.Review = Get-DateText (60 + (($reviewIndex * 13) % 241)) }
             $reviewIndex++
         }

@@ -21,7 +21,7 @@ export const routes = [
   ['/access/by-user', 'Access by user'],
   ['/cleanup', 'Cleanup'],
   ['/notifications', 'Notifications'],
-  ['/agent', 'Foundry agent'],
+  ['/agent', 'Site Assistant'],
 ] as const;
 
 export async function configureBrowser(page: Page, api: (route: Route) => Promise<void>): Promise<void> {

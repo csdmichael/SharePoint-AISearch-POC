@@ -39,7 +39,7 @@
     "access": "Access by user",
     "cleanup": "Cleanup",
     "notifications": "Notifications",
-    "agent": "Foundry agent",
+    "agent": "Site Assistant",
     "document": "Document governance",
     "notFound": "Page not found"
   },
@@ -235,7 +235,7 @@
     "actionFailed": "The notification action could not be completed."
   },
   "agent": {
-    "fabLabel": "Open Foundry agent",
+    "fabLabel": "Open Site Assistant",
     "transcriptHeading": "Conversation",
     "transcriptEmpty": "Ask a question or choose a prompt to start.",
     "promptsHeading": "Prompts",
@@ -253,12 +253,12 @@
     "stages": {
       "routing": "Understanding your question…",
       "evidence": "Reading live SharePoint permissions and metadata…",
-      "foundry": "Asking the Foundry agent and searching published knowledge…",
+      "foundry": "Asking the Site Assistant and searching published knowledge…",
       "composing": "Composing a formatted answer…"
     },
     "send": "Send",
     "you": "You",
-    "assistant": "Foundry agent",
+    "assistant": "Site Assistant",
     "intent": "Intent",
     "mode": "Mode",
     "evidence": "Evidence",
@@ -266,7 +266,7 @@
     "citations": "Citations",
     "noCitations": "No citations were returned.",
     "replyFailed": "The agent did not reply.",
-    "foundryIconAlt": "Microsoft Foundry icon",
+    "foundryIconAlt": "Site Assistant icon",
     "promptGroupCount": "{count} prompts"
   },
   "document": {

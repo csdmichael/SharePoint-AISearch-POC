@@ -183,7 +183,10 @@ foreach ($site in $selectedSites) {
         $iterationMinimum = if ($files.Count -ge 5) { ($iterationValues | ForEach-Object { $iterations[$_] } | Measure-Object -Minimum).Minimum } else { $null }
         $iterationDetail = ($iterationValues | ForEach-Object { "$_=$($iterations[$_])" }) -join ', '
         if ($files.Count -ge 5) {
-            Add-Check -Label 'iteration spread (each value >= 3)' -Passed ($iterationMinimum -ge 3) -Detail $iterationDetail
+            # Most documents are approved; every other state must still be represented so the cleanup demo has examples.
+            $approvedShare = $iterations['Approved'] / $files.Count
+            $others = @($iterationValues | Where-Object { $_ -ne 'Approved' } | ForEach-Object { $iterations[$_] })
+            Add-Check -Label 'iteration spread (approved majority, every other state present)' -Passed (($approvedShare -ge 0.5) -and (($others | Measure-Object -Minimum).Minimum -ge 1)) -Detail $iterationDetail
         }
         $missingDetail = ($setColumns | Where-Object { $missing[$_] -gt 0 } | ForEach-Object { "$_=$($missing[$_])" }) -join ', '
         Add-Check -Label 'governance columns set on every file' -Passed ($missingDetail -eq '') -Detail $(if ($missingDetail) { "missing $missingDetail" } else { 'none missing' })
