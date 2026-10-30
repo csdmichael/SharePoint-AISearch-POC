@@ -25,6 +25,7 @@ import {
   CleanupRecord,
   DocumentDetail,
   DocumentListResponse,
+  DocumentPreview,
   DocumentPage,
   DraftRequest,
   DraftResult,
@@ -130,6 +131,28 @@ export class ApiService {
 
   document(id: string): Observable<DocumentDetail> {
     return this.send<DocumentDetail>('GET', this.endpoint('document', { id }));
+  }
+
+  /** Raw file bytes for the in-page viewer (PDF/video/text), as a Blob so it can become an object URL. */
+  documentContent(id: string): Observable<Blob> {
+    const url = this.endpoint('documentContent', { id });
+    const site = this.siteContext();
+    const paramsObject: Record<string, string> = {};
+    if (site) {
+      paramsObject['site'] = site;
+    }
+    const params = Object.keys(paramsObject).length > 0 ? new HttpParams({ fromObject: paramsObject }) : undefined;
+    return this.http
+      .get(url, { params, responseType: 'blob' })
+      .pipe(
+        timeout(this.config.app.requestTimeoutMs),
+        catchError((error: unknown) => throwError(() => toApiError(error))),
+      );
+  }
+
+  /** Structured preview (paragraphs/tables, sheets or slides) for docx, xlsx and pptx files. */
+  documentPreview(id: string): Observable<DocumentPreview> {
+    return this.send<DocumentPreview>('GET', this.endpoint('documentPreview', { id }));
   }
 
   /** One cleanup segment. Each analytics route has its own shape, so every segment becomes one record list. */

@@ -5,9 +5,11 @@ from __future__ import annotations
 from typing import Any
 
 from app.analytics.expiry import ExpiryFinding
+from app.analytics.preview import PREVIEW_EXTRACTORS, build_preview
 from app.core.config import Settings
 from app.core.errors import BadRequestError, NotFoundError
 from app.core.governance import Governance, normalize_token
+from app.domain.identity import file_extension
 from app.domain.snapshot import ItemRecord
 from app.services.analytics import AnalyticsService
 from app.services.corpus import LibraryCorpus
@@ -193,3 +195,25 @@ class DocumentService:
             "liveExpiry": expiry_view(self._analytics.expiry(corpus).get(item.item_id)),
         })
         return summary
+
+    def content(self, item_id: str) -> tuple[bytes, str, str]:
+        """Returns (bytes, file name, extension) for the in-page viewer. Raises NotFoundError/UpstreamError."""
+
+        corpus, item = self._libraries.item(item_id)
+        if item.kind != "file":
+            raise NotFoundError("The identifier does not name a document.")
+        return corpus.raw_content(item), item.name, file_extension(item.name)
+
+    def preview(self, item_id: str) -> dict[str, Any]:
+        """Structured preview (paragraphs/tables, sheets, or slides) for docx, xlsx and pptx files."""
+
+        content, name, extension = self.content(item_id)
+        if extension not in PREVIEW_EXTRACTORS:
+            raise BadRequestError(f"No structured preview is available for {extension or 'this file type'}.")
+        try:
+            preview = build_preview(extension, content)
+        except Exception as exc:  # office parsers raise many unrelated exception types for damaged files
+            raise BadRequestError(f"The document could not be parsed for preview: {exc}") from exc
+        preview["name"] = name
+        return preview
+

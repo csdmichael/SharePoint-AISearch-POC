@@ -18,7 +18,7 @@ from typing import Any, Callable, Hashable, Iterable, TypeVar
 from app.analytics.text import extract_text, normalize_text
 from app.clients.graph import GraphClient
 from app.core.config import Settings
-from app.core.errors import UpstreamError
+from app.core.errors import NotFoundError, UpstreamError
 from app.domain.identity import compose_item_id, file_extension
 from app.domain.permissions import GRANT_INHERITED, GRANT_SHARING_LINK, PermissionEntry, SourceRef, grant_mechanism
 from app.domain.principals import Principal, PrincipalKind
@@ -468,6 +468,17 @@ class LibraryCorpus:
         if content_tag is not None:
             self._text_cache.put(cache_key, content_tag, result)
         return result
+
+    def raw_content(self, item: ItemRecord) -> bytes:
+        """Downloads the file's raw bytes for the in-page viewer. Raises UpstreamError or NotFoundError."""
+
+        context = self.drive_context()
+        if not context.drive_id:
+            raise NotFoundError("The document library drive is not available.")
+        drive_item = context.by_list_id.get(item.list_item_id)
+        if drive_item is None:
+            raise NotFoundError("No drive item is linked to this document.")
+        return self._graph.drive_item_content(context.drive_id, str(drive_item["id"]))
 
     def _extract_text(self, extension: str, content: bytes) -> TextResult:
         extraction = self._settings.analytics.extraction

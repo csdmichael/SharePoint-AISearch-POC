@@ -499,6 +499,35 @@ export interface DocumentDetail extends DocumentSummary {
   liveExpiry: ExpiryView | null;
 }
 
+/** Structured preview blocks for a docx/pptx/xlsx file (GET /documents/{id}/preview), rendered in-page. */
+export interface DocumentPreviewBlock {
+  kind?: 'heading' | 'paragraph';
+  text?: string;
+  style?: string;
+  lines?: string[];
+  table?: string[][];
+}
+
+export interface DocumentPreviewSlide {
+  number: number;
+  title: string;
+  blocks: DocumentPreviewBlock[];
+}
+
+export interface DocumentPreviewSheet {
+  name: string;
+  rows: string[][];
+}
+
+export interface DocumentPreview {
+  kind: 'docx' | 'pptx' | 'xlsx';
+  name: string;
+  blocks?: DocumentPreviewBlock[];
+  tables?: string[][][];
+  slides?: DocumentPreviewSlide[];
+  sheets?: DocumentPreviewSheet[];
+}
+
 export interface DocumentListResponse {
   items: DocumentSummary[];
   page: number;

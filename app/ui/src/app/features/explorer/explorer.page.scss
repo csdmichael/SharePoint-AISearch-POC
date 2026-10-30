@@ -122,3 +122,9 @@
   line-height: 1.3;
   overflow-wrap: anywhere;
 }
+
+.detail-tabs {
+  display: flex;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}

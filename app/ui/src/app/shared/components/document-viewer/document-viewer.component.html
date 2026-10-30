@@ -1,0 +1,105 @@
+@switch (state().status) {
+  @case ('loading') {
+    <div class="viewer-fallback">
+      <ion-icon name="hourglass-outline" class="viewer-fallback__icon" aria-hidden="true" />
+      <p>Loading preview…</p>
+    </div>
+  }
+  @case ('error') {
+    <div class="viewer-fallback">
+      <ion-icon name="warning-outline" class="viewer-fallback__icon" aria-hidden="true" />
+      <p>This document could not be loaded for preview.</p>
+    </div>
+  }
+  @case ('unsupported') {
+    <div class="viewer-fallback">
+      <ion-icon name="document-outline" class="viewer-fallback__icon" aria-hidden="true" />
+      <p>Preview isn't available for this file type.</p>
+    </div>
+  }
+  @case ('ready') {
+    @switch (document() ? viewerType(document()!.name) : 'other') {
+      @case ('pdf') {
+        <iframe [src]="safeResourceUrl(state().objectUrl)" class="doc-viewer-frame" title="Document viewer"></iframe>
+      }
+      @case ('media') {
+        <video [src]="state().objectUrl" controls class="doc-viewer-video"></video>
+      }
+      @case ('text') {
+        <pre class="doc-viewer-text">{{ state().textContent }}</pre>
+      }
+      @case ('office') {
+        <div class="doc-viewer-office">
+          @if (state().preview?.kind === 'docx') {
+            @for (block of state().preview!.blocks; track $index) {
+              @if (block.kind === 'heading') {
+                <h3 class="doc-preview-heading">{{ block.text }}</h3>
+              } @else {
+                <p class="doc-preview-paragraph">{{ block.text }}</p>
+              }
+            }
+            @for (table of state().preview!.tables; track $index) {
+              <table class="doc-preview-table">
+                <tbody>
+                  @for (row of table; track $index) {
+                    <tr>
+                      @for (cell of row; track $index) {
+                        <td>{{ cell }}</td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          }
+          @if (state().preview?.kind === 'pptx') {
+            @for (slide of state().preview!.slides; track slide.number) {
+              <div class="doc-preview-slide">
+                <h3 class="doc-preview-heading">{{ slide.number }}. {{ slide.title }}</h3>
+                @for (block of slide.blocks; track $index) {
+                  @if (block.lines) {
+                    <ul class="doc-preview-bullets">
+                      @for (line of block.lines; track $index) {
+                        <li>{{ line }}</li>
+                      }
+                    </ul>
+                  }
+                  @if (block.table) {
+                    <table class="doc-preview-table">
+                      <tbody>
+                        @for (row of block.table; track $index) {
+                          <tr>
+                            @for (cell of row; track $index) {
+                              <td>{{ cell }}</td>
+                            }
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  }
+                }
+              </div>
+            }
+          }
+          @if (state().preview?.kind === 'xlsx') {
+            @for (sheet of state().preview!.sheets; track sheet.name) {
+              <h3 class="doc-preview-heading">{{ sheet.name }}</h3>
+              <table class="doc-preview-table">
+                <tbody>
+                  @for (row of sheet.rows; track $index) {
+                    <tr>
+                      @for (cell of row; track $index) {
+                        <td>{{ cell }}</td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          }
+        </div>
+      }
+    }
+  }
+  @default {}
+}

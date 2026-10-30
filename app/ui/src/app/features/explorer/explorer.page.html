@@ -192,6 +192,19 @@
         <h2 class="section-title">{{ 'explorer.detailHeading' | t }}</h2>
         @if (selectedItem(); as item) {
           <h3 class="detail__name" data-testid="detail-name">{{ item.name }}</h3>
+          @if (item.kind === 'file') {
+            <div class="detail-tabs">
+              <button type="button" class="action action--sm" [class.action--primary]="detailTab() === 'details'" (click)="setDetailTab('details')">
+                {{ 'explorer.detailHeading' | t }}
+              </button>
+              <button type="button" class="action action--sm" [class.action--primary]="detailTab() === 'preview'" (click)="setDetailTab('preview')" data-testid="detail-preview-tab">
+                Preview
+              </button>
+            </div>
+          }
+          @if (detailTab() === 'preview' && item.kind === 'file') {
+            <app-document-viewer [document]="item" data-testid="document-viewer" />
+          } @else {
           <dl class="definition-list">
             <dt>{{ 'explorer.kind' | t }}</dt>
             <dd>{{ itemLabel(item) }}</dd>
@@ -209,6 +222,7 @@
               <ion-icon [name]="icons.externalLink" aria-hidden="true" />
               {{ 'buttons.openInSharePoint' | t }}
             </a>
+          }
           }
           @if (selectedPermission(); as entry) {
             <h3 class="section-title">{{ 'explorer.columns.members' | t }}</h3>

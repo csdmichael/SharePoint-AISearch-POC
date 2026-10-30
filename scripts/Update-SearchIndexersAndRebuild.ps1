@@ -118,6 +118,28 @@ foreach ($t in $targets) {
         if ($_.ErrorDetails.Message) { Write-Host $_.ErrorDetails.Message -ForegroundColor Red }
     }
 
+    # 3a. Retarget hr/manufacturing/sales datasources from the retired "Trusted Knowledge" library to
+    #     "Documents" (regular content) and "Meeting Recordings and Transcripts" (its own library now).
+    if ($t.dataSourceName -match '^trusted') {
+        try {
+            $ds = Invoke-RestMethod -Method GET -Uri "$($state.searchEndpoint)/datasources/$($t.dataSourceName)?api-version=$($state.apiVersion)" -Headers $headers
+            $query = $ds.container.query
+            if ($query -match 'Trusted%20Knowledge') {
+                Write-Host "  Retargeting datasource from Trusted Knowledge to Documents + Meeting Recordings and Transcripts..." -ForegroundColor Yellow
+                $newQuery = $query -replace 'includeLibrary=([^;]*)/Trusted%20Knowledge', 'includeLibrary=$1/Documents;includeLibrary=$1/Meeting%20Recordings%20and%20Transcripts'
+                $ds.container.query = $newQuery
+                $updateDsBody = $ds | ConvertTo-Json -Depth 50
+                Invoke-RestMethod -Method PUT -Uri "$($state.searchEndpoint)/datasources/$($t.dataSourceName)?api-version=$($state.apiVersion)" -Headers $headers -Body $updateDsBody | Out-Null
+                Write-Host "  [OK] Datasource retargeted: $newQuery" -ForegroundColor Green
+            } else {
+                Write-Host "  [OK] Datasource already targets the current libraries." -ForegroundColor Green
+            }
+        } catch {
+            Write-Host "  Error retargeting datasource $($t.dataSourceName): $($_.Exception.Message)" -ForegroundColor Red
+            if ($_.ErrorDetails.Message) { Write-Host $_.ErrorDetails.Message -ForegroundColor Red }
+        }
+    }
+
     # 4. Reset & Run Indexer
     try {
         $indexerStatus = Invoke-RestMethod -Method GET -Uri "$($state.searchEndpoint)/indexers/$($t.indexerName)/status?api-version=$($state.apiVersion)" -Headers $headers

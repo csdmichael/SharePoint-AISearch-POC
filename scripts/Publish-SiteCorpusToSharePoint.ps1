@@ -38,6 +38,9 @@ param(
     [Parameter(Mandatory)][string]$SiteGraphPath,
     [Parameter(Mandatory)][string]$LibraryName,
     [Parameter(Mandatory)][string]$CorpusPath,
+    [string[]]$OnlyTopFolder,
+    [string[]]$ExcludeTopFolder,
+    [switch]$StripTopFolder,
     [switch]$Prune
 )
 
@@ -169,18 +172,30 @@ $driveId = $drive.id
 $manifestPath = Join-Path $CorpusPath 'manifest.json'
 if (-not (Test-Path $manifestPath)) { throw "Manifest not found: $manifestPath" }
 $manifest = @(Get-Content -Raw -Path $manifestPath | ConvertFrom-Json)
+if ($OnlyTopFolder -or $ExcludeTopFolder) {
+    $manifest = @($manifest | Where-Object {
+            $topFolder = ($_.relative_path -replace '\\', '/').Split('/')[0]
+            (-not $OnlyTopFolder -or $OnlyTopFolder -contains $topFolder) -and
+            (-not $ExcludeTopFolder -or $ExcludeTopFolder -notcontains $topFolder)
+        })
+}
 Write-Host "Uploading $($manifest.Count) files from $CorpusPath ..."
 
 $uploaded = 0
 $desiredPaths = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
 foreach ($entry in $manifest) {
-    $relativePath = ($entry.relative_path -replace '\\', '/')
-    [void]$desiredPaths.Add($relativePath)
-    $localPath = Join-Path $CorpusPath ($relativePath -replace '/', [IO.Path]::DirectorySeparatorChar)
+    $sourceRelativePath = ($entry.relative_path -replace '\\', '/')
+    $localPath = Join-Path $CorpusPath ($sourceRelativePath -replace '/', [IO.Path]::DirectorySeparatorChar)
     if (-not (Test-Path $localPath -PathType Leaf)) { throw "Missing local file for manifest entry: $localPath" }
-    $folder = Split-Path -Path $relativePath -Parent
+    $uploadRelativePath = if ($StripTopFolder) {
+        ($sourceRelativePath.Split('/') | Select-Object -Skip 1) -join '/'
+    } else {
+        $sourceRelativePath
+    }
+    [void]$desiredPaths.Add($uploadRelativePath)
+    $folder = Split-Path -Path $uploadRelativePath -Parent
     if ($folder) { Ensure-DriveFolderPath -DriveId $driveId -RelativeFolderPath $folder }
-    $encodedPath = ConvertTo-DrivePath -RelativePath $relativePath
+    $encodedPath = ConvertTo-DrivePath -RelativePath $uploadRelativePath
     Invoke-Graph -Method PUT -Uri "/drives/$driveId/root:/$encodedPath`:/content" -InFile (Resolve-Path $localPath).Path | Out-Null
     $uploaded++
     if ($uploaded % 20 -eq 0) { Write-Host "  uploaded $uploaded / $($manifest.Count)" }

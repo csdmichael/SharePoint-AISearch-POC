@@ -10,3 +10,4 @@ use lifecycle meta data field rather than iteration and delete iteration
 also for duplicate documents, compare side by side feature in ui, it does not open in page but it asks to open in sharepoint or new windows. Fix this issue so viewers open docs in same page for ppt, xls, pdf, word, videos and viewer for vtt transcripts too to render text
 then reindex ai search and test flow end to end
 publish changes to sharepoint, ui, commit code to git as well
+at end, cleanup any old code, old scripts, old readme info that no longer applies to new changes.

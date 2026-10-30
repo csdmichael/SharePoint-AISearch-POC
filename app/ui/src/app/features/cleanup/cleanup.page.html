@@ -165,6 +165,113 @@
           </header>
 
           <div class="comparison-modal__body">
+            <ng-template #viewerBody let-doc="doc" let-state="state">
+              @switch (state.status) {
+                @case ('loading') {
+                  <div class="viewer-fallback">
+                    <ion-icon name="hourglass-outline" style="font-size: 3rem; color: var(--surface-muted-text);" aria-hidden="true" />
+                    <p>Loading preview…</p>
+                  </div>
+                }
+                @case ('error') {
+                  <div class="viewer-fallback">
+                    <ion-icon name="warning-outline" style="font-size: 3rem; color: var(--surface-muted-text);" aria-hidden="true" />
+                    <p>This document could not be loaded for preview.</p>
+                  </div>
+                }
+                @case ('unsupported') {
+                  <div class="viewer-fallback">
+                    <ion-icon [name]="fileTypeInfo(doc.name).icon" style="font-size: 3rem; color: var(--surface-muted-text);" aria-hidden="true" />
+                    <p>Preview isn't available for this file type.</p>
+                  </div>
+                }
+                @case ('ready') {
+                  @switch (fileTypeInfo(doc.name).viewerType) {
+                    @case ('pdf') {
+                      <iframe [src]="safeResourceUrl(state.objectUrl)" class="doc-viewer-frame" title="Document viewer"></iframe>
+                    }
+                    @case ('media') {
+                      <video [src]="state.objectUrl" controls class="doc-viewer-video"></video>
+                    }
+                    @case ('text') {
+                      <pre class="doc-viewer-text">{{ state.textContent }}</pre>
+                    }
+                    @case ('office') {
+                      <div class="doc-viewer-office">
+                        @if (state.preview?.kind === 'docx') {
+                          @for (block of state.preview.blocks; track $index) {
+                            @if (block.kind === 'heading') {
+                              <h3 class="doc-preview-heading">{{ block.text }}</h3>
+                            } @else {
+                              <p class="doc-preview-paragraph">{{ block.text }}</p>
+                            }
+                          }
+                          @for (table of state.preview.tables; track $index) {
+                            <table class="data-table doc-preview-table">
+                              <tbody>
+                                @for (row of table; track $index) {
+                                  <tr>
+                                    @for (cell of row; track $index) {
+                                      <td>{{ cell }}</td>
+                                    }
+                                  </tr>
+                                }
+                              </tbody>
+                            </table>
+                          }
+                        }
+                        @if (state.preview?.kind === 'pptx') {
+                          @for (slide of state.preview.slides; track slide.number) {
+                            <div class="doc-preview-slide">
+                              <h3 class="doc-preview-heading">{{ slide.number }}. {{ slide.title }}</h3>
+                              @for (block of slide.blocks; track $index) {
+                                @if (block.lines) {
+                                  <ul class="doc-preview-bullets">
+                                    @for (line of block.lines; track $index) {
+                                      <li>{{ line }}</li>
+                                    }
+                                  </ul>
+                                }
+                                @if (block.table) {
+                                  <table class="data-table doc-preview-table">
+                                    <tbody>
+                                      @for (row of block.table; track $index) {
+                                        <tr>
+                                          @for (cell of row; track $index) {
+                                            <td>{{ cell }}</td>
+                                          }
+                                        </tr>
+                                      }
+                                    </tbody>
+                                  </table>
+                                }
+                              }
+                            </div>
+                          }
+                        }
+                        @if (state.preview?.kind === 'xlsx') {
+                          @for (sheet of state.preview.sheets; track sheet.name) {
+                            <h3 class="doc-preview-heading">{{ sheet.name }}</h3>
+                            <table class="data-table doc-preview-table">
+                              <tbody>
+                                @for (row of sheet.rows; track $index) {
+                                  <tr>
+                                    @for (cell of row; track $index) {
+                                      <td>{{ cell }}</td>
+                                    }
+                                  </tr>
+                                }
+                              </tbody>
+                            </table>
+                          }
+                        }
+                      </div>
+                    }
+                  }
+                }
+              }
+            </ng-template>
+
             <!-- Left: Canonical -->
             <div class="comparison-pane">
               <div class="comparison-pane__header">
@@ -178,18 +285,11 @@
 
               @if (viewerTab() === 'viewer') {
                 <div class="viewer-container">
-                  @if (getSafeEmbedUrl(pair.canonical.webUrl); as embedUrl) {
-                    <iframe [src]="embedUrl" class="doc-viewer-frame" title="Canonical Document Viewer"></iframe>
-                  } @else {
-                    <div class="viewer-fallback">
-                      <ion-icon [name]="fileTypeInfo(pair.canonical.name).icon" style="font-size: 3rem; color: var(--surface-muted-text);" aria-hidden="true" />
-                      <p>Preview in iframe not available without direct webUrl.</p>
-                    </div>
-                  }
+                  <ng-container *ngTemplateOutlet="viewerBody; context: { doc: pair.canonical, state: canonicalViewer() }"></ng-container>
                   <div class="viewer-actions">
                     <span class="file-type-pill">{{ fileTypeInfo(pair.canonical.name).label }}</span>
                     @if (pair.canonical.webUrl) {
-                      <a [href]="pair.canonical.webUrl" target="_blank" rel="noopener noreferrer" class="action action--sm action--primary">
+                      <a [href]="pair.canonical.webUrl" target="_blank" rel="noopener noreferrer" class="action action--sm">
                         <ion-icon name="open-outline" aria-hidden="true" />
                         <span>Open in SharePoint / Office</span>
                       </a>
@@ -225,18 +325,11 @@
 
               @if (viewerTab() === 'viewer') {
                 <div class="viewer-container">
-                  @if (getSafeEmbedUrl(pair.duplicate.webUrl); as embedUrl) {
-                    <iframe [src]="embedUrl" class="doc-viewer-frame" title="Duplicate Document Viewer"></iframe>
-                  } @else {
-                    <div class="viewer-fallback">
-                      <ion-icon [name]="fileTypeInfo(pair.duplicate.name).icon" style="font-size: 3rem; color: var(--surface-muted-text);" aria-hidden="true" />
-                      <p>Preview in iframe not available without direct webUrl.</p>
-                    </div>
-                  }
+                  <ng-container *ngTemplateOutlet="viewerBody; context: { doc: pair.duplicate, state: duplicateViewer() }"></ng-container>
                   <div class="viewer-actions">
                     <span class="file-type-pill">{{ fileTypeInfo(pair.duplicate.name).label }}</span>
                     @if (pair.duplicate.webUrl) {
-                      <a [href]="pair.duplicate.webUrl" target="_blank" rel="noopener noreferrer" class="action action--sm action--primary">
+                      <a [href]="pair.duplicate.webUrl" target="_blank" rel="noopener noreferrer" class="action action--sm">
                         <ion-icon name="open-outline" aria-hidden="true" />
                         <span>Open in SharePoint / Office</span>
                       </a>

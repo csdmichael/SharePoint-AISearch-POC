@@ -13,6 +13,8 @@ export const ENDPOINT_KEYS = [
   'accessUserItems',
   'documents',
   'document',
+  'documentContent',
+  'documentPreview',
   'cleanup',
   'notifications',
   'notificationDrafts',

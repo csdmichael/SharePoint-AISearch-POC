@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import mimetypes
 from typing import Any
 
 from fastapi import APIRouter, Depends, Path, Query
+from fastapi.responses import Response
 
 from app.api.deps import get_container, resolve_page_size
 from app.auth.validator import require_auditor
@@ -13,6 +15,14 @@ from app.domain.identity import GUID_RE
 
 router = APIRouter(tags=["documents"], dependencies=[Depends(require_auditor)])
 ITEM_PATTERN = GUID_RE.pattern.replace("$", "") + r"(\.[0-9]{1,10})?$"
+
+MIME_OVERRIDES = {
+    ".vtt": "text/vtt",
+    ".txt": "text/plain",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+}
 
 
 @router.get("/documents", summary="Governance list of documents, filtered and paged")
@@ -47,3 +57,26 @@ def document_detail(
     container: Container = Depends(get_container),
 ) -> dict[str, Any]:
     return container.documents.detail(item_id)
+
+
+@router.get("/documents/{itemId}/content", summary="Raw file bytes for the in-page viewer (PDF, video, text)")
+def document_content(
+    item_id: str = Path(alias="itemId", pattern=ITEM_PATTERN),
+    container: Container = Depends(get_container),
+) -> Response:
+    content, name, extension = container.documents.content(item_id)
+    media_type = MIME_OVERRIDES.get(extension) or mimetypes.guess_type(name)[0] or "application/octet-stream"
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={"Content-Disposition": f'inline; filename="{name}"'},
+    )
+
+
+@router.get("/documents/{itemId}/preview", summary="Structured preview (paragraphs/sheets/slides) for docx, xlsx, pptx")
+def document_preview(
+    item_id: str = Path(alias="itemId", pattern=ITEM_PATTERN),
+    container: Container = Depends(get_container),
+) -> dict[str, Any]:
+    return container.documents.preview(item_id)
+

@@ -16,21 +16,21 @@
       "siteUrl": "https://caldova37587778.sharepoint.com/sites/hrknowledgehub",
       "graphPath": "caldova37587778.sharepoint.com:/sites/hrknowledgehub",
       "businessUnit": "Human Resources",
-      "libraries": ["Documents", "Trusted Knowledge"]
+      "libraries": ["Documents", "Meeting Recordings and Transcripts"]
     },
     {
       "siteId": "manufacturing",
       "siteUrl": "https://caldova37587778.sharepoint.com/sites/manufacturingknowledgehub",
       "graphPath": "caldova37587778.sharepoint.com:/sites/manufacturingknowledgehub",
       "businessUnit": "Manufacturing",
-      "libraries": ["Documents", "Trusted Knowledge"]
+      "libraries": ["Documents", "Meeting Recordings and Transcripts"]
     },
     {
       "siteId": "sales",
       "siteUrl": "https://caldova37587778.sharepoint.com/sites/salesmarketingknowledgehub",
       "graphPath": "caldova37587778.sharepoint.com:/sites/salesmarketingknowledgehub",
       "businessUnit": "Sales and Marketing",
-      "libraries": ["Documents", "Trusted Knowledge"]
+      "libraries": ["Documents", "Meeting Recordings and Transcripts"]
     }
   ]
 }

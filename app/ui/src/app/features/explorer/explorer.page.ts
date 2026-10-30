@@ -8,6 +8,7 @@ import { ConfigService } from '../../core/config/config.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { LayoutService } from '../../core/layout/layout.service';
 import { SessionService, ViewState, resolveViewState } from '../../core/session/session.service';
+import { DocumentViewerComponent } from '../../shared/components/document-viewer/document-viewer.component';
 import { StateViewComponent } from '../../shared/components/state-view/state-view.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { DisplayService } from '../../shared/util/display.service';
@@ -35,7 +36,7 @@ const ROOT_KEY = '';
 @Component({
   selector: 'app-explorer-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonIcon, IonLabel, IonSegment, IonSegmentButton, IonSelect, IonSelectOption, StateViewComponent, TranslatePipe],
+  imports: [IonContent, IonIcon, IonLabel, IonSegment, IonSegmentButton, IonSelect, IonSelectOption, DocumentViewerComponent, StateViewComponent, TranslatePipe],
   templateUrl: './explorer.page.html',
   styleUrl: './explorer.page.scss',
   host: { class: 'ion-page' },
@@ -69,6 +70,7 @@ export class ExplorerPage {
   readonly branches = signal<Record<string, TreeBranch>>({});
   readonly expandedFolders = signal<ReadonlySet<string>>(new Set());
   readonly selectedItem = signal<DriveItem | null>(null);
+  readonly detailTab = signal<'details' | 'preview'>('details');
 
   readonly visibleRows = computed<TreeRow[]>(() => {
     const rows: TreeRow[] = [];
@@ -246,6 +248,11 @@ export class ExplorerPage {
     this.selectedItem.set(item);
     this.selectedPermissionId.set(null);
     this.expandedPrincipals.set(new Set());
+    this.detailTab.set('details');
+  }
+
+  setDetailTab(tab: 'details' | 'preview'): void {
+    this.detailTab.set(tab);
   }
 
   selectPermission(entry: PermissionRow): void {
