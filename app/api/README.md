@@ -94,7 +94,9 @@ Paths are relative to `/api/v1`. Every row needs a token with the Auditor role e
 | `GET /access/users` | Search site users by name, UPN, email or login. |
 | `GET /access/users/{userKey}/items` | Every item a user can reach, with role and grant path. |
 | `GET /documents` | Governance list of documents, filtered by lifecycle, data quality, authoritative flag and knowledge category (`knowledgeCategory`), and paged. Returns `knowledgeCategories`, the categories in the library, for the category filter. |
-| `GET /documents/{itemId}` | One document with trust reasons, conflicts and duplicate status. |
+| `GET /documents/{itemId}` | One document with trust reasons, conflicts and duplicate status. Resolves the library GUID across all configured sites automatically. |
+| `GET /documents/{itemId}/content` | Raw file bytes for the in-page viewer (PDF, MP4 video, VTT/TXT transcripts). |
+| `GET /documents/{itemId}/preview` | Structured multi-page preview (pages/slides/sheets, tables, and base64-encoded embedded diagrams/charts) for `.docx`, `.pptx`, `.xlsx`, and `.pdf`. |
 | `GET /analytics/duplicates` | Exact and near-duplicate clusters with canonical copies. |
 | `GET /analytics/expiry` | Expired and review-overdue documents from metadata and text dates. |
 | `GET /analytics/anomalies` | IsolationForest anomaly scores with per-feature contributions. |

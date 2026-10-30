@@ -6,13 +6,15 @@ Databricks rows.
 
 ## Resources
 
-- SharePoint site: `https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub`
-- Production library: `Semiconductor Knowledge`
-- Isolated bootstrap library: `Semiconductor Knowledge Bootstrap`
+- SharePoint sites:
+  - Semiconductor: `https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub` (`Semiconductor Knowledge` library)
+  - HR: `https://caldova37587778.sharepoint.com/sites/hrknowledgehub` (`Documents` and `Meeting Recordings and Transcripts` libraries)
+  - Manufacturing: `https://caldova37587778.sharepoint.com/sites/manufacturingknowledgehub` (`Documents` and `Meeting Recordings and Transcripts` libraries)
+  - Sales & Marketing: `https://caldova37587778.sharepoint.com/sites/salesmarketingknowledgehub` (`Documents` and `Meeting Recordings and Transcripts` libraries)
 - Search service: `semiconductor-search-myaacoub`
-- Stable Search alias: `semiconductor-knowledge`
-- Promoted physical index: `semiconductor-20260915214135-knowledge-chunks`
-- Bootstrap physical index: `semiconductor-bootstrap-knowledge-chunks`
+- Physical indexes & aliases:
+  - `semiconductor-knowledge-index` (alias `semiconductor-knowledge`)
+  - `departments-knowledge-index` (alias `trusted-knowledge`)
 - Feedback index: `semiconductor-search-feedback`
 - Embedding deployment: `text-embedding-3-small`
 

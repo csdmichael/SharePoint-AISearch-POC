@@ -38,8 +38,21 @@ Covers:
 - `ApiError`: Classification of unreachable, unauthorized, forbidden, notFound, and server errors
 - `MicrosoftLogoComponent`: Microsoft logo mark and wordmark rendering
 - `AgentFabComponent`: Foundry agent floating action button visibility and navigation
+- `DocumentViewerComponent`: Multi-page in-page rendering and pagination (`All`, `Prev`, `1..N`, `Next`) for 10+ page `.docx`, `.pptx`, `.xlsx`, and `.pdf` documents (with tables and embedded diagrams), plus `.mp4` video and `.vtt`/`.txt` transcripts
 - `groupByIssue`: Issue grouping and first-appearance ordering for prompts
 - `CursorList`: Failed requests expose an error without throwing from data signals, and retry can recover
+
+## Explorer & Side-by-Side Viewer Layout
+
+```mermaid
+flowchart LR
+    subgraph Explorer["/explorer — Three-Pane Desktop Layout (.panes--explorer)"]
+        M["Left: Libraries & Folder Tree<br/>(pane--master, 200-250px)"]
+        P["Center: Multi-Page Document Viewer & Metadata<br/>(pane--primary, 1fr widest column)"]
+        D["Right: Item Permissions (Users / Groups)<br/>(pane--detail, 260-340px)"]
+        M --> P --> D
+    end
+```
 
 ### End-to-End Tests (Playwright Device Matrix)
 Runs the responsive device matrix across web, desktop, tablet, and mobile profiles:

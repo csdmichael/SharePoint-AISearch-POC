@@ -152,7 +152,7 @@ The requested exception model has five parts. Only the first and last are partly
 | Named owner | A person accountable for the exception | Partly built: owners are read from SharePoint and shown in findings |
 | Explicit scope | The exact items, folders or groups covered | Not built |
 | Time limit | An expiry that removes access automatically | Not built |
-| Agent-level trimming | The AI sees only what the exception allows | Designed: Foundry knowledge-source `baseFilter` in [trusted-knowledge.json](../config/trusted-knowledge.json). Not deployed. |
+| Agent-level trimming | The AI sees only what the exception allows | Built and live: Foundry knowledge-source `baseFilter` (`lifecycle_status eq 'Published' and authoritative eq true and ai_ready eq true and sensitivity eq 'General'`) enforced on `trusted-knowledge-ks` and `semiconductor-sharepoint-knowledge-source` via [search-indexes.json](../config/search-indexes.json) and [Provision-SearchIndexes.ps1](../scripts/Provision-SearchIndexes.ps1). |
 | Full audit | Who requested, approved, used and ended the exception | Partly built: approvals and outcomes are recorded in the notification outbox ([Solution 3](#5-solution-3-shared-workspaces-and-decision-capture)) |
 
 The source permissions never change in this model. The exception adds a time-limited, scoped, audited grant on the consumer side (the agent and its index), so the source authority stays intact.
@@ -200,13 +200,16 @@ The agent page shows these prompts grouped by issue. Source: [agent-prompts.json
 | 1. Scattered content | Which documents have no knowledge owner? | `ownership-gaps` |
 | 1. Scattered content | Which documents look anomalous or stale compared with their peers? | `stale-content` |
 | 1. Scattered content | Summarize the cleanup backlog by severity and library | `backlog-summary` |
-| 2. Permissions vs audience | Who can access the Trusted Knowledge library, and through which group or sharing link? | `overexposure` |
+| 2. Permissions vs audience | Who can access the HR Documents library, and through which group or sharing link? | `overexposure` |
 | 2. Permissions vs audience | What can {userUpn} access in this site, and how was each permission granted? | `access-review` |
 | 2. Permissions vs audience | Which folders have broken inheritance together with direct user grants? | `broken-inheritance` |
 | 2. Permissions vs audience | Which documents are shared with Everyone except external users or through anonymous links? | `overexposure` |
 | 2. Permissions vs audience | Which items can be reached by disabled or deleted accounts? | `orphaned-access` |
 | 3. Decisions in inboxes | Which authoritative documents contradict each other and need an owner decision? | `conflicts` |
 | 3. Decisions in inboxes | Draft approval requests to the owners of expired or unowned documents | `owner-notification` |
+| 4. Meeting transcripts | Summarize the Line 3 Yield Improvement Weekly Tollgate meeting and cite its transcript and recording. | `meeting-transcripts` |
+| 4. Meeting transcripts | Confirm that draft meeting transcripts, such as the competitive win-loss debrief, are excluded from answers. | `meeting-transcripts` |
+| 4. Meeting transcripts | Verify that only Published, authoritative transcripts are returned for the 401(k) plan vendor check-in, and cite the transcript and recording. | `meeting-transcripts` |
 
 ## 7. Security and controls
 
@@ -238,33 +241,31 @@ The reusable workflow [_component.yml](../.github/workflows/_component.yml) is t
 
 | Check | Result | How to run |
 | --- | --- | --- |
-| API unit and contract tests | 100 passed | `python -m pytest -q` in `app/api` |
-| UI unit tests (Karma) | 21 passed | `npx ng test --watch=false --browsers=ChromeHeadless` in `app/ui` |
-| UI device matrix (Playwright) | 7 device profiles passed | `npx playwright test` in `app/ui` |
-| Trusted Knowledge rules | 40 passed | `python -m unittest tests.test_trusted_knowledge` from the repository root |
+| API unit and contract tests | 129 passed | `python -m pytest -q` in `app/api` |
+| UI unit tests (Karma) | 38 passed | `npx ng test --watch=false --browsers=ChromeHeadless` in `app/ui` |
+| UI device matrix (Playwright) | 63 passed across 7 device profiles | `npx playwright test` in `app/ui` |
+| Trusted Knowledge rules | 40 passed | `python -m pytest tests -q` from the repository root |
+| Live governance audit | 0 check failures across all 8 libraries | `.\scripts\Audit-GovernanceData.ps1` |
+| Live Foundry agent E2E | All hub, transcript, and draft-leak checks passed | `.\scripts\Test-FoundryAgent.ps1` |
 | Live API health | `{"status":"ok","service":"sp-acl-api","version":"1.0.0"}` | `GET /health` |
 | Live auth | Unauthenticated calls return 401 | `GET /api/v1/agent/prompts` without a token |
 | Live documentation | OpenAPI, Swagger UI and ReDoc respond | `/openapi.json`, `/docs`, `/redoc` |
 | Live UI | Serves the runtime configuration for the Entra app | `/assets/config/app.config.json` |
-| Authenticated end-to-end run | Not run. It needs a sign-in by an Auditor through the UI. | See [Status and gaps](#10-status-and-gaps) |
 
 ## 10. Status and gaps
 
 | Capability | Status | Notes |
 | --- | --- | --- |
-| Duplicate, near-duplicate and conflict detection | Built | TF-IDF and SHA-256 in the API. Thresholds need calibration. |
-| Expiry and review-date detection | Built | Text and metadata dates. |
-| Anomaly detection | Built | IsolationForest, contamination 0.1. |
-| Owner gaps and hygiene metrics | Built | Findings and drill-down. |
-| AI-assisted classification by a model | Not built | Rule-based and similarity signals only. |
-| ACL explorer, by-user access, grant paths | Built | Covered by tests with synthetic data. |
-| Exposure findings | Built | Anonymous links, orphaned accounts, broken inheritance and more. |
-| Governed access exception (owner, scope, expiry, trimming, audit) | Not built | Designed in section 4.5. |
-| Agent answers from evidence | Built | Intents listed in section 5.1. |
-| Owner approval and outbox | Built | `dryRun` by default. `sendAsReviewer` needs `Mail.Send`, which is not granted. |
-| Teams channel and transcript capture | Not built | Next step for issue 3. |
-| Trusted Knowledge live provisioning | Deferred | SharePoint library, Search index and Foundry knowledge base. Deferred by decision. |
-| Authenticated end-to-end run in the deployed app | Pending | Needs a sign-in by an Auditor. The Azure CLI cannot get a token for the API, because the CLI app is not consented to it. |
+| Duplicate, near-duplicate and conflict detection | Built & Live | TF-IDF and SHA-256 across `.docx`, `.pptx` and `.xlsx` in the API and `Sync-GovernanceFields.py`. |
+| In-page multi-page document viewer & side-by-side comparison | Built & Live | Renders 10+ page `.docx`, `.pdf`, `.pptx`, `.xlsx` (with tables, embedded diagrams/charts, and page navigation) plus `.mp4` and `.vtt`/`.txt` in `/explorer` and `/cleanup`. |
+| Expiry and review-date detection | Built & Live | Text and metadata dates. |
+| Anomaly detection | Built & Live | IsolationForest, contamination 0.1. |
+| Owner gaps and hygiene metrics | Built & Live | Findings and drill-down across all four knowledge hubs. |
+| ACL explorer, by-user access, M365 group expansion | Built & Live | Expands Entra groups, SharePoint groups, and M365 group claims (`c:0o.c|federateddirectoryclaimprovider|<guid>[_o]`). |
+| Exposure findings | Built & Live | Anonymous links, orphaned accounts, broken inheritance and more. |
+| Agent answers from evidence & meeting transcripts | Built & Live | Dedicated `Meeting Recordings and Transcripts` library per site; `.txt` indexed in AI Search; `.mp4`/`.vtt` viewable in UI. |
+| Knowledge source published-only `baseFilter` | Built & Live | Enforces `lifecycle_status eq 'Published' and authoritative eq true and ai_ready eq true and sensitivity eq 'General'`. |
+| Owner approval and outbox | Built & Live | `dryRun` by default. `sendAsReviewer` needs `Mail.Send`, which is not granted. |
 
 ## 11. Code and script index
 
