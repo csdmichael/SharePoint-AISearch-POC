@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { IonContent, IonIcon, IonInput, IonTextarea } from '@ionic/angular';
 import { ApiError, asApiError, toApiError } from '../../core/api/api-error';
@@ -89,6 +89,13 @@ export class AgentPage {
   );
   readonly canSend = computed(() => !this.sending() && this.draft().trim().length > 0 && this.draft().length <= this.maxInputChars);
   private nextMessageId = 1;
+
+  constructor() {
+    effect(() => {
+      this.api.siteContext();
+      this.prompts.reload();
+    });
+  }
 
   onDraftInput(value: string | null | undefined): void {
     this.draft.set((value ?? '').slice(0, this.maxInputChars));

@@ -164,6 +164,16 @@ export class ExplorerPage {
       this.selectedItem.set(null);
       this.selectedPermissionId.set(null);
       this.expandedPrincipals.set(new Set());
+      this.libraries.reload();
+    });
+    effect(() => {
+      const libs = this.libraryItems();
+      const current = this.selectedLibrary();
+      if (libs.length > 0) {
+        if (!current || !libs.some((l) => l.id === current.id)) {
+          this.selectLibrary(libs[0]);
+        }
+      }
     });
     effect(() => {
       const selectedId = this.selectedPermissionId();

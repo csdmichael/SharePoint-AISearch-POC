@@ -60,7 +60,8 @@ interface SendOptions {
 export class ApiService {
   private readonly http = inject(HttpClient);
   private readonly config = inject(ConfigService);
-  readonly siteContext = signal<string | null>(null);
+  readonly siteContext = signal<string | null>(typeof localStorage !== 'undefined' ? localStorage.getItem('selectedSiteId') : null);
+  readonly isSwitchingSite = signal<boolean>(false);
 
   health(): Observable<HealthResponse> {
     return this.send<HealthResponse>('GET', this.endpoint('health'), { skipAuth: true });
@@ -180,7 +181,25 @@ export class ApiService {
 
   setSiteContext(siteId: string | null): void {
     const next = siteId?.trim() ?? '';
-    this.siteContext.set(next.length > 0 ? next : null);
+    const val = next.length > 0 ? next : null;
+    if (val !== this.siteContext()) {
+      this.isSwitchingSite.set(true);
+      this.siteContext.set(val);
+      try {
+        if (typeof localStorage !== 'undefined') {
+          if (val) {
+            localStorage.setItem('selectedSiteId', val);
+          } else {
+            localStorage.removeItem('selectedSiteId');
+          }
+        }
+      } catch {
+        // storage fallback
+      }
+      setTimeout(() => {
+        this.isSwitchingSite.set(false);
+      }, 1000);
+    }
   }
 
   private endpoint(key: EndpointKey, values: Record<string, string> = {}): string {

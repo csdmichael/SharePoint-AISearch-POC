@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
@@ -83,6 +83,15 @@ export class DashboardPage {
 
   readonly expanded = signal<ReadonlySet<string>>(new Set());
   readonly details = signal<Record<string, FindingDetailState>>({});
+
+  constructor() {
+    effect(() => {
+      this.api.siteContext();
+      this.expanded.set(new Set());
+      this.details.set({});
+      this.summary.reload();
+    });
+  }
 
   formatValue(value: number | null): string {
     return value === null ? this.i18n.text('states.notAvailable') : this.i18n.number(value);

@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { IonContent, IonIcon, IonSearchbar } from '@ionic/angular';
 import { Subject, debounceTime, distinctUntilChanged, map } from 'rxjs';
@@ -108,6 +108,17 @@ export class AccessPage {
     const start = (this.currentPage() - 1) * this.pageSize();
     return this.filteredItems().slice(start, start + this.pageSize());
   });
+
+  constructor() {
+    effect(() => {
+      this.api.siteContext();
+      this.selectedUser.set(null);
+      this.expandedKeys.set(new Set());
+      this.itemFilter.set('');
+      this.currentPage.set(1);
+      this.users.reload();
+    });
+  }
 
   onSearch(value: string | null | undefined): void {
     this.queryInput.next(value ?? '');

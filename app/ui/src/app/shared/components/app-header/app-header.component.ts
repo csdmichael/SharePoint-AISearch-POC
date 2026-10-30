@@ -67,12 +67,17 @@ import { MicrosoftLogoComponent } from '../microsoft-logo/microsoft-logo.compone
         </ion-button>
       }
     </header>
+    @if (api.isSwitchingSite()) {
+      <div class="site-switch-progress" role="progressbar" aria-label="Switching site...">
+        <div class="site-switch-progress__bar"></div>
+      </div>
+    }
   `,
   styleUrl: './app-header.component.scss',
 })
 export class AppHeaderComponent {
   private readonly config = inject(ConfigService);
-  private readonly api = inject(ApiService);
+  readonly api = inject(ApiService);
   private readonly i18n = inject(I18nService);
   private readonly display = inject(DisplayService);
   private readonly menu = inject(MenuController);

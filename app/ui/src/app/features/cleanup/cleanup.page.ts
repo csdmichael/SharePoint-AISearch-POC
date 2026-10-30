@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonIcon, IonLabel, IonSegment, IonSegmentButton } from '@ionic/angular';
@@ -52,6 +52,18 @@ export class CleanupPage {
   readonly viewerTab = signal<'viewer' | 'metadata'>('viewer');
 
   readonly segment = signal(this.config.pages.cleanup.defaultSegment);
+
+  constructor() {
+    effect(() => {
+      this.api.siteContext();
+      this.selectedIds.set(new Set());
+      this.selectedComparison.set(null);
+      this.draftSummary.set(null);
+      this.draftError.set(null);
+      this.records.reload();
+    });
+  }
+
   readonly records = new CursorList<CleanupRecord>({
     key: () => (this.session.gate() === 'ready' ? `${this.api.siteContext() ?? '__default__'}:${this.segment()}` : undefined),
     fetch: (key) => this.api.cleanup(key.slice(key.indexOf(':') + 1)),

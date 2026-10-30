@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonIcon, IonInput, IonLabel, IonSegment, IonSegmentButton } from '@ionic/angular';
 import { ApiService } from '../../core/api/api.service';
@@ -155,6 +155,16 @@ export class DocumentListPage {
 
   trustColor(score: number | null): string {
     return score === null ? this.display.statusColor(null) : this.display.trustColor(score);
+  }
+
+  constructor() {
+    effect(() => {
+      this.api.siteContext();
+      this.category.set('');
+      this.iteration.set('');
+      this.folderQuery.set('');
+      this.documents.reload();
+    });
   }
 
   retry(): void {
