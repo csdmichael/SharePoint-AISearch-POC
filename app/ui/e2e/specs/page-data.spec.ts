@@ -40,6 +40,8 @@ async function setup(page: Page): Promise<void> {
       '/hygiene/findings/expired-documents': { ...finding, documents: [document] },
       '/documents': { items: [document], page: 1, pageSize: 25, total: 1, totalPages: 1, knowledgeCategories: ['Engineering'] },
       [`/documents/${documentId}`]: document,
+      [`/documents/${documentId}/preview`]: { kind: 'docx', name: 'Test guide.docx', blocks: [{ kind: 'paragraph', text: 'Test guide content' }], tables: [] },
+      [`/documents/${documentId}/content`]: 'Test guide content',
       '/site': {
         name: 'Test site',
         webUrl: 'https://contoso.sharepoint.com/sites/test',
