@@ -29,6 +29,7 @@
     "conflictingAuthoritative": "conflicting-authoritative",
     "conflictsWithAuthoritative": "conflicts-with-authoritative"
   },
+  "knowledgeBaseIntents": ["meeting-transcripts"],
   "instructions": "You are the SharePoint governance assistant for the document libraries of the configured SharePoint site. Answer only from the live evidence supplied with the question; never mention the evidence format, JSON, field names or handlers. Quote document titles, owners, dates, roles and grant paths exactly as the evidence states them. Say so plainly when the evidence does not contain the answer. Never recommend deleting content; recommend review, approval or notification steps. Owner notifications are drafts until a reviewer approves them. Format every answer as rich Markdown: start with a one-sentence bold answer, then use '##' section headings, a Markdown table for any list of people, groups, documents or permissions (include role and how access was granted), bullets for findings, and a final '### Recommended next steps' list. Link documents with [title](url) when a URL is given. Keep it scannable and under 350 words.",
   "messages": {
     "foundryNotConfigured": "Microsoft Foundry is not configured for this API, so the answer is built from live evidence only.",
@@ -82,18 +83,18 @@
   },
   "intents": [
     {"id": "meeting-transcripts", "keywords": ["meeting", "transcript", "recording", "video", "vtt"], "handler": "meetingTranscripts"},
-    {"id": "library-access", "keywords": ["who can access", "who has access", "which group", "through which group", "library", "sharing link", "permissions on", "permission levels"], "handler": "libraryAccess"},
+    {"id": "library-access", "keywords": ["who can access", "who has access", "which group", "through which group", "sharing link", "permissions on", "permission levels"], "handler": "libraryAccess"},
     {"id": "overexposure", "keywords": ["everyone", "anonymous", "anyone with the link", "shared with", "external users", "sharing link", "overexposed", "over-exposed", "overexposure", "exposure"], "handler": "exposure"},
-    {"id": "access-review", "keywords": ["what can", "can access", "access in this site", "how was each permission", "permissions for", "granted"], "handler": "userAccess"},
+    {"id": "access-review", "keywords": ["can access", "access in this site", "how was each permission", "permissions for", "@"], "handler": "userAccess"},
     {"id": "broken-inheritance", "keywords": ["broken inheritance", "inheritance", "unique permission", "direct user grant", "direct grant"], "handler": "brokenInheritance"},
     {"id": "duplicates", "keywords": ["duplicate", "canonical", "near-duplicate", "exact and near"], "handler": "duplicates"},
     {"id": "expired-content", "keywords": ["expired", "expir", "past their review", "review date", "overdue"], "handler": "expiry"},
-    {"id": "ownership-gaps", "keywords": ["no knowledge owner", "knowledge owner", "missing owner", "unowned", "owner"], "handler": "ownership"},
+    {"id": "ownership-gaps", "keywords": ["no knowledge owner", "knowledge owner", "missing owner", "unowned"], "handler": "ownership"},
     {"id": "stale-content", "keywords": ["anomal", "stale", "outlier"], "handler": "anomalies"},
-    {"id": "owner-notification", "keywords": ["draft notification", "notification", "notify", "approval", "approval request", "draft approval", "owners of"], "handler": "notifications"},
-    {"id": "backlog-summary", "keywords": ["backlog", "summar", "severity", "cleanup"], "handler": "backlog"},
-    {"id": "orphaned-access", "keywords": ["disabled", "deleted account", "orphan", "reached by"], "handler": "orphans"},
+    {"id": "owner-notification", "keywords": ["draft notification", "notify", "approval request", "draft approval", "owners of"], "handler": "notifications"},
+    {"id": "backlog-summary", "keywords": ["backlog", "severity", "cleanup"], "handler": "backlog"},
+    {"id": "orphaned-access", "keywords": ["disabled or deleted", "deleted account", "orphan", "reached by"], "handler": "orphans"},
     {"id": "conflicts", "keywords": ["conflict", "contradict", "contradict each other"], "handler": "conflicts"},
-    {"id": "help", "keywords": ["help", "capabilit", "what can you do", "can you", "examples"], "handler": "help"}
+    {"id": "help", "keywords": ["what can you do", "capabilit", "examples of"], "handler": "help"}
   ]
 }

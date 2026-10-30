@@ -110,6 +110,37 @@ def test_library_access_question_reads_library_permissions(client: TestClient, a
     assert body["evidence"]["items"][0]["grantedVia"]
 
 
+def test_content_questions_go_to_the_knowledge_base_without_governance_evidence(
+    build_app, config_path, auth_headers: dict[str, str], tenant: FakeTenant
+) -> None:
+    client = TestClient(build_app(load_settings(config_path, env=FOUNDRY_ENV)))
+    body = ask(client, auth_headers, "How many weeks of paid parental leave does the primary caregiver get?")
+    assert body["intent"] == "help"
+    sent = tenant.foundry_calls[-1]["input"]
+    assert "Live evidence" not in sent
+    assert "knowledge-base tool" in sent
+
+
+def test_meeting_questions_combine_evidence_with_the_knowledge_base(
+    build_app, config_path, auth_headers: dict[str, str], tenant: FakeTenant
+) -> None:
+    client = TestClient(build_app(load_settings(config_path, env=FOUNDRY_ENV)))
+    ask(client, auth_headers, "What did the weekly tollgate meeting say about seal leaks?")
+    sent = tenant.foundry_calls[-1]["input"]
+    assert "Live evidence" in sent
+    assert "search the knowledge base" in sent
+
+
+def test_a_governance_question_keeps_the_evidence_only_prompt(
+    build_app, config_path, auth_headers: dict[str, str], tenant: FakeTenant
+) -> None:
+    client = TestClient(build_app(load_settings(config_path, env=FOUNDRY_ENV)))
+    ask(client, auth_headers, "Which documents have no knowledge owner?")
+    sent = tenant.foundry_calls[-1]["input"]
+    assert "Live evidence" in sent
+    assert "search the knowledge base" not in sent
+
+
 def test_evidence_mode_never_calls_foundry(build_app, config_path, auth_headers: dict[str, str],
                                            tenant: FakeTenant) -> None:
     settings = load_settings(config_path, env=FOUNDRY_ENV)

@@ -40,6 +40,8 @@ each over under only also such when where while within without before after othe
 more most some any all not are was were its the and for per via""".split())
 COPY_SUFFIX = re.compile(r"\s\((edited\s)?copy\)$")
 MAX_FACTS = 2
+API_URL = "https://caldova-aiscr-api.azurewebsites.net/api/v1"
+API_RESOURCE = "api://e3d6917e-1001-4f80-82c1-e7f8913dec22"
 
 
 def az(*args: str) -> str:
@@ -136,14 +138,20 @@ def build_cases(limit: int | None) -> list[dict]:
                           "question": f"What does the {title} say?"})
     curated = json.loads((ROOT / "config" / "agent-eval-questions.json").read_text(encoding="utf-8"))["questions"]
     for item in curated:
+        stem = item["cite"] or (item.get("hidden") or [""])[0]
+        site = next((s for s, d in corpus.SITE_DATA.items()
+                     if any(slug(x["title"]) == stem for dep in d["departments"] for x in dep["documents"])
+                     or any(slug(m["title"]) == stem for m in d["meetings"])), "")
         cases.append({"kind": "curated", "file": item["cite"] or ",".join(item.get("hidden", [])), "stem": item["cite"] or "",
-                      "site": "", "facts": [], "min_hits": 0, "question": item["q"], "curated": item})
+                      "site": site, "facts": [], "min_hits": 0, "question": item["q"], "curated": item})
     return cases[:limit] if limit else cases
 
 
 class Foundry:
-    def __init__(self) -> None:
+    def __init__(self, via_api: bool = False) -> None:
         self._token, self._expires = "", 0.0
+        self._via_api = via_api
+        self._api_token, self._api_expires = "", 0.0
 
     def headers(self) -> dict[str, str]:
         if time.time() > self._expires:
@@ -151,7 +159,16 @@ class Foundry:
             self._expires = time.time() + 900
         return {"Authorization": f"Bearer {self._token}"}
 
-    def ask(self, question: str) -> tuple[str, list[str]]:
+    def api_headers(self) -> dict[str, str]:
+        if time.time() > self._api_expires:
+            self._api_token = az("account", "get-access-token", "--resource", API_RESOURCE, "--query", "accessToken", "-o", "tsv")
+            self._api_expires = time.time() + 900
+        return {"Authorization": f"Bearer {self._api_token}"}
+
+    def ask(self, question: str, site: str = "") -> tuple[str, list[str]]:
+        if self._via_api:
+            reply = http("POST", f"{API_URL}/agent/messages?site={site or 'hr'}", self.api_headers(), {"prompt": question})
+            return reply.get("answer", ""), []
         project = STATE["projectEndpoint"].rstrip("/")
         conversation = http("POST", f"{project}/openai/v1/conversations", self.headers(), {})
         response = http("POST", f"{project}/openai/v1/responses", self.headers(), {
@@ -174,7 +191,7 @@ def cited(answer: str) -> str:
 def run_case(client: Foundry, case: dict) -> dict:
     started = time.time()
     try:
-        answer, retrieved = client.ask(case["question"])
+        answer, retrieved = client.ask(case["question"], case.get("site", ""))
         error = None
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         answer, retrieved, error = "", [], str(exc)
@@ -222,11 +239,13 @@ def main() -> int:
     parser.add_argument("--threshold", type=float, default=0.9)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--report", default=str(ROOT / ".state" / "agent-eval.json"))
+    parser.add_argument("--via-api", action="store_true", help="Ask through the deployed API (what the UI uses) instead of the Foundry agent directly.")
     args = parser.parse_args()
 
     cases = build_cases(args.limit)
-    print(f"Evaluating {len(cases)} questions ({sum(c['kind'] == 'hidden' for c in cases)} hidden-document checks)...")
-    client = Foundry()
+    print(f"Evaluating {len(cases)} questions ({sum(c['kind'] == 'hidden' for c in cases)} hidden-document checks) "
+          f"{'through the API' if args.via_api else 'against the Foundry agent'}...")
+    client = Foundry(args.via_api)
     client.headers()
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         results = list(pool.map(lambda case: run_case(client, case), cases))

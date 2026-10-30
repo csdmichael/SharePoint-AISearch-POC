@@ -117,13 +117,17 @@ class AgentService:
         }
 
     def _grounded_input(self, question: str, evidence: dict[str, Any]) -> str:
+        if evidence["fallback"]:
+            return f"{self._agent.instructions}\n\n{self._agent.contentQuestionInstruction}\n\nQuestion: {question}"
         body = json.dumps(evidence, default=str, ensure_ascii=False)
         if len(body) > self._limits.maxEvidenceChars:
             body = body[: self._limits.maxEvidenceChars] + " ...(evidence truncated)"
+        knowledge = f"{self._agent.knowledgeBaseInstruction}\n" if evidence["intent"] in self._agent.knowledgeBaseIntents else ""
         return (
             f"{self._agent.instructions}\n\n"
             f"Question: {question}\n"
-            f"Intent: {evidence['intent']}\n\n"
+            f"Intent: {evidence['intent']}\n"
+            f"{knowledge}\n"
             f"Live evidence (JSON, read from SharePoint and Microsoft Graph):\n{body}"
         )
 

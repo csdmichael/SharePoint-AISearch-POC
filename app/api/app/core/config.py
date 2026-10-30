@@ -654,6 +654,13 @@ class AgentConfig(_Model):
     intents: list[IntentConfig] = Field(min_length=1)
     messages: AgentMessages
     answers: AnswerText
+    # Intents whose answer also needs the knowledge base (indexed document and transcript content), and the
+    # instructions that tell the model so. The fallback intent always uses the knowledge base alone.
+    knowledgeBaseIntents: list[str] = Field(default_factory=list)
+    knowledgeBaseInstruction: str = Field(default="Also search the knowledge base for the document or transcript content before answering.")
+    contentQuestionInstruction: str = Field(
+        default="This is a question about document or meeting content. Answer it with the knowledge-base tool; no live governance evidence applies."
+    )
 
     @model_validator(mode="after")
     def _intents_consistent(self) -> "AgentConfig":
@@ -662,6 +669,9 @@ class AgentConfig(_Model):
             raise ValueError("intent ids must be unique")
         if self.fallbackIntent not in ids:
             raise ValueError("fallbackIntent must match one of the intent ids")
+        unknown = [intent for intent in self.knowledgeBaseIntents if intent not in ids]
+        if unknown:
+            raise ValueError(f"knowledgeBaseIntents names unknown intents: {', '.join(unknown)}")
         return self
 
 
