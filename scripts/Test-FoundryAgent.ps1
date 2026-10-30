@@ -66,7 +66,8 @@ foreach ($case in $cases) {
             })) -join "`n"
     $calledKnowledge = $json -match 'knowledge_base_retrieve'
     $citedSite = if ($case.ContainsKey('Site')) { $text -match [regex]::Escape("/sites/$($case.Site)/") } else { $true }
-    $leaked = $case.ContainsKey('Forbidden') -and (($text -match [regex]::Escape($case.Forbidden)) -or ($json -match [regex]::Escape($case.Forbidden)))
+    $citedLinks = [uri]::UnescapeDataString((([regex]::Matches($text, 'https://[^\s\)\]]+') | ForEach-Object { $_.Value }) -join ' ')).ToLowerInvariant() -replace '\s', '-'
+    $leaked = $case.ContainsKey('Forbidden') -and ($citedLinks -match [regex]::Escape($case.Forbidden))
     $checks = [ordered]@{ 'returned text' = -not [string]::IsNullOrWhiteSpace($text); 'called knowledge base' = $calledKnowledge }
     if ($case.ContainsKey('Site')) { $checks["cited $($case.Site)"] = $citedSite }
     if ($case.ContainsKey('Forbidden')) { $checks["did not surface $($case.Forbidden)"] = -not $leaked }

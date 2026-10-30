@@ -80,7 +80,7 @@ workflows described in [deploy/README.md](deploy/README.md).
 | --- | --- | --- |
 | Azure resource group | `<RESOURCE_GROUP>` | Exists (provisioning state Succeeded) |
 | Ionic web UI | [caldova-aiscr-ui.azurewebsites.net](https://caldova-aiscr-ui.azurewebsites.net/) | Live. Governance UI with the Microsoft logo, the agent button on every page and responsive navigation. |
-| Agent page in the UI | [/agent](https://caldova-aiscr-ui.azurewebsites.net/agent) | Live. Foundry agent page with sample prompts grouped by issue. |
+| Agent page in the UI | [/agent](https://caldova-aiscr-ui.azurewebsites.net/agent) | Live. Site Assistant page (Foundry-backed) with sample prompts grouped by issue. |
 | Python API root | `https://caldova-aiscr-api.azurewebsites.net/api/v1` | Live. Requires a bearer token with the `Auditor` app role. |
 | API Swagger UI | [/docs](https://caldova-aiscr-api.azurewebsites.net/docs) | Live. |
 | API ReDoc | [/redoc](https://caldova-aiscr-api.azurewebsites.net/redoc) | Live. |
@@ -272,7 +272,8 @@ python .\scripts\Sync-GovernanceFields.py
 ```
 
 `scripts/governance-targets.json` lists which libraries the seed, sync and audit
-scripts process.
+scripts process; `config/lifecycle-overrides.json` holds the named lifecycle
+stories the seed applies on top of its repeating pattern.
 
 ### Governance web application
 
@@ -608,8 +609,8 @@ agent's MCP tool calls. A caller can narrow it with `filterAddOn`, never widen
 or replace it. `Provision-SearchIndexes.ps1` and `provision_foundry_agent.ps1`
 both write it from `config/search-indexes.json` and `config/trusted-knowledge.json`,
 so a rebuild cannot drop it. Current counts in `departments-knowledge-index`
-(607 chunks): Draft 309, Published 206, Archived 73, Superseded 19, of which
-94 also satisfy the rest of the filter.
+(618 chunks): Draft 171, Published 411, Archived 20, Superseded 16, of which
+346 also satisfy the rest of the filter (70 documents).
 
 #### Where the filter lives, and why
 
@@ -649,12 +650,47 @@ after any change to the filter.
 
    ![Foundry agent end-to-end test](docs/images/search/04-agent-end-to-end-test.png)
 
-`scripts/Test-FoundryAgent.ps1` proves it end to end. It asks about
+`scripts/Test-FoundryAgent.ps1` is the quick smoke test. It asks about
 draft-only and superseded documents (the competitive win-loss debrief, the
 proposal and pricing template guide, the superseded paid-time-off and leave
 policy) and fails if any is cited, and it retrieves straight
 from the knowledge base and fails if any returned reference is not Published,
 authoritative and AI-ready.
+
+#### Measuring answer accuracy
+
+`scripts/evaluate_agent.py` is the full accuracy evaluation. It reads the live
+index to find every document the agent may see, then asks the agent about each
+one (a summary question plus two single-fact questions, derived from the authored
+content in `scripts/site_corpus_data.py`) and about every visible meeting
+transcript. An answer passes only if it **cites the document's own SharePoint
+link** and **states the document's real facts**. It also asks about hidden
+documents and fails on any citation, and it runs the hand-written, user-style
+questions in [config/agent-eval-questions.json](config/agent-eval-questions.json),
+including the superseded-policy case: the agent must answer *16 weeks* from the
+Parental and Family Leave Policy and must not cite or quote the superseded
+12-week policy.
+
+```powershell
+python .\scripts\evaluate_agent.py --workers 3 --threshold 0.9
+```
+
+Latest run: **184 of 184 answers correct (100%)**, 0 hidden-document citations.
+Requests retry on Foundry rate limits (HTTP 429), so use few workers.
+
+#### Which documents are visible, and why
+
+Visibility is deliberate, not accidental. `Seed-RichGovernanceData.ps1` applies a
+repeating lifecycle pattern per document: most are **Approved** (Published,
+authoritative, owner set, General sensitivity, in date), a minority are Draft, In
+Review, Archived or Superseded, and a few approved ones carry one governance flaw
+(expired, no owner, or confidential) so the cleanup pages have real findings.
+Named stories override the pattern in
+[config/lifecycle-overrides.json](config/lifecycle-overrides.json): core policies
+and procedures stay approved, the proposal template guide and the competitive
+win-loss debrief stay Draft, and the Paid Time Off and Leave of Absence Policy is
+Superseded by the Parental and Family Leave Policy. Stray `(copy)` files are
+always Draft duplicates of their approved originals.
 
 ### Index configuration
 
