@@ -72,3 +72,25 @@ def test_pptx_preview_returns_titled_slides() -> None:
 def test_unsupported_extension_is_rejected() -> None:
     with pytest.raises(ValueError):
         build_preview(".mp4", b"")
+
+
+def test_multipage_docx_preview_preserves_pages_and_tables() -> None:
+    document = Document()
+    for page_num in range(1, 13):
+        document.add_heading(f"Section {page_num}", level=1)
+        document.add_paragraph(f"Body text for section {page_num}.")
+        table = document.add_table(rows=2, cols=2)
+        table.rows[0].cells[0].text = "Key"
+        table.rows[0].cells[1].text = "Value"
+        table.rows[1].cells[0].text = f"K{page_num}"
+        table.rows[1].cells[1].text = f"V{page_num}"
+        if page_num < 12:
+            document.add_page_break()
+    buffer = BytesIO()
+    document.save(buffer)
+    preview = build_preview(".docx", buffer.getvalue())
+    assert preview["pageCount"] == 12
+    assert len(preview["pages"]) == 12
+    assert preview["pages"][0]["title"] == "Section 1"
+    assert preview["pages"][11]["title"] == "Section 12"
+

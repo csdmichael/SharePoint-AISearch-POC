@@ -9,3 +9,5 @@ imageio==2.38.1
 imageio-ffmpeg==0.6.0
 python-docx==1.2.0
 python-pptx==1.0.2
+pypdf>=4.0,<7
+reportlab>=4.0,<6

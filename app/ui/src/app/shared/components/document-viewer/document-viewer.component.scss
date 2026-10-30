@@ -84,13 +84,115 @@
 
 .doc-viewer-office {
   flex: 1 1 auto;
-  min-height: 380px;
-  max-height: 600px;
+  min-height: 440px;
+  max-height: 680px;
   overflow: auto;
-  padding: var(--space-lg);
+  padding: var(--space-md);
   background: white;
   border: 1px solid var(--surface-border);
   border-radius: var(--control-radius);
+}
+
+.viewer-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  margin-bottom: var(--space-xs);
+  background: var(--surface-table-header);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--control-radius);
+  font-size: 0.8125rem;
+}
+
+.viewer-toolbar__info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.viewer-page-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-accent-soft);
+  color: var(--surface-accent-strong);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.viewer-toolbar__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.pager-btn {
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 6px;
+  border: 1px solid var(--surface-control-border);
+  border-radius: var(--control-radius);
+  background: var(--surface-card);
+  color: var(--surface-text);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--surface-hover);
+  }
+
+  &.is-active {
+    background: var(--surface-accent);
+    border-color: var(--surface-accent);
+    color: var(--surface-accent-text);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+}
+
+.doc-preview-page-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+  padding-bottom: var(--space-xs);
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.doc-preview-page-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--control-radius);
+  background: var(--surface-accent-soft);
+  color: var(--surface-accent-strong);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.doc-preview-image-wrap {
+  margin: var(--space-sm) 0;
+  display: flex;
+  justify-content: center;
+}
+
+.doc-preview-image {
+  max-width: 100%;
+  max-height: 360px;
+  height: auto;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--control-radius);
+  background: #fff;
 }
 
 .doc-preview-heading {

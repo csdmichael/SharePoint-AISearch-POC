@@ -6,207 +6,297 @@
     "category": "Quality Assurance",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Quality Assurance/incoming-material-inspection-procedure.docx"
   },
   {
     "artifact_id": "MANUFACTURING-DOC-002",
+    "filename": "incoming-material-inspection-procedure (copy).docx",
+    "title": "Incoming Material Inspection Procedure (Copy)",
+    "category": "Quality Assurance",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
+    "relative_path": "Quality Assurance/incoming-material-inspection-procedure (copy).docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOC-003",
+    "filename": "incoming-material-inspection-procedure (edited copy).docx",
+    "title": "Incoming Material Inspection Procedure (Edited Copy)",
+    "category": "Quality Assurance",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
+    "relative_path": "Quality Assurance/incoming-material-inspection-procedure (edited copy).docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOC-004",
     "filename": "statistical-process-control-plan-line-3.docx",
     "title": "Statistical Process Control Plan - Line 3",
     "category": "Quality Assurance",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Quality Assurance/statistical-process-control-plan-line-3.docx"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-003",
+    "artifact_id": "MANUFACTURING-DOC-005",
     "filename": "corrective-and-preventive-action-capa-log.xlsx",
     "title": "Corrective and Preventive Action (CAPA) Log",
     "category": "Quality Assurance",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Quality Assurance/corrective-and-preventive-action-capa-log.xlsx"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-004",
+    "artifact_id": "MANUFACTURING-DOC-006",
+    "filename": "corrective-and-preventive-action-capa-log (copy).xlsx",
+    "title": "Corrective and Preventive Action (CAPA) Log (Copy)",
+    "category": "Quality Assurance",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
+    "relative_path": "Quality Assurance/corrective-and-preventive-action-capa-log (copy).xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOC-007",
+    "filename": "corrective-and-preventive-action-capa-log (edited copy).xlsx",
+    "title": "Corrective and Preventive Action (CAPA) Log (Edited Copy)",
+    "category": "Quality Assurance",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
+    "relative_path": "Quality Assurance/corrective-and-preventive-action-capa-log (edited copy).xlsx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOC-008",
     "filename": "customer-complaint-8d-report-bracket-assembly.pdf",
     "title": "Customer Complaint 8D Report - Bracket Assembly",
     "category": "Quality Assurance",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Quality Assurance/customer-complaint-8d-report-bracket-assembly.pdf"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-005",
+    "artifact_id": "MANUFACTURING-DOC-009",
     "filename": "iso-9001-internal-audit-checklist.docx",
     "title": "ISO 9001 Internal Audit Checklist",
     "category": "Quality Assurance",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Quality Assurance/iso-9001-internal-audit-checklist.docx"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-006",
+    "artifact_id": "MANUFACTURING-DOC-010",
     "filename": "gauge-and-equipment-calibration-schedule.xlsx",
     "title": "Gauge and Equipment Calibration Schedule",
     "category": "Quality Assurance",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Quality Assurance/gauge-and-equipment-calibration-schedule.xlsx"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-007",
+    "artifact_id": "MANUFACTURING-DOC-011",
+    "filename": "plant-quality-management-system-executive-deck.pptx",
+    "title": "Plant Quality Management System Executive Deck",
+    "category": "Quality Assurance",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
+    "relative_path": "Quality Assurance/plant-quality-management-system-executive-deck.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOC-012",
+    "filename": "plant-quality-management-system-executive-deck (copy).pptx",
+    "title": "Plant Quality Management System Executive Deck (Copy)",
+    "category": "Quality Assurance",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
+    "relative_path": "Quality Assurance/plant-quality-management-system-executive-deck (copy).pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOC-013",
+    "filename": "plant-quality-management-system-executive-deck (edited copy).pptx",
+    "title": "Plant Quality Management System Executive Deck (Edited Copy)",
+    "category": "Quality Assurance",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
+    "relative_path": "Quality Assurance/plant-quality-management-system-executive-deck (edited copy).pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOC-014",
     "filename": "process-fmea-bracket-welding-cell.pdf",
     "title": "Process FMEA - Bracket Welding Cell",
     "category": "Process Engineering",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Process Engineering/process-fmea-bracket-welding-cell.pdf"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-008",
+    "artifact_id": "MANUFACTURING-DOC-015",
     "filename": "work-instruction-update-station-7-torque-sequence.docx",
     "title": "Work Instruction Update - Station 7 Torque Sequence",
     "category": "Process Engineering",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Process Engineering/work-instruction-update-station-7-torque-sequence.docx"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-009",
+    "artifact_id": "MANUFACTURING-DOC-016",
     "filename": "line-balancing-study-assembly-line-2.pdf",
     "title": "Line Balancing Study - Assembly Line 2",
     "category": "Process Engineering",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Process Engineering/line-balancing-study-assembly-line-2.pdf"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-010",
+    "artifact_id": "MANUFACTURING-DOC-017",
     "filename": "tooling-validation-report-new-injection-mold.pdf",
     "title": "Tooling Validation Report - New Injection Mold",
     "category": "Process Engineering",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Process Engineering/tooling-validation-report-new-injection-mold.pdf"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-011",
+    "artifact_id": "MANUFACTURING-DOC-018",
     "filename": "yield-improvement-project-charter-line-3.pptx",
     "title": "Yield Improvement Project Charter - Line 3",
     "category": "Process Engineering",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Process Engineering/yield-improvement-project-charter-line-3.pptx"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-012",
+    "artifact_id": "MANUFACTURING-DOC-019",
     "filename": "shift-handover-log-template-and-guide.docx",
     "title": "Shift Handover Log Template and Guide",
     "category": "Production Operations",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Production Operations/shift-handover-log-template-and-guide.docx"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-013",
+    "artifact_id": "MANUFACTURING-DOC-020",
     "filename": "overall-equipment-effectiveness-oee-tracker.xlsx",
     "title": "Overall Equipment Effectiveness (OEE) Tracker",
     "category": "Production Operations",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Production Operations/overall-equipment-effectiveness-oee-tracker.xlsx"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-014",
+    "artifact_id": "MANUFACTURING-DOC-021",
     "filename": "preventive-maintenance-schedule-line-2.xlsx",
     "title": "Preventive Maintenance Schedule - Line 2",
     "category": "Production Operations",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Production Operations/preventive-maintenance-schedule-line-2.xlsx"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-015",
+    "artifact_id": "MANUFACTURING-DOC-022",
     "filename": "changeover-standard-operating-procedure.docx",
     "title": "Changeover Standard Operating Procedure",
     "category": "Production Operations",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Production Operations/changeover-standard-operating-procedure.docx"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-016",
+    "artifact_id": "MANUFACTURING-DOC-023",
     "filename": "safety-incident-report-near-miss-forklift-interaction.pdf",
     "title": "Safety Incident Report - Near Miss Forklift Interaction",
     "category": "Production Operations",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Production Operations/safety-incident-report-near-miss-forklift-interaction.pdf"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-017",
+    "artifact_id": "MANUFACTURING-DOC-024",
+    "filename": "plant-operations-and-oee-performance-deck.pptx",
+    "title": "Plant Operations and OEE Performance Deck",
+    "category": "Production Operations",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
+    "relative_path": "Production Operations/plant-operations-and-oee-performance-deck.pptx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOC-025",
+    "filename": "comprehensive-plant-oee-and-maintenance-manual.docx",
+    "title": "Comprehensive Plant OEE and Maintenance Manual",
+    "category": "Production Operations",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
+    "relative_path": "Production Operations/comprehensive-plant-oee-and-maintenance-manual.docx"
+  },
+  {
+    "artifact_id": "MANUFACTURING-DOC-026",
     "filename": "supplier-scorecard-fastener-components.pdf",
     "title": "Supplier Scorecard - Fastener Components",
     "category": "Supply Chain and Logistics",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Supply Chain and Logistics/supplier-scorecard-fastener-components.pdf"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-018",
+    "artifact_id": "MANUFACTURING-DOC-027",
     "filename": "inventory-cycle-count-procedure.docx",
     "title": "Inventory Cycle Count Procedure",
     "category": "Supply Chain and Logistics",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Supply Chain and Logistics/inventory-cycle-count-procedure.docx"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-019",
+    "artifact_id": "MANUFACTURING-DOC-028",
     "filename": "incoming-materials-service-level-agreement.docx",
     "title": "Incoming Materials Service Level Agreement",
     "category": "Supply Chain and Logistics",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Supply Chain and Logistics/incoming-materials-service-level-agreement.docx"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-020",
+    "artifact_id": "MANUFACTURING-DOC-029",
     "filename": "freight-cost-analysis-q2.pdf",
     "title": "Freight Cost Analysis - Q2",
     "category": "Supply Chain and Logistics",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Supply Chain and Logistics/freight-cost-analysis-q2.pdf"
   },
   {
-    "artifact_id": "MANUFACTURING-DOC-021",
+    "artifact_id": "MANUFACTURING-DOC-030",
     "filename": "supplier-corrective-action-request-packaging-defect.pdf",
     "title": "Supplier Corrective Action Request - Packaging Defect",
     "category": "Supply Chain and Logistics",
     "source_table": "corp.manufacturing.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Supply Chain and Logistics/supplier-corrective-action-request-packaging-defect.pdf"
   },
   {
@@ -216,7 +306,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/line-3-yield-improvement-weekly-tollgate.mp4"
   },
   {
@@ -226,7 +316,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/line-3-yield-improvement-weekly-tollgate.vtt"
   },
   {
@@ -236,7 +326,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/line-3-yield-improvement-weekly-tollgate.txt"
   },
   {
@@ -246,7 +336,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/monthly-oee-and-downtime-review.mp4"
   },
   {
@@ -256,7 +346,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/monthly-oee-and-downtime-review.vtt"
   },
   {
@@ -266,7 +356,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/monthly-oee-and-downtime-review.txt"
   },
   {
@@ -276,7 +366,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/supplier-quarterly-business-review-fasteners.mp4"
   },
   {
@@ -286,7 +376,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/supplier-quarterly-business-review-fasteners.vtt"
   },
   {
@@ -296,7 +386,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/supplier-quarterly-business-review-fasteners.txt"
   },
   {
@@ -306,7 +396,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/capa-review-board.mp4"
   },
   {
@@ -316,7 +406,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/capa-review-board.vtt"
   },
   {
@@ -326,7 +416,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/capa-review-board.txt"
   },
   {
@@ -336,7 +426,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/iso-9001-internal-audit-planning.mp4"
   },
   {
@@ -346,7 +436,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/iso-9001-internal-audit-planning.vtt"
   },
   {
@@ -356,7 +446,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/iso-9001-internal-audit-planning.txt"
   },
   {
@@ -366,7 +456,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/safety-committee-monthly-meeting.mp4"
   },
   {
@@ -376,7 +466,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/safety-committee-monthly-meeting.vtt"
   },
   {
@@ -386,7 +476,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/safety-committee-monthly-meeting.txt"
   },
   {
@@ -396,7 +486,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/preventive-maintenance-compliance-review.mp4"
   },
   {
@@ -406,7 +496,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/preventive-maintenance-compliance-review.vtt"
   },
   {
@@ -416,7 +506,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/preventive-maintenance-compliance-review.txt"
   },
   {
@@ -426,7 +516,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/new-mold-tooling-validation-sign-off.mp4"
   },
   {
@@ -436,7 +526,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/new-mold-tooling-validation-sign-off.vtt"
   },
   {
@@ -446,7 +536,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/new-mold-tooling-validation-sign-off.txt"
   },
   {
@@ -456,7 +546,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/line-balancing-pilot-review-assembly-line-2.mp4"
   },
   {
@@ -466,7 +556,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/line-balancing-pilot-review-assembly-line-2.vtt"
   },
   {
@@ -476,7 +566,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/line-balancing-pilot-review-assembly-line-2.txt"
   },
   {
@@ -486,7 +576,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/freight-cost-reduction-working-session.mp4"
   },
   {
@@ -496,7 +586,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/freight-cost-reduction-working-session.vtt"
   },
   {
@@ -506,7 +596,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/freight-cost-reduction-working-session.txt"
   },
   {
@@ -516,7 +606,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/incoming-inspection-process-improvement-session.mp4"
   },
   {
@@ -526,7 +616,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/incoming-inspection-process-improvement-session.vtt"
   },
   {
@@ -536,7 +626,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.manufacturing.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:06.769563+00:00",
+    "profile_generated_at": "2026-10-30T12:18:47.540895+00:00",
     "relative_path": "Meeting Recordings and Transcripts/incoming-inspection-process-improvement-session.txt"
   }
 ]

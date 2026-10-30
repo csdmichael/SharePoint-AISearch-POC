@@ -518,6 +518,33 @@ def create_docx(
             )
         ):
             set_docx_cell_text(cells[column], value)
+    extra_docx_sections = (
+        ("Operational Governance Controls", "Defines lot release gates, excursion escalation thresholds, and owner sign-off SLAs."),
+        ("Statistical Process Capability", "Tracks Cp/Cpk stability across fabs, process nodes, and measurement equipment."),
+        ("Containment & 8D Escalation Matrix", "Maps excursion severity tiers to Material Review Board containment windows."),
+        ("Cross-Site Supply & Yield Alignment", "Reconciles wafer starts, die-bank buffers, and downstream assembly capacity."),
+        ("Audit Readiness & Traceability", "Verifies Databricks-to-SharePoint lineage, calibration logs, and review currency."),
+        ("Quarterly Continuous Improvement Roadmap", "Schedules yield ramp milestones, recipe tightening, and scrap reduction targets."),
+        ("Appendix & Executive Sign-off", "Records accountable owner attestation, revision history, and governance compliance."),
+    )
+    for extra_idx, (sec_heading, sec_summary) in enumerate(extra_docx_sections, start=5):
+        document.add_page_break()
+        document.add_heading(f"Page {extra_idx}: {sec_heading}", level=2)
+        document.add_paragraph(f"{sec_summary} Grounded in {spec['source_table']} ({spec['artifact_id']}).")
+        sec_tbl = document.add_table(rows=1, cols=3)
+        sec_tbl.style = "Light Shading Accent 1"
+        for col_i, h_text in enumerate(("Control Gate", "Target SLA", "Verification")):
+            set_docx_cell_text(sec_tbl.rows[0].cells[col_i], h_text, True)
+        for row_label, sla_val, status_val in (
+            (f"{spec['category']} Gate {extra_idx}.1", "24 hours", "Verified"),
+            (f"{spec['category']} Gate {extra_idx}.2", "5 business days", "Active"),
+        ):
+            r_cells = sec_tbl.add_row().cells
+            set_docx_cell_text(r_cells[0], row_label)
+            set_docx_cell_text(r_cells[1], sla_val)
+            set_docx_cell_text(r_cells[2], status_val)
+        if extra_idx in (6, 9):
+            document.add_picture(str(diagram_path if extra_idx == 6 else chart_path), width=DocxInches(5.8))
     footer = section.footer.paragraphs[0]
     footer.text = f"{AUTHOR} | {spec['source_table']} | {spec['artifact_id']}"
     footer.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -758,6 +785,28 @@ def create_pptx(path: Path, spec: dict, rows: list[dict], aggregate: dict, colum
     note.text_frame.paragraphs[0].font.size = Pt(12)
     note.text_frame.paragraphs[0].font.color.rgb = RGBColor(64, 80, 88)
     add_ppt_footer(slide, spec)
+
+    for extra_slide_title, extra_slide_note in (
+        ("Operational governance gates", "Lot containment, MRB escalation SLAs, and cross-fab sign-off checkpoints."),
+        ("Capability & benchmark tracking", "Quarterly Cpk, DPPM, and cycle-time targets tracked against baseline."),
+        ("Risk register & mitigations", "Primary excursion, tooling, and supplier lead-time mitigations."),
+        ("Continuous improvement roadmap", "Next-quarter automation, recipe optimization, and audit milestones."),
+    ):
+        extra_slide = presentation.slides.add_slide(blank)
+        add_ppt_title(extra_slide, extra_slide_title, accent)
+        body_box = extra_slide.shapes.add_textbox(Inches(0.8), Inches(1.4), Inches(11.6), Inches(1.4))
+        body_box.text_frame.text = f"{extra_slide_note}\nSource: {spec['source_table']} ({spec['artifact_id']})"
+        tbl_shape = extra_slide.shapes.add_table(3, 3, Inches(0.8), Inches(3.1), Inches(11.4), Inches(2.4)).table
+        for c_i, h_val in enumerate(("Checkpoint", "Owner / Scope", "Target SLA")):
+            tbl_shape.cell(0, c_i).text = h_val
+        tbl_shape.cell(1, 0).text = f"{spec['category']} Primary Gate"
+        tbl_shape.cell(1, 1).text = spec["perspective"]
+        tbl_shape.cell(1, 2).text = "24 hours"
+        tbl_shape.cell(2, 0).text = f"{spec['category']} Quarterly Audit"
+        tbl_shape.cell(2, 1).text = SHAREPOINT_LIBRARY_NAME
+        tbl_shape.cell(2, 2).text = "5 business days"
+        add_ppt_footer(extra_slide, spec)
+
     presentation.save(path)
 
 
@@ -934,6 +983,23 @@ def create_xlsx(path: Path, spec: dict, rows: list[dict], aggregate: dict, colum
     lineage["B9"].alignment = Alignment(wrap_text=True, vertical="top")
     for column in range(1, 13):
         lineage.column_dimensions[lineage.cell(1, column).column_letter].width = 13
+
+    for extra_sheet_name, extra_desc in (
+        ("Operational Controls", "Lot release gates, excursion containment thresholds, and owner sign-off SLAs."),
+        ("Risk Register", "Fab, tooling, and supplier risk items with preventive and contingency controls."),
+        ("Quarterly Benchmarks", "Quarter-over-quarter yield, throughput, and quality benchmark progression."),
+        ("Governance Audit", "SharePoint metadata verification, review schedule compliance, and AI-readiness checks."),
+    ):
+        extra_ws = workbook.create_sheet(extra_sheet_name)
+        extra_ws["A1"] = f"{spec['title']} - {extra_sheet_name}"
+        extra_ws["A1"].font = Font(size=15, bold=True, color=accent)
+        extra_ws["A2"] = extra_desc
+        extra_ws.append(["Control ID", "Category", "Source Table", "Target SLA", "Status"])
+        style_excel_header(extra_ws[3], accent)
+        for r_idx in range(1, 6):
+            extra_ws.append([f"{spec['artifact_id']}-C{r_idx}", spec["category"], spec["source_table"], "5 business days", "Verified"])
+        for col_i in range(1, 6):
+            extra_ws.column_dimensions[extra_ws.cell(1, col_i).column_letter].width = 24
 
     for worksheet in workbook.worksheets:
         worksheet.sheet_view.showGridLines = False

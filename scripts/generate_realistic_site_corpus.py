@@ -21,6 +21,8 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import copy
+import io
 import json
 import math
 import os
@@ -32,10 +34,11 @@ from pathlib import Path
 import numpy as np
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Pt, RGBColor
+from docx.shared import Inches as DocxInches, Pt, RGBColor
 from imageio_ffmpeg import get_ffmpeg_exe
 from moviepy import AudioClip, VideoClip
 from openpyxl import Workbook
+from openpyxl.drawing.image import Image as XlsxImage
 from openpyxl.styles import Alignment, Font, PatternFill
 from PIL import Image, ImageDraw, ImageFont
 from pptx import Presentation
@@ -44,7 +47,7 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
-from reportlab.platypus import ListFlowable, ListItem, Paragraph, SimpleDocTemplate, Spacer
+from reportlab.platypus import Image as PdfImage, ListFlowable, ListItem, PageBreak, Paragraph, SimpleDocTemplate, Spacer
 from reportlab.platypus import Table as PdfTable
 from reportlab.platypus import TableStyle
 
@@ -89,59 +92,233 @@ def parse_args() -> argparse.Namespace:
 
 
 # ---------------------------------------------------------------------------
-# Document renderers
+# Document renderers (12 pages / 12 slides / 12 sheets with tables & diagrams)
 # ---------------------------------------------------------------------------
+
+SECTION_BLUEPRINTS = [
+    ("Executive Summary & Scope", "Overview", "Defines the operational charter, scope boundaries, and executive accountability."),
+    ("Architecture & Process Flow", "Architecture", "Maps end-to-end process stages, handoff gates, and system-of-record integrations."),
+    ("Governance Standards & Controls", "Controls", "Establishes mandatory compliance controls, approval thresholds, and audit evidence."),
+    ("Operational KPIs & Benchmarks", "KPIs", "Tracks baseline performance, target SLAs, and quarterly benchmark progression."),
+    ("Roles, Responsibilities & RACI", "RACI Matrix", "Clarifies ownership across accountable executives, operational leads, and reviewers."),
+    ("Standard Operating Procedures", "Procedures", "Provides step-by-step execution checklists, intake criteria, and verification gates."),
+    ("Risk Register & Mitigations", "Risk Register", "Catalogs operational, compliance, and delivery risks alongside preventive mitigations."),
+    ("Quality Assurance & Audits", "Quality Audit", "Specifies sampling frequencies, inspection tolerances, and nonconformance workflows."),
+    ("Exception Handling & Escalations", "Escalations", "Outlines severity tiers, response SLAs, and cross-functional escalation paths."),
+    ("Cross-Functional Dependencies", "SLAs", "Documents upstream and downstream team dependencies and service-level commitments."),
+    ("Continuous Improvement Roadmap", "Roadmap", "Schedules quarterly optimization milestones, automation targets, and capability reviews."),
+    ("Appendix, Lineage & Sign-off", "Sign-off", "Records document lineage, governance metadata, version history, and owner sign-off."),
+]
+
+
+def _create_architecture_diagram_png(title: str, site_label: str, department: str) -> bytes:
+    width, height = 760, 250
+    image = Image.new("RGB", (width, height), color=(248, 250, 252))
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.load_default()
+
+    draw.rectangle((0, 0, width, 42), fill=(31, 78, 121))
+    draw.text((16, 14), f"{site_label} | {department} - Process & Governance Flow", fill=(255, 255, 255), font=font)
+
+    stages = [
+        ("1. Intake & Scope", "Owner validation\n& classification", (43, 87, 154)),
+        ("2. Policy Controls", "Compliance gate\n& peer review", (33, 115, 70)),
+        ("3. Execution & SLA", "Operational run\n& telemetry log", (180, 95, 6)),
+        ("4. Audit & Index", "SharePoint + AI\nSearch governance", (92, 45, 145)),
+    ]
+    box_w, box_h = 155, 125
+    top_y = 68
+    for idx, (heading, sub, color) in enumerate(stages):
+        left_x = 24 + idx * 182
+        draw.rounded_rectangle(
+            (left_x, top_y, left_x + box_w, top_y + box_h),
+            radius=10,
+            fill=(255, 255, 255),
+            outline=color,
+            width=3,
+        )
+        draw.rectangle((left_x, top_y, left_x + box_w, top_y + 32), fill=color)
+        draw.text((left_x + 10, top_y + 10), heading, fill=(255, 255, 255), font=font)
+        draw.text((left_x + 12, top_y + 52), sub, fill=(40, 50, 65), font=font)
+        if idx < len(stages) - 1:
+            ax = left_x + box_w + 4
+            ay = top_y + box_h // 2
+            draw.line((ax, ay, ax + 18, ay), fill=(31, 78, 121), width=3)
+            draw.polygon([(ax + 18, ay - 6), (ax + 25, ay), (ax + 18, ay + 6)], fill=(31, 78, 121))
+
+    draw.text((16, 215), f"Artifact Workflow Diagram: {title[:75]}", fill=(90, 102, 115), font=font)
+    buf = io.BytesIO()
+    image.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def _create_kpi_chart_png(title: str, department: str) -> bytes:
+    width, height = 760, 250
+    image = Image.new("RGB", (width, height), color=(255, 255, 255))
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.load_default()
+
+    draw.rectangle((0, 0, width, 38), fill=(21, 101, 192))
+    draw.text((16, 12), f"{department} - Operational KPI & Compliance Benchmark Chart", fill=(255, 255, 255), font=font)
+
+    bars = [
+        ("Q1 Baseline", 78, (100, 149, 237)),
+        ("Q2 Actual", 86, (65, 105, 225)),
+        ("Q3 Current", 93, (33, 150, 83)),
+        ("SLA Target", 95, (242, 153, 74)),
+        ("Audit Score", 98, (45, 156, 219)),
+    ]
+    chart_left, chart_bottom, chart_top = 70, 205, 58
+    chart_height = chart_bottom - chart_top
+    for pct in (25, 50, 75, 100):
+        y = chart_bottom - int(chart_height * (pct / 100.0))
+        draw.line((chart_left, y, width - 30, y), fill=(225, 230, 238), width=1)
+        draw.text((25, y - 6), f"{pct}%", fill=(100, 110, 125), font=font)
+
+    for idx, (label, val, color) in enumerate(bars):
+        bx = chart_left + 30 + idx * 125
+        bh = int(chart_height * (val / 100.0))
+        by = chart_bottom - bh
+        draw.rectangle((bx, by, bx + 72, chart_bottom), fill=color, outline=(30, 40, 60), width=1)
+        draw.text((bx + 18, by - 16), f"{val}%", fill=(20, 30, 45), font=font)
+        draw.text((bx + 4, chart_bottom + 8), label, fill=(40, 50, 65), font=font)
+
+    draw.line((chart_left, chart_top, chart_left, chart_bottom), fill=(80, 90, 105), width=2)
+    draw.line((chart_left, chart_bottom, width - 30, chart_bottom), fill=(80, 90, 105), width=2)
+    buf = io.BytesIO()
+    image.save(buf, format="PNG")
+    return buf.getvalue()
+
 
 def _owner_line(owner: str, generated_at: datetime) -> str:
     return f"Owner: {owner}  |  Last updated: {generated_at.strftime('%B %d, %Y')}"
 
 
+def _build_sections(doc: dict, site_label: str, department: str, generated_at: datetime) -> list[dict]:
+    base_table = doc["table"] or [
+        ("Control Area", "Owner", "Target SLA", "Verification Status"),
+        (department, doc["owner"], "5 business days", "Verified"),
+        (f"{doc['title'][:28]} Gate 1", doc["owner"], "3 business days", "Active"),
+        (f"{doc['title'][:28]} Gate 2", doc["owner"], "10 business days", "Monitored"),
+    ]
+    points = list(doc["points"])
+    sections: list[dict] = []
+    for idx, (sec_title, short_sheet, sec_desc) in enumerate(SECTION_BLUEPRINTS, start=1):
+        p1 = (
+            f"{doc['summary']} Section {idx} ({sec_title}) applies to {department} within {site_label} "
+            f"and is maintained by {doc['owner']}. {sec_desc}"
+        )
+        p2 = (
+            f"Operational requirement {idx}.1: {points[(idx - 1) % len(points)]} "
+            f"Secondary control {idx}.2: {points[idx % len(points)]}"
+        )
+        sec_bullets = [
+            points[(idx - 1) % len(points)],
+            points[idx % len(points)],
+            f"Section {idx} review cadence is tracked by {doc['owner']} under {department} governance.",
+        ]
+        if idx == 1:
+            sec_table = base_table
+        else:
+            header, *rows = base_table
+            sec_table = [
+                header,
+                *rows,
+                tuple(
+                    f"Sec-{idx}" if col == 0 else (f"Stage {idx} Verified" if col == len(header) - 1 else str(val))
+                    for col, val in enumerate(rows[(idx - 1) % len(rows)])
+                ),
+            ]
+        image_kind = None
+        if idx in (2, 6, 9):
+            image_kind = "architecture"
+        elif idx in (4, 8, 11):
+            image_kind = "chart"
+        sections.append(
+            {
+                "number": idx,
+                "heading": f"Section {idx}: {sec_title}",
+                "sheet_name": f"{idx:02d} {short_sheet}"[:31],
+                "paragraphs": [p1, p2],
+                "bullets": sec_bullets,
+                "table": sec_table,
+                "image_kind": image_kind,
+            }
+        )
+    return sections
+
+
 def render_docx(path: Path, doc: dict, site_label: str, department: str, generated_at: datetime) -> None:
     document = Document()
-    title = document.add_heading(doc["title"], level=0)
-    title.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    meta = document.add_paragraph(f"{site_label} | {department}")
-    meta.runs[0].italic = True
-    document.add_paragraph(_owner_line(doc["owner"], generated_at))
-    document.add_paragraph(doc["summary"])
-    document.add_heading("Key Points", level=1)
-    for point in doc["points"]:
-        document.add_paragraph(point, style="List Bullet")
-    if doc["table"]:
-        header, *rows = doc["table"]
+    arch_png = _create_architecture_diagram_png(doc["title"], site_label, department)
+    chart_png = _create_kpi_chart_png(doc["title"], department)
+    sections = _build_sections(doc, site_label, department, generated_at)
+
+    for sec in sections:
+        if sec["number"] == 1:
+            title = document.add_heading(doc["title"], level=0)
+            title.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            meta = document.add_paragraph(f"{site_label} | {department} | {_owner_line(doc['owner'], generated_at)}")
+            meta.runs[0].italic = True
+
+        document.add_heading(sec["heading"], level=1)
+        for para in sec["paragraphs"]:
+            document.add_paragraph(para)
+        for point in sec["bullets"]:
+            document.add_paragraph(point, style="List Bullet")
+
+        header, *rows = sec["table"]
         table = document.add_table(rows=1, cols=len(header))
         table.style = "Light Grid Accent 1"
         for cell, value in zip(table.rows[0].cells, header):
             cell.text = str(value)
-            cell.paragraphs[0].runs[0].bold = True
+            if cell.paragraphs and cell.paragraphs[0].runs:
+                cell.paragraphs[0].runs[0].bold = True
         for row in rows:
             cells = table.add_row().cells
             for cell, value in zip(cells, row):
                 cell.text = str(value)
-    footer = document.add_paragraph(f"Source: {site_label} knowledge base | {SOURCE_SYSTEM}")
-    footer.runs[0].font.size = Pt(8)
-    footer.runs[0].font.color.rgb = RGBColor(0x80, 0x80, 0x80)
+
+        if sec["image_kind"] == "architecture":
+            document.add_picture(io.BytesIO(arch_png), width=DocxInches(5.8))
+        elif sec["image_kind"] == "chart":
+            document.add_picture(io.BytesIO(chart_png), width=DocxInches(5.8))
+
+        footer = document.add_paragraph(
+            f"Page {sec['number']} of {len(sections)} | {site_label} | {department} | {SOURCE_SYSTEM}"
+        )
+        footer.runs[0].font.size = Pt(8)
+        footer.runs[0].font.color.rgb = RGBColor(0x80, 0x80, 0x80)
+
+        if sec["number"] < len(sections):
+            document.add_page_break()
+
     document.save(path)
 
 
 def render_pdf(path: Path, doc: dict, site_label: str, department: str, generated_at: datetime) -> None:
     styles = getSampleStyleSheet()
-    body_style = ParagraphStyle("Body", parent=styles["BodyText"], spaceAfter=10)
-    meta_style = ParagraphStyle("Meta", parent=styles["Normal"], textColor=colors.HexColor("#555555"), spaceAfter=12)
-    story = [
-        Paragraph(doc["title"], styles["Title"]),
-        Paragraph(f"{site_label} | {department}", meta_style),
-        Paragraph(_owner_line(doc["owner"], generated_at), meta_style),
-        Paragraph(doc["summary"], body_style),
-        Paragraph("Key Points", styles["Heading2"]),
-        ListFlowable(
-            [ListItem(Paragraph(point, body_style)) for point in doc["points"]],
-            bulletType="bullet",
-        ),
-        Spacer(1, 12),
-    ]
-    if doc["table"]:
-        header, *rows = doc["table"]
+    body_style = ParagraphStyle("Body", parent=styles["BodyText"], spaceAfter=8, leading=13)
+    meta_style = ParagraphStyle("Meta", parent=styles["Normal"], textColor=colors.HexColor("#555555"), spaceAfter=10)
+    arch_png = _create_architecture_diagram_png(doc["title"], site_label, department)
+    chart_png = _create_kpi_chart_png(doc["title"], department)
+    sections = _build_sections(doc, site_label, department, generated_at)
+
+    story = []
+    for sec in sections:
+        story.append(Paragraph(f"{doc['title']} - {sec['heading']}", styles["Title"] if sec["number"] == 1 else styles["Heading1"]))
+        story.append(Paragraph(f"{site_label} | {department} | {_owner_line(doc['owner'], generated_at)} | Page {sec['number']} of {len(sections)}", meta_style))
+        for para in sec["paragraphs"]:
+            story.append(Paragraph(para, body_style))
+        story.append(
+            ListFlowable(
+                [ListItem(Paragraph(point, body_style)) for point in sec["bullets"]],
+                bulletType="bullet",
+            )
+        )
+        story.append(Spacer(1, 8))
+
+        header, *rows = sec["table"]
         pdf_table = PdfTable([header, *rows], hAlign="LEFT")
         pdf_table.setStyle(
             TableStyle(
@@ -150,99 +327,149 @@ def render_pdf(path: Path, doc: dict, site_label: str, department: str, generate
                     ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
                     ("FONTSIZE", (0, 0), (-1, -1), 8.5),
                     ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#BBBBBB")),
-                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F2F2F2")]),
+                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F2F4F8")]),
                 ]
             )
         )
         story.append(pdf_table)
-    story.append(Spacer(1, 18))
-    story.append(Paragraph(f"Source: {site_label} knowledge base | {SOURCE_SYSTEM}", meta_style))
-    SimpleDocTemplate(str(path), pagesize=letter, topMargin=0.75 * inch, bottomMargin=0.75 * inch).build(story)
+        story.append(Spacer(1, 10))
+
+        img_bytes = arch_png if sec["image_kind"] == "architecture" else (chart_png if sec["image_kind"] == "chart" else None)
+        if img_bytes:
+            story.append(PdfImage(io.BytesIO(img_bytes), width=430, height=142))
+            story.append(Spacer(1, 8))
+
+        story.append(Paragraph(f"Source: {site_label} knowledge base | {SOURCE_SYSTEM}", meta_style))
+        if sec["number"] < len(sections):
+            story.append(PageBreak())
+
+    SimpleDocTemplate(str(path), pagesize=letter, topMargin=0.6 * inch, bottomMargin=0.6 * inch).build(story)
 
 
 def render_xlsx(path: Path, doc: dict, site_label: str, department: str, generated_at: datetime) -> None:
     workbook = Workbook()
-    sheet = workbook.active
-    sheet.title = "Overview"
+    workbook.remove(workbook.active)
     header_font = Font(bold=True, color="FFFFFF")
     header_fill = PatternFill(start_color="1F4E79", end_color="1F4E79", fill_type="solid")
+    arch_png = _create_architecture_diagram_png(doc["title"], site_label, department)
+    chart_png = _create_kpi_chart_png(doc["title"], department)
+    sections = _build_sections(doc, site_label, department, generated_at)
 
-    sheet.merge_cells("A1:D1")
-    sheet["A1"] = doc["title"]
-    sheet["A1"].font = Font(bold=True, size=14)
-    sheet.merge_cells("A2:D2")
-    sheet["A2"] = f"{site_label} | {department} | {_owner_line(doc['owner'], generated_at)}"
-    sheet.merge_cells("A3:D3")
-    sheet["A3"] = doc["summary"]
-    sheet["A3"].alignment = Alignment(wrap_text=True)
-    sheet.row_dimensions[3].height = 45
+    for sec in sections:
+        sheet = workbook.create_sheet(title=sec["sheet_name"])
+        sheet.merge_cells("A1:D1")
+        sheet["A1"] = f"{doc['title']} - {sec['heading']}"
+        sheet["A1"].font = Font(bold=True, size=13, color="1F4E79")
+        sheet.merge_cells("A2:D2")
+        sheet["A2"] = f"{site_label} | {department} | {_owner_line(doc['owner'], generated_at)}"
+        sheet.merge_cells("A3:D3")
+        sheet["A3"] = sec["paragraphs"][0]
+        sheet["A3"].alignment = Alignment(wrap_text=True)
+        sheet.row_dimensions[3].height = 42
+        sheet.merge_cells("A4:D4")
+        sheet["A4"] = sec["paragraphs"][1]
+        sheet["A4"].alignment = Alignment(wrap_text=True)
+        sheet.row_dimensions[4].height = 36
 
-    row = 5
-    table = doc["table"] or [("Key Point",), *[(point,) for point in doc["points"]]]
-    header, *rows = table
-    for col_index, value in enumerate(header, start=1):
-        cell = sheet.cell(row=row, column=col_index, value=str(value))
-        cell.font = header_font
-        cell.fill = header_fill
-    for row_offset, data_row in enumerate(rows, start=1):
-        for col_index, value in enumerate(data_row, start=1):
-            sheet.cell(row=row + row_offset, column=col_index, value=str(value))
-    for col_index in range(1, max(len(header), 4) + 1):
-        sheet.column_dimensions[chr(64 + col_index)].width = 32
+        row_start = 6
+        header, *rows = sec["table"]
+        for col_index, value in enumerate(header, start=1):
+            cell = sheet.cell(row=row_start, column=col_index, value=str(value))
+            cell.font = header_font
+            cell.fill = header_fill
+        for row_offset, data_row in enumerate(rows, start=1):
+            for col_index, value in enumerate(data_row, start=1):
+                sheet.cell(row=row_start + row_offset, column=col_index, value=str(value))
+
+        bullet_start = row_start + len(rows) + 2
+        sheet.cell(row=bullet_start, column=1, value="Governance Checkpoints").font = Font(bold=True)
+        for b_idx, bullet in enumerate(sec["bullets"], start=1):
+            sheet.cell(row=bullet_start + b_idx, column=1, value=f"• {bullet}")
+
+        img_bytes = arch_png if sec["image_kind"] == "architecture" else (chart_png if sec["image_kind"] == "chart" else None)
+        if img_bytes:
+            xl_img = XlsxImage(io.BytesIO(img_bytes))
+            xl_img.width = 480
+            xl_img.height = 160
+            sheet.add_image(xl_img, f"A{bullet_start + len(sec['bullets']) + 2}")
+
+        for col_index in range(1, max(len(header), 4) + 1):
+            sheet.column_dimensions[chr(64 + col_index)].width = 30
+
     workbook.save(path)
 
 
 def render_pptx(path: Path, doc: dict, site_label: str, department: str, generated_at: datetime) -> None:
     presentation = Presentation()
-    title_slide = presentation.slides.add_slide(presentation.slide_layouts[0])
-    title_slide.shapes.title.text = doc["title"]
-    title_slide.placeholders[1].text = f"{site_label} | {department}\n{_owner_line(doc['owner'], generated_at)}"
+    presentation.slide_width = Inches(13.333)
+    presentation.slide_height = Inches(7.5)
+    arch_png = _create_architecture_diagram_png(doc["title"], site_label, department)
+    chart_png = _create_kpi_chart_png(doc["title"], department)
+    sections = _build_sections(doc, site_label, department, generated_at)
 
-    content_slide = presentation.slides.add_slide(presentation.slide_layouts[1])
-    content_slide.shapes.title.text = "Overview"
-    body = content_slide.placeholders[1].text_frame
-    body.text = doc["summary"]
-    for point in doc["points"]:
-        paragraph = body.add_paragraph()
-        paragraph.text = point
-        paragraph.level = 1
+    for sec in sections:
+        slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+        slide.shapes.title.text = f"{sec['number']}. {sec['heading'].split(': ', 1)[-1]} - {doc['title'][:36]}"
+        body = slide.placeholders[1].text_frame
+        body.text = sec["paragraphs"][0]
+        for bullet in sec["bullets"]:
+            paragraph = body.add_paragraph()
+            paragraph.text = bullet
+            paragraph.level = 1
 
-    if doc["metrics"]:
-        metrics_slide = presentation.slides.add_slide(presentation.slide_layouts[1])
-        metrics_slide.shapes.title.text = "Key Metrics"
-        metrics_body = metrics_slide.placeholders[1].text_frame
-        first = True
-        for name, value in doc["metrics"].items():
-            if first:
-                metrics_body.text = f"{name}: {value}"
-                first = False
-            else:
-                paragraph = metrics_body.add_paragraph()
-                paragraph.text = f"{name}: {value}"
-
-    if doc["table"]:
-        header, *rows = doc["table"]
-        table_slide = presentation.slides.add_slide(presentation.slide_layouts[5])
-        table_slide.shapes.title.text = "Details"
+        header, *rows = sec["table"]
         rows_total = len(rows) + 1
         cols_total = len(header)
-        graphic_frame = table_slide.shapes.add_table(
-            rows_total, cols_total, Inches(0.5), Inches(1.5), Inches(9), Inches(0.4 * rows_total)
+        graphic_frame = slide.shapes.add_table(
+            rows_total, cols_total, Inches(0.6), Inches(4.1), Inches(6.2), Inches(0.38 * rows_total)
         )
         table_shape = graphic_frame.table
         for col_index, value in enumerate(header):
             cell = table_shape.cell(0, col_index)
             cell.text = str(value)
             cell.text_frame.paragraphs[0].font.bold = True
-            cell.text_frame.paragraphs[0].font.size = PptxPt(14)
+            cell.text_frame.paragraphs[0].font.size = PptxPt(11)
         for row_index, data_row in enumerate(rows, start=1):
             for col_index, value in enumerate(data_row):
-                table_shape.cell(row_index, col_index).text = str(value)
+                cell = table_shape.cell(row_index, col_index)
+                cell.text = str(value)
+                cell.text_frame.paragraphs[0].font.size = PptxPt(10)
+
+        img_bytes = arch_png if sec["image_kind"] in ("architecture", None) else chart_png
+        slide.shapes.add_picture(io.BytesIO(img_bytes), Inches(7.1), Inches(4.05), Inches(5.6), Inches(2.0))
 
     presentation.save(path)
 
 
 RENDERERS = {"docx": render_docx, "pdf": render_pdf, "xlsx": render_xlsx, "pptx": render_pptx}
+
+
+def _make_near_duplicate_doc(doc: dict) -> dict:
+    edited = copy.deepcopy(doc)
+    swaps = [
+        ("standards", "guidelines"),
+        ("Defines", "Establishes"),
+        ("Describes", "Outlines"),
+        ("Walks", "Guides"),
+        ("Tracks", "Monitors"),
+        ("Compares", "Evaluates"),
+        ("Summarizes", "Reviews"),
+        ("Overview", "Summary"),
+        ("Twelve-slide", "Multi-slide"),
+        ("Multi-sheet", "Comprehensive"),
+        ("employees", "staff members"),
+        ("managers", "team leads"),
+    ]
+    summary = edited["summary"]
+    changed = 0
+    for old, new in swaps:
+        if old in summary:
+            summary = summary.replace(old, new, 1)
+            changed += 1
+    if changed == 0:
+        summary = summary + " Reviewed for current governance cycle."
+    edited["summary"] = summary
+    return edited
 
 
 # ---------------------------------------------------------------------------
@@ -410,13 +637,15 @@ def generate_site(site_id: str, output_root: Path, seconds: int, fps: int, skip_
     generated_at = datetime.now(timezone.utc)
     manifest: list[dict] = []
     counter = 0
+    dup_counts_by_ext: dict[str, int] = {"docx": 0, "pptx": 0, "xlsx": 0}
 
     for department in site["departments"]:
         folder = department["folder"]
         for doc in department["documents"]:
             counter += 1
             extension = EXTENSION_FOR_DOC_TYPE[doc["doc_type"]]
-            filename = f"{slug(doc['title'])}.{extension}"
+            base_slug = slug(doc["title"])
+            filename = f"{base_slug}.{extension}"
             relative_path = f"{folder}/{filename}"
             destination = site_root / relative_path
             destination.parent.mkdir(parents=True, exist_ok=True)
@@ -434,7 +663,45 @@ def generate_site(site_id: str, output_root: Path, seconds: int, fps: int, skip_
                 }
             )
 
+            # Generate multi-page exact and near-duplicate pairs for docx, pptx, and xlsx
+            if extension in dup_counts_by_ext and dup_counts_by_ext[extension] < 1:
+                dup_counts_by_ext[extension] += 1
+                counter += 1
+                exact_filename = f"{base_slug} (copy).{extension}"
+                exact_rel = f"{folder}/{exact_filename}"
+                shutil.copy2(destination, site_root / exact_rel)
+                manifest.append(
+                    {
+                        "artifact_id": f"{site_id.upper()}-DOC-{counter:03d}",
+                        "filename": exact_filename,
+                        "title": f"{doc['title']} (Copy)",
+                        "category": folder,
+                        "source_table": f"corp.{site_id}.knowledge_assets",
+                        "source_system": SOURCE_SYSTEM,
+                        "profile_generated_at": generated_at.isoformat(),
+                        "relative_path": exact_rel,
+                    }
+                )
+                counter += 1
+                near_filename = f"{base_slug} (edited copy).{extension}"
+                near_rel = f"{folder}/{near_filename}"
+                near_doc = _make_near_duplicate_doc(doc)
+                RENDERERS[extension](site_root / near_rel, near_doc, site_label, folder, generated_at)
+                manifest.append(
+                    {
+                        "artifact_id": f"{site_id.upper()}-DOC-{counter:03d}",
+                        "filename": near_filename,
+                        "title": f"{doc['title']} (Edited Copy)",
+                        "category": folder,
+                        "source_table": f"corp.{site_id}.knowledge_assets",
+                        "source_system": SOURCE_SYSTEM,
+                        "profile_generated_at": generated_at.isoformat(),
+                        "relative_path": near_rel,
+                    }
+                )
+
     meetings_folder = site["meetings_folder"]
+    cached_site_root = Path("data/sites") / site_id
     for meeting_index, meeting in enumerate(site["meetings"], start=1):
         meeting_slug = slug(meeting["title"])
         relative_base = f"{meetings_folder}/{meeting_slug}"
@@ -447,8 +714,12 @@ def generate_site(site_id: str, output_root: Path, seconds: int, fps: int, skip_
         write_txt(txt_path, meeting["title"], cues)
 
         mp4_path = site_root / f"{relative_base}.mp4"
+        cached_mp4 = cached_site_root / f"{relative_base}.mp4"
         if not skip_video:
-            render_meeting_video(mp4_path, meeting["title"], names, cues, seconds, fps)
+            if cached_mp4.exists() and cached_mp4.stat().st_size > 10000:
+                shutil.copy2(cached_mp4, mp4_path)
+            else:
+                render_meeting_video(mp4_path, meeting["title"], names, cues, seconds, fps)
 
         for suffix, kind in ((".mp4", "mp4"), (".vtt", "vtt"), (".txt", "txt")):
             if suffix == ".mp4" and skip_video:

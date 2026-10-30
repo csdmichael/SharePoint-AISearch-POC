@@ -76,7 +76,88 @@
         }
       </section>
 
-      <section class="pane pane--primary" data-testid="explorer-permissions">
+      <section class="pane pane--primary" data-testid="explorer-detail">
+        <div class="detail-header-row">
+          <h2 class="section-title" style="margin: 0;">{{ 'explorer.detailHeading' | t }}</h2>
+          @if (selectedItem(); as item) {
+            @if (item.kind === 'file') {
+              <div class="detail-tabs">
+                <button
+                  type="button"
+                  class="action action--sm"
+                  [class.action--primary]="detailTab() === 'preview'"
+                  (click)="setDetailTab('preview')"
+                  data-testid="detail-preview-tab"
+                >
+                  <ion-icon name="eye-outline" aria-hidden="true" />
+                  <span>Document Preview</span>
+                </button>
+                <button
+                  type="button"
+                  class="action action--sm"
+                  [class.action--primary]="detailTab() === 'details'"
+                  (click)="setDetailTab('details')"
+                  data-testid="detail-metadata-tab"
+                >
+                  <ion-icon name="information-circle-outline" aria-hidden="true" />
+                  <span>Metadata</span>
+                </button>
+              </div>
+            }
+          }
+        </div>
+        @if (selectedItem(); as item) {
+          <h3 class="detail__name" data-testid="detail-name">{{ item.name }}</h3>
+          @if (detailTab() === 'preview' && item.kind === 'file') {
+            <div class="explorer-viewer-container">
+              <app-document-viewer [document]="item" data-testid="document-viewer" />
+              @if (safeLink(item.webUrl); as link) {
+                <div class="explorer-viewer-footer">
+                  <a class="action action--sm" [href]="link" target="_blank" rel="noopener noreferrer">
+                    <ion-icon [name]="icons.externalLink" aria-hidden="true" />
+                    <span>{{ 'buttons.openInSharePoint' | t }}</span>
+                  </a>
+                </div>
+              }
+            </div>
+          } @else {
+          <dl class="definition-list">
+            <dt>{{ 'explorer.kind' | t }}</dt>
+            <dd>{{ itemLabel(item) }}</dd>
+            <dt>{{ 'explorer.path' | t }}</dt>
+            <dd>{{ item.path ?? ('states.notAvailable' | t) }}</dd>
+            <dt>{{ 'explorer.modified' | t }}</dt>
+            <dd>{{ i18n.date(item.modified) }}</dd>
+            <dt>{{ 'explorer.size' | t }}</dt>
+            <dd>{{ formatSize(item.size) }}</dd>
+            <dt>{{ 'explorer.detailPermissions' | t }}</dt>
+            <dd data-testid="detail-scope">{{ scopeText() }}</dd>
+          </dl>
+          @if (safeLink(item.webUrl); as link) {
+            <a class="external-link" [href]="link" target="_blank" rel="noopener noreferrer">
+              <ion-icon [name]="icons.externalLink" aria-hidden="true" />
+              {{ 'buttons.openInSharePoint' | t }}
+            </a>
+          }
+          }
+          @if (selectedPermission(); as entry) {
+            <h3 class="section-title">{{ 'explorer.columns.members' | t }}</h3>
+            @if (entry.expandedMembers.length > 0) {
+              <ul class="member-list" data-testid="detail-members">
+                @for (member of entry.expandedMembers; track $index) {
+                  <li>{{ memberLine(member) }}</li>
+                }
+              </ul>
+            } @else {
+              <p class="muted">{{ 'explorer.noMembers' | t }}</p>
+            }
+          }
+        } @else {
+          <p class="muted">{{ 'explorer.detailEmpty' | t }}</p>
+        }
+      </section>
+
+      <section class="pane pane--detail" data-testid="explorer-permissions">
         <h2 class="section-title">{{ 'explorer.permissionsHeading' | t }}</h2>
         @if (!selectedItem()) {
           <p class="muted" data-testid="permissions-hint">{{ 'explorer.selectItemHint' | t }}</p>
@@ -185,87 +266,6 @@
               </div>
             }
           }
-        }
-      </section>
-
-      <section class="pane pane--detail" data-testid="explorer-detail">
-        <div class="detail-header-row">
-          <h2 class="section-title" style="margin: 0;">{{ 'explorer.detailHeading' | t }}</h2>
-          @if (selectedItem(); as item) {
-            @if (item.kind === 'file') {
-              <div class="detail-tabs">
-                <button
-                  type="button"
-                  class="action action--sm"
-                  [class.action--primary]="detailTab() === 'preview'"
-                  (click)="setDetailTab('preview')"
-                  data-testid="detail-preview-tab"
-                >
-                  <ion-icon name="eye-outline" aria-hidden="true" />
-                  <span>Document Preview</span>
-                </button>
-                <button
-                  type="button"
-                  class="action action--sm"
-                  [class.action--primary]="detailTab() === 'details'"
-                  (click)="setDetailTab('details')"
-                  data-testid="detail-metadata-tab"
-                >
-                  <ion-icon name="information-circle-outline" aria-hidden="true" />
-                  <span>Metadata</span>
-                </button>
-              </div>
-            }
-          }
-        </div>
-        @if (selectedItem(); as item) {
-          <h3 class="detail__name" data-testid="detail-name">{{ item.name }}</h3>
-          @if (detailTab() === 'preview' && item.kind === 'file') {
-            <div class="explorer-viewer-container">
-              <app-document-viewer [document]="item" data-testid="document-viewer" />
-              @if (safeLink(item.webUrl); as link) {
-                <div class="explorer-viewer-footer">
-                  <a class="action action--sm" [href]="link" target="_blank" rel="noopener noreferrer">
-                    <ion-icon [name]="icons.externalLink" aria-hidden="true" />
-                    <span>{{ 'buttons.openInSharePoint' | t }}</span>
-                  </a>
-                </div>
-              }
-            </div>
-          } @else {
-          <dl class="definition-list">
-            <dt>{{ 'explorer.kind' | t }}</dt>
-            <dd>{{ itemLabel(item) }}</dd>
-            <dt>{{ 'explorer.path' | t }}</dt>
-            <dd>{{ item.path ?? ('states.notAvailable' | t) }}</dd>
-            <dt>{{ 'explorer.modified' | t }}</dt>
-            <dd>{{ i18n.date(item.modified) }}</dd>
-            <dt>{{ 'explorer.size' | t }}</dt>
-            <dd>{{ formatSize(item.size) }}</dd>
-            <dt>{{ 'explorer.detailPermissions' | t }}</dt>
-            <dd data-testid="detail-scope">{{ scopeText() }}</dd>
-          </dl>
-          @if (safeLink(item.webUrl); as link) {
-            <a class="external-link" [href]="link" target="_blank" rel="noopener noreferrer">
-              <ion-icon [name]="icons.externalLink" aria-hidden="true" />
-              {{ 'buttons.openInSharePoint' | t }}
-            </a>
-          }
-          }
-          @if (selectedPermission(); as entry) {
-            <h3 class="section-title">{{ 'explorer.columns.members' | t }}</h3>
-            @if (entry.expandedMembers.length > 0) {
-              <ul class="member-list" data-testid="detail-members">
-                @for (member of entry.expandedMembers; track $index) {
-                  <li>{{ memberLine(member) }}</li>
-                }
-              </ul>
-            } @else {
-              <p class="muted">{{ 'explorer.noMembers' | t }}</p>
-            }
-          }
-        } @else {
-          <p class="muted">{{ 'explorer.detailEmpty' | t }}</p>
         }
       </section>
     </div>

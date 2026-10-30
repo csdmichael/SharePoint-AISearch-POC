@@ -192,7 +192,7 @@ foreach ($site in $selectedSites) {
         $computedDetail = ($computedColumns | Where-Object { $computedMissing[$_] -gt 0 } | ForEach-Object { "$_=$($computedMissing[$_])" }) -join ', '
         Add-Check -Label 'governance-computed columns present' -Passed ($computedDetail -eq '') -Detail $(if ($computedDetail) { "missing $computedDetail" } else { 'present on every file' })
         Add-Check -Label 'no checkouts left' -Passed ($checkedOut -eq 0) -Detail "$checkedOut checked out"
-        if ($site.siteId -ne 'semiconductor') {
+        if ($site.siteId -ne 'semiconductor' -and $libraryName -eq 'Documents') {
             Add-Check -Label 'duplicate copies added' -Passed ($copyNames -ge 2 -and $editedCopyNames -ge 2) -Detail "exact copies $copyNames, edited copies $editedCopyNames"
         }
         if ($script:checkFailures.Count -eq $failuresBefore) { Write-Host '  all checks passed for this library' -ForegroundColor Green }

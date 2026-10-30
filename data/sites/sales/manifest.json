@@ -6,187 +6,277 @@
     "category": "Sales Playbooks",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Sales Playbooks/discovery-call-guide.docx"
   },
   {
     "artifact_id": "SALES-DOC-002",
+    "filename": "discovery-call-guide (copy).docx",
+    "title": "Discovery Call Guide (Copy)",
+    "category": "Sales Playbooks",
+    "source_table": "corp.sales.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
+    "relative_path": "Sales Playbooks/discovery-call-guide (copy).docx"
+  },
+  {
+    "artifact_id": "SALES-DOC-003",
+    "filename": "discovery-call-guide (edited copy).docx",
+    "title": "Discovery Call Guide (Edited Copy)",
+    "category": "Sales Playbooks",
+    "source_table": "corp.sales.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
+    "relative_path": "Sales Playbooks/discovery-call-guide (edited copy).docx"
+  },
+  {
+    "artifact_id": "SALES-DOC-004",
     "filename": "competitive-battlecard-northstar-analytics.pdf",
     "title": "Competitive Battlecard - Northstar Analytics",
     "category": "Sales Playbooks",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Sales Playbooks/competitive-battlecard-northstar-analytics.pdf"
   },
   {
-    "artifact_id": "SALES-DOC-003",
+    "artifact_id": "SALES-DOC-005",
     "filename": "objection-handling-guide.docx",
     "title": "Objection Handling Guide",
     "category": "Sales Playbooks",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Sales Playbooks/objection-handling-guide.docx"
   },
   {
-    "artifact_id": "SALES-DOC-004",
+    "artifact_id": "SALES-DOC-006",
     "filename": "proposal-and-pricing-template-guide.docx",
     "title": "Proposal and Pricing Template Guide",
     "category": "Sales Playbooks",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Sales Playbooks/proposal-and-pricing-template-guide.docx"
   },
   {
-    "artifact_id": "SALES-DOC-005",
+    "artifact_id": "SALES-DOC-007",
     "filename": "deal-desk-approval-process.docx",
     "title": "Deal Desk Approval Process",
     "category": "Sales Playbooks",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Sales Playbooks/deal-desk-approval-process.docx"
   },
   {
-    "artifact_id": "SALES-DOC-006",
+    "artifact_id": "SALES-DOC-008",
+    "filename": "enterprise-revenue-execution-playbook-deck.pptx",
+    "title": "Enterprise Revenue Execution Playbook Deck",
+    "category": "Sales Playbooks",
+    "source_table": "corp.sales.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
+    "relative_path": "Sales Playbooks/enterprise-revenue-execution-playbook-deck.pptx"
+  },
+  {
+    "artifact_id": "SALES-DOC-009",
+    "filename": "enterprise-revenue-execution-playbook-deck (copy).pptx",
+    "title": "Enterprise Revenue Execution Playbook Deck (Copy)",
+    "category": "Sales Playbooks",
+    "source_table": "corp.sales.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
+    "relative_path": "Sales Playbooks/enterprise-revenue-execution-playbook-deck (copy).pptx"
+  },
+  {
+    "artifact_id": "SALES-DOC-010",
+    "filename": "enterprise-revenue-execution-playbook-deck (edited copy).pptx",
+    "title": "Enterprise Revenue Execution Playbook Deck (Edited Copy)",
+    "category": "Sales Playbooks",
+    "source_table": "corp.sales.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
+    "relative_path": "Sales Playbooks/enterprise-revenue-execution-playbook-deck (edited copy).pptx"
+  },
+  {
+    "artifact_id": "SALES-DOC-011",
+    "filename": "global-deal-desk-and-territory-quota-workbook.xlsx",
+    "title": "Global Deal Desk and Territory Quota Workbook",
+    "category": "Sales Playbooks",
+    "source_table": "corp.sales.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
+    "relative_path": "Sales Playbooks/global-deal-desk-and-territory-quota-workbook.xlsx"
+  },
+  {
+    "artifact_id": "SALES-DOC-012",
+    "filename": "global-deal-desk-and-territory-quota-workbook (copy).xlsx",
+    "title": "Global Deal Desk and Territory Quota Workbook (Copy)",
+    "category": "Sales Playbooks",
+    "source_table": "corp.sales.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
+    "relative_path": "Sales Playbooks/global-deal-desk-and-territory-quota-workbook (copy).xlsx"
+  },
+  {
+    "artifact_id": "SALES-DOC-013",
+    "filename": "global-deal-desk-and-territory-quota-workbook (edited copy).xlsx",
+    "title": "Global Deal Desk and Territory Quota Workbook (Edited Copy)",
+    "category": "Sales Playbooks",
+    "source_table": "corp.sales.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
+    "relative_path": "Sales Playbooks/global-deal-desk-and-territory-quota-workbook (edited copy).xlsx"
+  },
+  {
+    "artifact_id": "SALES-DOC-014",
     "filename": "q3-campaign-brief-mid-market-expansion.pptx",
     "title": "Q3 Campaign Brief - Mid-Market Expansion",
     "category": "Marketing Campaigns",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Marketing Campaigns/q3-campaign-brief-mid-market-expansion.pptx"
   },
   {
-    "artifact_id": "SALES-DOC-007",
+    "artifact_id": "SALES-DOC-015",
     "filename": "content-calendar-q3.xlsx",
     "title": "Content Calendar - Q3",
     "category": "Marketing Campaigns",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Marketing Campaigns/content-calendar-q3.xlsx"
   },
   {
-    "artifact_id": "SALES-DOC-008",
+    "artifact_id": "SALES-DOC-016",
     "filename": "lead-scoring-model-overview.pdf",
     "title": "Lead Scoring Model Overview",
     "category": "Marketing Campaigns",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Marketing Campaigns/lead-scoring-model-overview.pdf"
   },
   {
-    "artifact_id": "SALES-DOC-009",
+    "artifact_id": "SALES-DOC-017",
     "filename": "webinar-recap-report-total-cost-of-ownership-series.pdf",
     "title": "Webinar Recap Report - Total Cost of Ownership Series",
     "category": "Marketing Campaigns",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Marketing Campaigns/webinar-recap-report-total-cost-of-ownership-series.pdf"
   },
   {
-    "artifact_id": "SALES-DOC-010",
+    "artifact_id": "SALES-DOC-018",
     "filename": "brand-and-messaging-guidelines.docx",
     "title": "Brand and Messaging Guidelines",
     "category": "Marketing Campaigns",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Marketing Campaigns/brand-and-messaging-guidelines.docx"
   },
   {
-    "artifact_id": "SALES-DOC-011",
+    "artifact_id": "SALES-DOC-019",
     "filename": "customer-onboarding-playbook.docx",
     "title": "Customer Onboarding Playbook",
     "category": "Customer Success",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Customer Success/customer-onboarding-playbook.docx"
   },
   {
-    "artifact_id": "SALES-DOC-012",
+    "artifact_id": "SALES-DOC-020",
     "filename": "quarterly-business-review-template-and-guide.docx",
     "title": "Quarterly Business Review Template and Guide",
     "category": "Customer Success",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Customer Success/quarterly-business-review-template-and-guide.docx"
   },
   {
-    "artifact_id": "SALES-DOC-013",
+    "artifact_id": "SALES-DOC-021",
     "filename": "churn-risk-scorecard.xlsx",
     "title": "Churn Risk Scorecard",
     "category": "Customer Success",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Customer Success/churn-risk-scorecard.xlsx"
   },
   {
-    "artifact_id": "SALES-DOC-014",
+    "artifact_id": "SALES-DOC-022",
     "filename": "renewal-playbook.docx",
     "title": "Renewal Playbook",
     "category": "Customer Success",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Customer Success/renewal-playbook.docx"
   },
   {
-    "artifact_id": "SALES-DOC-015",
+    "artifact_id": "SALES-DOC-023",
     "filename": "nps-survey-summary-q2.pdf",
     "title": "NPS Survey Summary - Q2",
     "category": "Customer Success",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Customer Success/nps-survey-summary-q2.pdf"
   },
   {
-    "artifact_id": "SALES-DOC-016",
+    "artifact_id": "SALES-DOC-024",
+    "filename": "customer-health-renewal-and-expansion-deck.pptx",
+    "title": "Customer Health, Renewal and Expansion Deck",
+    "category": "Customer Success",
+    "source_table": "corp.sales.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
+    "relative_path": "Customer Success/customer-health-renewal-and-expansion-deck.pptx"
+  },
+  {
+    "artifact_id": "SALES-DOC-025",
     "filename": "competitor-teardown-northstar-analytics.pdf",
     "title": "Competitor Teardown - Northstar Analytics",
     "category": "Competitive Intelligence",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Competitive Intelligence/competitor-teardown-northstar-analytics.pdf"
   },
   {
-    "artifact_id": "SALES-DOC-017",
+    "artifact_id": "SALES-DOC-026",
     "filename": "win-loss-analysis-q2.pdf",
     "title": "Win-Loss Analysis - Q2",
     "category": "Competitive Intelligence",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Competitive Intelligence/win-loss-analysis-q2.pdf"
   },
   {
-    "artifact_id": "SALES-DOC-018",
+    "artifact_id": "SALES-DOC-027",
     "filename": "market-positioning-brief.pptx",
     "title": "Market Positioning Brief",
     "category": "Competitive Intelligence",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Competitive Intelligence/market-positioning-brief.pptx"
   },
   {
-    "artifact_id": "SALES-DOC-019",
+    "artifact_id": "SALES-DOC-028",
     "filename": "pricing-comparison-analysis.xlsx",
     "title": "Pricing Comparison Analysis",
     "category": "Competitive Intelligence",
     "source_table": "corp.sales.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Competitive Intelligence/pricing-comparison-analysis.xlsx"
   },
   {
@@ -196,7 +286,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/pipeline-coverage-review-west-region.mp4"
   },
   {
@@ -206,7 +296,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/pipeline-coverage-review-west-region.vtt"
   },
   {
@@ -216,7 +306,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/pipeline-coverage-review-west-region.txt"
   },
   {
@@ -226,7 +316,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/mid-market-expansion-campaign-kickoff.mp4"
   },
   {
@@ -236,7 +326,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/mid-market-expansion-campaign-kickoff.vtt"
   },
   {
@@ -246,7 +336,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/mid-market-expansion-campaign-kickoff.txt"
   },
   {
@@ -256,7 +346,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/competitive-win-loss-debrief.mp4"
   },
   {
@@ -266,7 +356,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/competitive-win-loss-debrief.vtt"
   },
   {
@@ -276,7 +366,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/competitive-win-loss-debrief.txt"
   },
   {
@@ -286,7 +376,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/deal-desk-exception-review.mp4"
   },
   {
@@ -296,7 +386,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/deal-desk-exception-review.vtt"
   },
   {
@@ -306,7 +396,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/deal-desk-exception-review.txt"
   },
   {
@@ -316,7 +406,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/quarterly-business-review-prep-strategic-accounts.mp4"
   },
   {
@@ -326,7 +416,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/quarterly-business-review-prep-strategic-accounts.vtt"
   },
   {
@@ -336,7 +426,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/quarterly-business-review-prep-strategic-accounts.txt"
   },
   {
@@ -346,7 +436,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/renewal-pipeline-review.mp4"
   },
   {
@@ -356,7 +446,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/renewal-pipeline-review.vtt"
   },
   {
@@ -366,7 +456,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/renewal-pipeline-review.txt"
   },
   {
@@ -376,7 +466,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/webinar-series-performance-review.mp4"
   },
   {
@@ -386,7 +476,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/webinar-series-performance-review.vtt"
   },
   {
@@ -396,7 +486,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/webinar-series-performance-review.txt"
   },
   {
@@ -406,7 +496,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/nps-survey-results-readout.mp4"
   },
   {
@@ -416,7 +506,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/nps-survey-results-readout.vtt"
   },
   {
@@ -426,7 +516,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/nps-survey-results-readout.txt"
   },
   {
@@ -436,7 +526,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/market-positioning-brief-review.mp4"
   },
   {
@@ -446,7 +536,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/market-positioning-brief-review.vtt"
   },
   {
@@ -456,7 +546,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/market-positioning-brief-review.txt"
   },
   {
@@ -466,7 +556,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/discovery-call-coaching-session.mp4"
   },
   {
@@ -476,7 +566,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/discovery-call-coaching-session.vtt"
   },
   {
@@ -486,7 +576,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/discovery-call-coaching-session.txt"
   },
   {
@@ -496,7 +586,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/brand-guidelines-refresh-review.mp4"
   },
   {
@@ -506,7 +596,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/brand-guidelines-refresh-review.vtt"
   },
   {
@@ -516,7 +606,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/brand-guidelines-refresh-review.txt"
   },
   {
@@ -526,7 +616,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/churn-risk-review-leadership-sync.mp4"
   },
   {
@@ -536,7 +626,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/churn-risk-review-leadership-sync.vtt"
   },
   {
@@ -546,7 +636,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.sales.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T03:46:41.449655+00:00",
+    "profile_generated_at": "2026-10-30T12:18:50.618940+00:00",
     "relative_path": "Meeting Recordings and Transcripts/churn-risk-review-leadership-sync.txt"
   }
 ]

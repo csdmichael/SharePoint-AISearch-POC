@@ -1494,6 +1494,226 @@ SALES_MEETINGS = [
 ]
 
 
+def _append_additional_department_docs() -> None:
+    hr_extras = {
+        "HR Policies": [
+            _doc(
+                "Global Workplace Governance Architecture Deck",
+                "deck",
+                "Twelve-slide executive presentation covering global HR policy architecture, regional compliance matrices, escalation paths, and annual audit readiness.",
+                [
+                    "Standardizes policy governance across North America, EMEA, and APAC hubs.",
+                    "Maps statutory compliance controls to quarterly HR Business Partner audit checkpoints.",
+                    "Integrates incident intake, investigation SLAs, and executive reporting dashboards.",
+                    "Defines annual policy review cycles and version control requirements.",
+                ],
+                "Maria Chen",
+                table=[
+                    ("Region", "Policy Coverage", "Audit SLA", "Compliance Score"),
+                    ("North America", "100%", "5 business days", "98.4%"),
+                    ("EMEA", "99%", "5 business days", "97.9%"),
+                    ("APAC", "98%", "7 business days", "96.8%"),
+                ],
+                metrics={"Global Coverage": "99.1%", "Audit Readiness": "98.0%", "Open Exceptions": "2"},
+            ),
+            _doc(
+                "Enterprise HR Policy Compliance Master Workbook",
+                "tracker",
+                "Multi-sheet compliance workbook tracking policy attestations, regional regulatory updates, audit findings, and control effectiveness across all business units.",
+                [
+                    "Tracks 100% of mandatory policy acknowledgements across 12 operating divisions.",
+                    "Monitors overdue attestations with automated 7-day and 14-day manager escalations.",
+                    "Reconciles statutory updates with handbook revision releases each quarter.",
+                    "Feeds the board audit committee quarterly people compliance readout.",
+                ],
+                "Devon Russell",
+                table=[
+                    ("Control ID", "Policy Area", "Attestation Rate", "Status"),
+                    ("HRP-01", "Code of Conduct", "99.2%", "Compliant"),
+                    ("HRP-02", "Data Privacy", "98.5%", "Compliant"),
+                    ("HRP-03", "Workplace Safety", "97.8%", "Compliant"),
+                    ("HRP-04", "Remote Work", "96.4%", "In Review"),
+                ],
+            ),
+        ],
+        "Recruiting and Onboarding": [
+            _doc(
+                "Talent Acquisition Operating Review Deck",
+                "deck",
+                "Comprehensive slide deck analyzing recruiting funnel conversion, interviewer calibration, offer acceptance trends, and 90-day onboarding retention.",
+                [
+                    "Evaluates source-of-hire quality across referrals, direct sourcing, and agency partners.",
+                    "Tracks time-to-fill and interview-to-offer ratios across engineering, sales, and operations.",
+                    "Highlights structured interviewing calibration scores and scorecard completion SLAs.",
+                    "Reviews 30-60-90 day onboarding milestone completion and new hire productivity.",
+                ],
+                "Priya Natarajan",
+                table=[
+                    ("Funnel Stage", "Q1 Conversion", "Q2 Conversion", "Benchmark"),
+                    ("Screen to Onsite", "34%", "38%", "35%"),
+                    ("Onsite to Offer", "29%", "33%", "30%"),
+                    ("Offer Acceptance", "86%", "91%", "85%"),
+                ],
+                metrics={"Time to Fill": "32 days", "Offer Acceptance": "91%", "90-Day Retention": "96%"},
+            ),
+            _doc(
+                "Global Talent Funnel and Onboarding Analytics Report",
+                "report",
+                "Multi-page analytical report detailing requisition velocity, diversity pipeline metrics, background check SLAs, and onboarding cohort outcomes.",
+                [
+                    "Requisition aging dropped by 18% following structured intake scorecards.",
+                    "Buddy program assignment prior to Day 1 increased 90-day satisfaction scores by 14 points.",
+                    "Background check turnaround averaged 2.6 business days across all job levels.",
+                    "Recommends expanding referral incentives to specialized manufacturing roles.",
+                ],
+                "Priya Natarajan",
+                table=[
+                    ("Job Family", "Hires Completed", "Avg Days to Fill", "Onboarding Score"),
+                    ("Engineering", "42", "36", "4.7/5"),
+                    ("Manufacturing", "31", "29", "4.6/5"),
+                    ("Sales & Marketing", "27", "26", "4.8/5"),
+                ],
+            ),
+        ],
+    }
+
+    mfg_extras = {
+        "Quality Assurance": [
+            _doc(
+                "Plant Quality Management System Executive Deck",
+                "deck",
+                "Multi-slide quality review deck covering Statistical Process Control, CAPA closure velocity, ISO 9001 audit readiness, and supplier lot acceptance.",
+                [
+                    "Presents X-bar/R control chart stability and Cpk capability across Lines 1, 2, and 3.",
+                    "Reviews 8D containment and root-cause verification for customer field returns.",
+                    "Tracks gauge R&R and calibration compliance across 140 floor measurement instruments.",
+                    "Outlines zero-defect containment gates for incoming fastener and bracket lots.",
+                ],
+                "Linda Park",
+                table=[
+                    ("Production Line", "First-Pass Yield", "Cpk Index", "Open CAPAs"),
+                    ("Line 1", "96.4%", "1.52", "1"),
+                    ("Line 2", "94.1%", "1.39", "2"),
+                    ("Line 3", "95.2%", "1.48", "1"),
+                ],
+                metrics={"Plant FPY": "95.2%", "Calibration Compliance": "99.3%", "Avg CAPA Closure": "18 days"},
+            ),
+        ],
+        "Production Operations": [
+            _doc(
+                "Plant Operations and OEE Performance Deck",
+                "deck",
+                "Twelve-slide operational review covering line availability, changeover reduction, preventive maintenance compliance, and EHS safety indicators.",
+                [
+                    "Breaks down OEE into availability, performance, and quality across all shifts.",
+                    "Documents SMED changeover time reduction from 35 minutes to 22 minutes on Line 1.",
+                    "Reviews weekly preventive maintenance completion and unplanned downtime root causes.",
+                    "Tracks near-miss safety closure rates and pedestrian aisle sightline improvements.",
+                ],
+                "Theo Marsh",
+                table=[
+                    ("Shift", "OEE %", "Changeover Avg", "PM Compliance"),
+                    ("Shift A (Day)", "82.4%", "21 min", "98%"),
+                    ("Shift B (Swing)", "79.8%", "23 min", "95%"),
+                    ("Shift C (Night)", "77.5%", "25 min", "92%"),
+                ],
+                metrics={"Overall OEE": "80.1%", "SMED Target": "22 min", "Recordable Incidents": "0"},
+            ),
+            _doc(
+                "Comprehensive Plant OEE and Maintenance Manual",
+                "policy",
+                "Multi-page standard operating manual governing shift handovers, OEE loss categorization, autonomous maintenance, and line stop escalation.",
+                [
+                    "Defines mandatory 15-minute overlap checklists for incoming and outgoing shift leads.",
+                    "Standardizes six big losses classification in the floor MES terminal.",
+                    "Establishes daily operator lubrication and torque verification routines.",
+                    "Requires EHS and Quality sign-off before restarting a line after a safety or quality stop.",
+                ],
+                "Grace Liu",
+                table=[
+                    ("Loss Category", "Threshold", "Escalation Owner", "Response SLA"),
+                    ("Equipment Breakdown", "> 15 min", "Maintenance Lead", "Immediate"),
+                    ("Setup & Changeover", "> 25 min", "Process Engineer", "Within Shift"),
+                    ("Quality Hold", "Any out-of-spec", "Quality Assurance", "Within 1 hour"),
+                ],
+            ),
+        ],
+    }
+
+    sales_extras = {
+        "Sales Playbooks": [
+            _doc(
+                "Enterprise Revenue Execution Playbook Deck",
+                "deck",
+                "Multi-slide enablement deck covering enterprise discovery, MEDDPICC qualification, competitive positioning against Northstar, and deal desk guardrails.",
+                [
+                    "Walks reps through executive value hypothesis and technical evaluation milestones.",
+                    "Contrasts real-time data freshness and TCO against legacy reporting competitors.",
+                    "Details discount approval tiers, multi-year ramp structures, and legal SLA paths.",
+                    "Provides stage-by-stage exit criteria from Discovery through Closed-Won.",
+                ],
+                "Rachel Kim",
+                table=[
+                    ("Deal Stage", "Exit Criteria", "Target Duration", "Win Conversion"),
+                    ("1. Discovery", "Pain + Champion Identified", "14 days", "42%"),
+                    ("2. Technical Validation", "POC Success Criteria Met", "21 days", "68%"),
+                    ("3. Commercial Review", "Economic Buyer + Deal Desk Sign-off", "10 days", "84%"),
+                ],
+                metrics={"Enterprise Win Rate": "38%", "POC Conversion": "68%", "Avg Deal Cycle": "45 days"},
+            ),
+            _doc(
+                "Global Deal Desk and Territory Quota Workbook",
+                "tracker",
+                "Multi-sheet commercial operations workbook tracking regional quota attainment, discount exception logs, pipeline stage velocity, and multi-year contract terms.",
+                [
+                    "Monitors pipeline coverage ratios across West, Central, East, and EMEA territories.",
+                    "Logs all non-standard payment term and discount approvals with margin impact.",
+                    "Tracks proposal turnaround times against the 2-business-day Deal Desk SLA.",
+                    "Reconciles bookings, expansion ARR, and net dollar retention by segment.",
+                ],
+                "Marcus Lee",
+                table=[
+                    ("Region", "Pipeline Coverage", "Quota Attainment", "Avg Discount"),
+                    ("West", "2.8x", "96%", "11.2%"),
+                    ("Central", "3.2x", "104%", "9.8%"),
+                    ("East", "3.4x", "108%", "10.4%"),
+                    ("EMEA", "2.9x", "94%", "12.1%"),
+                ],
+            ),
+        ],
+        "Customer Success": [
+            _doc(
+                "Customer Health, Renewal and Expansion Deck",
+                "deck",
+                "Twelve-slide customer success review deck covering onboarding time-to-value, telemetry health scoring, save-play execution, and NRR expansion.",
+                [
+                    "Tracks 30-day first-value milestone achievement across enterprise and mid-market cohorts.",
+                    "Combines product usage telemetry, ticket severity, and NPS into a unified health score.",
+                    "Details executive sponsor save plays for accounts showing >25% usage decline.",
+                    "Highlights QBR expansion playbooks driving 114% net dollar retention.",
+                ],
+                "Tom Bergstrom",
+                table=[
+                    ("Segment", "Gross Retention", "Net Retention (NRR)", "Avg Time to Value"),
+                    ("Enterprise", "94%", "118%", "28 days"),
+                    ("Mid-Market", "91%", "111%", "19 days"),
+                    ("Commercial", "88%", "105%", "12 days"),
+                ],
+                metrics={"Net Retention": "114%", "NPS Score": "42", "30-Day Onboarding": "93%"},
+            ),
+        ],
+    }
+
+    for dept in HR_DEPARTMENTS:
+        dept["documents"].extend(hr_extras.get(dept["folder"], []))
+    for dept in MFG_DEPARTMENTS:
+        dept["documents"].extend(mfg_extras.get(dept["folder"], []))
+    for dept in SALES_DEPARTMENTS:
+        dept["documents"].extend(sales_extras.get(dept["folder"], []))
+
+
+_append_additional_department_docs()
+
 SITE_DATA = {
     "hr": {"departments": HR_DEPARTMENTS, "meetings_folder": HR_MEETINGS_FOLDER, "meetings": HR_MEETINGS},
     "manufacturing": {"departments": MFG_DEPARTMENTS, "meetings_folder": MFG_MEETINGS_FOLDER, "meetings": MFG_MEETINGS},

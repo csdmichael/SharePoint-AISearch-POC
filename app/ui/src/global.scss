@@ -169,24 +169,24 @@ body {
   grid-template-areas: "master primary";
 }
 
-/* Explorer: tree, then the document viewer (widest), then permissions. */
+/* Explorer: tree (master), then the document viewer (primary, widest), then permissions (detail, right). */
 .panes--explorer {
   grid-template-areas:
     "master"
-    "detail"
-    "primary";
+    "primary"
+    "detail";
 }
 
 :root[data-layout='tablet'] .panes--explorer {
   grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
   grid-template-areas:
-    "master detail"
-    "master primary";
+    "master primary"
+    "master detail";
 }
 
 :root[data-layout='desktop'] .panes--explorer {
-  grid-template-columns: minmax(180px, 230px) minmax(0, 1fr) minmax(260px, 340px);
-  grid-template-areas: "master detail primary";
+  grid-template-columns: minmax(200px, 250px) minmax(0, 1fr) minmax(260px, 340px);
+  grid-template-areas: "master primary detail";
 }
 
 .pane--master {

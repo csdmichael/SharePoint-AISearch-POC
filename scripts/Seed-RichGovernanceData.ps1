@@ -255,9 +255,9 @@ function Build-Plan {
                 ProcessArea       = $(
                     if ($name -match 'Failure') { 'Failure Analysis' }
                     elseif ($name -match 'Quality') { 'Quality Escalation' }
-                    else { @('Failure Analysis', 'Quality Escalation', 'General Engineering')[$i % 3] }
+                    else { @('Failure Analysis', 'Quality Escalation', 'General Engineering')[[Array]::IndexOf($baseNames, (Get-BaseName $name)) % 3] }
                 )
-                KnowledgeCategory = $(if ($name -match 'Quality') { 'Quality' } else { @('Quality', 'Engineering')[$i % 2] })
+                KnowledgeCategory = $(if ($name -match 'Quality') { 'Quality' } else { @('Quality', 'Engineering')[[Array]::IndexOf($baseNames, (Get-BaseName $name)) % 2] })
                 ArtifactId        = $artifactId
             })
     }
@@ -337,6 +337,7 @@ function Get-PlanChanges {
     param($PlanItem, $Fields)
     $changes = [ordered]@{}
     foreach ($key in $PlanItem.Expected.Keys) {
+        if ($null -eq $PlanItem.Expected[$key]) { continue }
         $current = Get-NormalizedField -Key $key -Value (Get-Prop $Fields $key)
         if (-not (Test-SameValue $current $PlanItem.Expected[$key])) {
             $changes[$key] = $PlanItem.Expected[$key]

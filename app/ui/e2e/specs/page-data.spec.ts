@@ -195,14 +195,39 @@ test('compare side by side opens the modal and renders both documents in page', 
   await expect(page.locator('.comparison-overlay')).toBeVisible();
 });
 
-test('explorer renders the viewer between the tree and the permissions', async ({ page }) => {
+test('explorer renders the viewer between the tree and the permissions and navigates multi-page docs', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await setup(page);
+  const twelvePages = Array.from({ length: 12 }, (_, idx) => ({
+    number: idx + 1,
+    title: `Section ${idx + 1}: Governance Control`,
+    blocks: [
+      { kind: 'heading', text: `Section ${idx + 1}: Governance Control` },
+      { kind: 'paragraph', text: idx === 0 ? 'Test guide content' : `Detailed narrative for page ${idx + 1}` },
+      { kind: 'table', table: [['Control', 'Status'], [`CTRL-${idx + 1}`, 'Verified']] },
+    ],
+  }));
+  await page.route(`**/api/v1/documents/${documentId}/preview*`, (route) =>
+    route.fulfill({
+      json: { kind: 'docx', name: 'Test guide.docx', pageCount: 12, pages: twelvePages, blocks: [], tables: [] },
+    }),
+  );
   await page.goto('/explorer');
   await page.getByTestId('library-item').click();
   await page.getByTestId('tree-item').click();
   await expect(page.getByTestId('document-viewer')).toContainText('Test guide content');
-  const x = async (id: string) => (await page.getByTestId(id).boundingBox())!.x;
-  expect(await x('explorer-master')).toBeLessThan(await x('explorer-detail'));
-  expect(await x('explorer-detail')).toBeLessThan(await x('explorer-permissions'));
+  await expect(page.getByTestId('viewer-page-count')).toContainText('12 Pages');
+  await expect(page.getByTestId('viewer-page-card')).toHaveCount(12);
+  await page.getByTestId('viewer-page-btn').nth(11).click();
+  await expect(page.getByTestId('viewer-page-card')).toHaveCount(1);
+  await expect(page.getByTestId('document-viewer')).toContainText('Detailed narrative for page 12');
+  await page.getByTestId('viewer-all-pages').click();
+  await expect(page.getByTestId('viewer-page-card')).toHaveCount(12);
+
+  const masterBox = (await page.getByTestId('explorer-master').boundingBox())!;
+  const detailBox = (await page.getByTestId('explorer-detail').boundingBox())!;
+  const permBox = (await page.getByTestId('explorer-permissions').boundingBox())!;
+  expect(masterBox.x).toBeLessThan(detailBox.x);
+  expect(detailBox.x).toBeLessThan(permBox.x);
+  expect(detailBox.width).toBeGreaterThan(permBox.width);
 });

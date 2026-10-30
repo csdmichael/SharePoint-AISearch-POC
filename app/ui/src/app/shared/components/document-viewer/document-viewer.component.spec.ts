@@ -76,4 +76,28 @@ describe('DocumentViewerComponent', () => {
     fixture.detectChanges();
     expect(component.state().status).toBe('unsupported');
   });
+
+  it('should support multi-page navigation across 12 pages', () => {
+    const pages = Array.from({ length: 12 }, (_, idx) => ({
+      number: idx + 1,
+      title: `Section ${idx + 1}`,
+      blocks: [{ kind: 'paragraph' as const, text: `Content for page ${idx + 1}` }],
+    }));
+    apiService.documentPreview.and.returnValue(
+      of({ kind: 'docx', name: 'handbook.docx', pageCount: 12, pages, blocks: [], tables: [] }),
+    );
+    fixture.componentRef.setInput('document', { id: 'test.12', name: 'handbook.docx' });
+    fixture.detectChanges();
+    expect(component.totalPages()).toBe(12);
+    expect(component.visiblePages().length).toBe(12);
+    component.selectPage(5);
+    expect(component.visiblePages().length).toBe(1);
+    expect(component.visiblePages()[0].number).toBe(5);
+    component.nextPage();
+    expect(component.selectedPage()).toBe(6);
+    component.prevPage();
+    expect(component.selectedPage()).toBe(5);
+    component.selectPage(null);
+    expect(component.visiblePages().length).toBe(12);
+  });
 });

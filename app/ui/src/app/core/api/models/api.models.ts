@@ -499,13 +499,14 @@ export interface DocumentDetail extends DocumentSummary {
   liveExpiry: ExpiryView | null;
 }
 
-/** Structured preview blocks for a docx/pptx/xlsx file (GET /documents/{id}/preview), rendered in-page. */
+/** Structured preview blocks for a docx/pptx/xlsx/pdf file (GET /documents/{id}/preview), rendered in-page. */
 export interface DocumentPreviewBlock {
-  kind?: 'heading' | 'paragraph';
+  kind?: 'heading' | 'paragraph' | 'table' | 'image';
   text?: string;
   style?: string;
   lines?: string[];
   table?: string[][];
+  image?: string;
 }
 
 export interface DocumentPreviewSlide {
@@ -517,11 +518,14 @@ export interface DocumentPreviewSlide {
 export interface DocumentPreviewSheet {
   name: string;
   rows: string[][];
+  images?: string[];
 }
 
 export interface DocumentPreview {
-  kind: 'docx' | 'pptx' | 'xlsx';
+  kind: 'docx' | 'pptx' | 'xlsx' | 'pdf';
   name: string;
+  pageCount?: number;
+  pages?: DocumentPreviewSlide[];
   blocks?: DocumentPreviewBlock[];
   tables?: string[][][];
   slides?: DocumentPreviewSlide[];

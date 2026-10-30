@@ -31,9 +31,6 @@
   }
   @case ('ready') {
     @switch (document() ? viewerType(document()!.name) : 'other') {
-      @case ('pdf') {
-        <iframe [src]="safeResourceUrl(state().objectUrl)" class="doc-viewer-frame" title="PDF viewer"></iframe>
-      }
       @case ('media') {
         <div class="doc-viewer-media-wrap">
           <video [src]="state().objectUrl" controls class="doc-viewer-video"></video>
@@ -42,36 +39,196 @@
       @case ('text') {
         <pre class="doc-viewer-text">{{ state().textContent }}</pre>
       }
+      @case ('pdf') {
+        @if (totalPages() > 0 && !pdfNativeMode()) {
+          <div class="viewer-toolbar" data-testid="viewer-pagination">
+            <div class="viewer-toolbar__info">
+              <span class="viewer-page-badge" data-testid="viewer-page-count">{{ totalPages() }} {{ pageUnitLabel() }}</span>
+              @if (selectedPage() !== null) {
+                <span class="muted">Showing page {{ selectedPage() }} of {{ totalPages() }}</span>
+              } @else {
+                <span class="muted">Showing all {{ totalPages() }} pages</span>
+              }
+            </div>
+            <div class="viewer-toolbar__controls">
+              <button type="button" class="pager-btn" [class.is-active]="selectedPage() === null" (click)="selectPage(null)" data-testid="viewer-all-pages">
+                All ({{ totalPages() }})
+              </button>
+              <button type="button" class="pager-btn" [disabled]="selectedPage() !== null && selectedPage()! <= 1" (click)="prevPage()" data-testid="viewer-prev-page">
+                Prev
+              </button>
+              @for (page of pageItems(); track page.number) {
+                <button
+                  type="button"
+                  class="pager-btn"
+                  [class.is-active]="selectedPage() === page.number"
+                  (click)="selectPage(page.number)"
+                  data-testid="viewer-page-btn"
+                >
+                  {{ page.number }}
+                </button>
+              }
+              <button type="button" class="pager-btn" [disabled]="selectedPage() !== null && selectedPage()! >= totalPages()" (click)="nextPage()" data-testid="viewer-next-page">
+                Next
+              </button>
+              @if (state().objectUrl) {
+                <button type="button" class="pager-btn" (click)="togglePdfNative()" data-testid="viewer-pdf-native-toggle">
+                  PDF Frame
+                </button>
+              }
+            </div>
+          </div>
+          <div class="doc-viewer-office">
+            @for (page of visiblePages(); track page.number) {
+              <div class="doc-preview-slide" data-testid="viewer-page-card">
+                <div class="doc-preview-page-header">
+                  <span class="doc-preview-page-pill">Page {{ page.number }} of {{ totalPages() }}</span>
+                  <h4 class="doc-preview-slide-title">{{ page.title }}</h4>
+                </div>
+                @for (block of page.blocks; track $index) {
+                  @if (block.kind === 'heading') {
+                    <h3 class="doc-preview-heading">{{ block.text }}</h3>
+                  } @else if (block.kind === 'paragraph' && block.text) {
+                    <p class="doc-preview-paragraph">{{ block.text }}</p>
+                  }
+                  @if (block.lines) {
+                    <ul class="doc-preview-bullets">
+                      @for (line of block.lines; track $index) {
+                        <li>{{ line }}</li>
+                      }
+                    </ul>
+                  }
+                  @if (block.table) {
+                    <div class="doc-preview-table-wrap">
+                      <table class="doc-preview-table">
+                        <tbody>
+                          @for (row of block.table; track $index) {
+                            <tr>
+                              @for (cell of row; track $index) {
+                                <td>{{ cell }}</td>
+                              }
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  }
+                  @if (block.image) {
+                    <div class="doc-preview-image-wrap">
+                      <img [src]="block.image" class="doc-preview-image" alt="Document diagram" />
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          @if (totalPages() > 0) {
+            <div class="viewer-toolbar">
+              <span class="viewer-page-badge">{{ totalPages() }} Pages (PDF Frame)</span>
+              <button type="button" class="pager-btn" (click)="togglePdfNative()">Structured View</button>
+            </div>
+          }
+          <iframe [src]="safeResourceUrl(state().objectUrl)" class="doc-viewer-frame" title="PDF viewer"></iframe>
+        }
+      }
       @case ('office') {
+        @if (totalPages() > 1) {
+          <div class="viewer-toolbar" data-testid="viewer-pagination">
+            <div class="viewer-toolbar__info">
+              <span class="viewer-page-badge" data-testid="viewer-page-count">{{ totalPages() }} {{ pageUnitLabel() }}</span>
+              @if (selectedPage() !== null) {
+                <span class="muted">Showing {{ selectedPage() }} of {{ totalPages() }}</span>
+              } @else {
+                <span class="muted">Showing all {{ totalPages() }} {{ pageUnitLabel().toLowerCase() }}</span>
+              }
+            </div>
+            <div class="viewer-toolbar__controls">
+              <button type="button" class="pager-btn" [class.is-active]="selectedPage() === null" (click)="selectPage(null)" data-testid="viewer-all-pages">
+                All ({{ totalPages() }})
+              </button>
+              <button type="button" class="pager-btn" [disabled]="selectedPage() !== null && selectedPage()! <= 1" (click)="prevPage()" data-testid="viewer-prev-page">
+                Prev
+              </button>
+              @if (state().preview?.kind === 'xlsx') {
+                @for (sheet of sheetItems(); track sheet.name; let idx = $index) {
+                  <button
+                    type="button"
+                    class="pager-btn"
+                    [class.is-active]="selectedPage() === idx + 1"
+                    (click)="selectPage(idx + 1)"
+                    data-testid="viewer-page-btn"
+                    [title]="sheet.name"
+                  >
+                    {{ idx + 1 }}
+                  </button>
+                }
+              } @else {
+                @for (page of pageItems(); track page.number) {
+                  <button
+                    type="button"
+                    class="pager-btn"
+                    [class.is-active]="selectedPage() === page.number"
+                    (click)="selectPage(page.number)"
+                    data-testid="viewer-page-btn"
+                  >
+                    {{ page.number }}
+                  </button>
+                }
+              }
+              <button type="button" class="pager-btn" [disabled]="selectedPage() !== null && selectedPage()! >= totalPages()" (click)="nextPage()" data-testid="viewer-next-page">
+                Next
+              </button>
+            </div>
+          </div>
+        }
         <div class="doc-viewer-office">
           @if (state().preview?.kind === 'docx') {
-            @for (block of state().preview!.blocks; track $index) {
-              @if (block.kind === 'heading') {
-                <h3 class="doc-preview-heading">{{ block.text }}</h3>
-              } @else {
-                <p class="doc-preview-paragraph">{{ block.text }}</p>
-              }
-            }
-            @for (table of state().preview!.tables; track $index) {
-              <div class="doc-preview-table-wrap">
-                <table class="doc-preview-table">
-                  <tbody>
-                    @for (row of table; track $index) {
-                      <tr>
-                        @for (cell of row; track $index) {
-                          <td>{{ cell }}</td>
-                        }
-                      </tr>
-                    }
-                  </tbody>
-                </table>
+            @for (page of visiblePages(); track page.number) {
+              <div class="doc-preview-slide" data-testid="viewer-page-card">
+                @if (totalPages() > 1) {
+                  <div class="doc-preview-page-header">
+                    <span class="doc-preview-page-pill">Page {{ page.number }} of {{ totalPages() }}</span>
+                    <h4 class="doc-preview-slide-title">{{ page.title }}</h4>
+                  </div>
+                }
+                @for (block of page.blocks; track $index) {
+                  @if (block.kind === 'heading') {
+                    <h3 class="doc-preview-heading">{{ block.text }}</h3>
+                  } @else if (block.kind === 'paragraph' && block.text) {
+                    <p class="doc-preview-paragraph">{{ block.text }}</p>
+                  }
+                  @if (block.table) {
+                    <div class="doc-preview-table-wrap">
+                      <table class="doc-preview-table">
+                        <tbody>
+                          @for (row of block.table; track $index) {
+                            <tr>
+                              @for (cell of row; track $index) {
+                                <td>{{ cell }}</td>
+                              }
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  }
+                  @if (block.image) {
+                    <div class="doc-preview-image-wrap">
+                      <img [src]="block.image" class="doc-preview-image" alt="Document diagram" />
+                    </div>
+                  }
+                }
               </div>
             }
           }
           @if (state().preview?.kind === 'pptx') {
-            @for (slide of state().preview!.slides; track slide.number) {
-              <div class="doc-preview-slide">
-                <h4 class="doc-preview-slide-title">{{ slide.number }}. {{ slide.title }}</h4>
+            @for (slide of visiblePages(); track slide.number) {
+              <div class="doc-preview-slide" data-testid="viewer-page-card">
+                <div class="doc-preview-page-header">
+                  <span class="doc-preview-page-pill">Slide {{ slide.number }} of {{ totalPages() }}</span>
+                  <h4 class="doc-preview-slide-title">{{ slide.number }}. {{ slide.title }}</h4>
+                </div>
                 @for (block of slide.blocks; track $index) {
                   @if (block.lines) {
                     <ul class="doc-preview-bullets">
@@ -95,14 +252,24 @@
                       </table>
                     </div>
                   }
+                  @if (block.image) {
+                    <div class="doc-preview-image-wrap">
+                      <img [src]="block.image" class="doc-preview-image" alt="Slide diagram" />
+                    </div>
+                  }
                 }
               </div>
             }
           }
           @if (state().preview?.kind === 'xlsx') {
-            @for (sheet of state().preview!.sheets; track sheet.name) {
-              <div class="doc-preview-sheet">
-                <h4 class="doc-preview-sheet-title">{{ sheet.name }}</h4>
+            @for (sheet of visibleSheets(); track sheet.name; let idx = $index) {
+              <div class="doc-preview-sheet" data-testid="viewer-page-card">
+                <div class="doc-preview-page-header">
+                  <span class="doc-preview-page-pill">
+                    Sheet {{ selectedPage() ?? (idx + 1) }} of {{ totalPages() }}
+                  </span>
+                  <h4 class="doc-preview-sheet-title">{{ sheet.name }}</h4>
+                </div>
                 <div class="doc-preview-table-wrap">
                   <table class="doc-preview-table">
                     <tbody>
@@ -116,6 +283,13 @@
                     </tbody>
                   </table>
                 </div>
+                @if (sheet.images?.length) {
+                  @for (imgUrl of sheet.images; track $index) {
+                    <div class="doc-preview-image-wrap">
+                      <img [src]="imgUrl" class="doc-preview-image" alt="Worksheet chart or diagram" />
+                    </div>
+                  }
+                }
               </div>
             }
           }

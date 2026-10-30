@@ -116,7 +116,71 @@ and documents the live permission blockers rather than implying setup is complet
 
 There is no Blob Storage hop between SharePoint and Azure AI Search. The
 indexer's data source has type `sharepoint` and its `includeLibrary` query is
-scoped to the dedicated document library.
+scoped to each site's dedicated document libraries (`Documents` / `Shared Documents`,
+`Meeting Recordings and Transcripts`, and `Semiconductor Knowledge`).
+
+### System Architecture & Dataflow Diagram
+
+```mermaid
+flowchart LR
+    subgraph M365["Microsoft 365 — SharePoint Online Knowledge Hubs"]
+        direction TB
+        SEM["Semiconductor Hub<br/>Library: Semiconductor Knowledge<br/>(11-12 page DOCX, PPTX, XLSX)"]
+        HR["HR Knowledge Hub<br/>Libraries: Documents +<br/>Meeting Recordings & Transcripts"]
+        MFG["Manufacturing Knowledge Hub<br/>Libraries: Documents +<br/>Meeting Recordings & Transcripts"]
+        SALES["Sales & Marketing Hub<br/>Libraries: Documents +<br/>Meeting Recordings & Transcripts"]
+    end
+
+    subgraph GOV["Governance & Analytics Layer (App Service)"]
+        direction TB
+        SYNC["Governance Seeding & Sync<br/>Seed-RichGovernanceData.ps1<br/>Sync-GovernanceFields.py"]
+        API["FastAPI Governance API (sp-acl-api)<br/>• ACL & M365 Group Expansion<br/>• Exact/Near Duplicate & Conflict Engine<br/>• Multi-Page Preview (/preview & /content)"]
+        UI["Ionic / Angular Governance Web UI<br/>• Explorer (Tree | Wide Multi-Page Viewer | Permissions)<br/>• Side-by-Side Duplicate Comparison<br/>• Access by User & Hygiene Dashboard"]
+    end
+
+    subgraph SEARCH["Azure AI Search (semiconductor-search-myaacoub)"]
+        direction TB
+        DS["SharePoint Datasources (useQuery)<br/>semiconductor-sp-source<br/>hr-sp-source | manufacturing-sp-source | sales-sp-source"]
+        SK["Skillsets (SplitSkill 512/128 + EmbeddingSkill)<br/>semiconductor-chunker | departments-chunker"]
+        IDX["Search Indexes (36 fields + HNSW vectors)<br/>semiconductor-knowledge-index<br/>departments-knowledge-index"]
+        KS["Knowledge Sources (Persisted baseFilter)<br/>lifecycle_status eq 'Published' and<br/>authoritative eq true and ai_ready eq true<br/>and sensitivity eq 'General'"]
+        KB["Foundry IQ Knowledge Bases (MCP)<br/>semiconductor-sharepoint-knowledge-base<br/>trusted-knowledge-kb"]
+    end
+
+    subgraph FOUNDRY["Microsoft Foundry Agent Service"]
+        AGENT["Foundry Knowledge Agents<br/>trusted-knowledge-agent<br/>Grounded citations + SharePoint deep links"]
+    end
+
+    M365 <-->|"Graph API (27 Governance Columns)"| SYNC
+    M365 -->|"Managed Identity Read (Graph + SPO REST)"| API
+    UI <-->|"Entra Bearer Token (Auditor Role)"| API
+    M365 -->|"Direct SharePoint Indexer Crawl"| DS
+    DS --> SK --> IDX --> KS --> KB
+    AGENT <-->|"MCP knowledge_base_retrieve"| KB
+    API <-->|"Responses API"| AGENT
+```
+
+### Document Governance, Indexing & Retrieval Dataflow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Gen as Corpus & Media Generator
+    participant SPO as SharePoint Libraries
+    participant Sync as Governance Sync Engine
+    participant Idx as AI Search SharePoint Indexer
+    participant KB as Knowledge Source & Base
+    participant UI as Governance UI & Foundry Agent
+
+    Gen->>SPO: Upload 11-12 page DOCX/PDF/PPTX/XLSX (with tables & diagrams) + MP4/VTT/TXT
+    Sync->>SPO: Seed declared metadata & compute SHA-256 ContentHash, TF-IDF cosine, TrustScore, AIReady
+    Idx->>SPO: Crawl includeLibrary URLs + additionalColumns (27 governance columns)
+    Idx->>Idx: Extract text -> SplitSkill (512 tokens, 128 overlap) -> AzureOpenAIEmbeddingSkill (1536d)
+    Idx->>KB: Project chunks + governance metadata into index
+    UI->>KB: Agent query via MCP / retrieve endpoint
+    Note over KB: Enforces persisted baseFilter:<br/>Published + Authoritative + AIReady + General
+    KB-->>UI: Return only governed, published passages & SharePoint citations
+```
 
 ## Data and corpus
 
@@ -168,7 +232,11 @@ department would organise it rather than as numbered placeholder files:
 | Semiconductor (`semiconductorknowledgehub`) | Library `Semiconductor Knowledge`, one folder per Databricks subject area | none |
 
 - Each hub's `Documents` library holds its policies, procedures, reports,
-  trackers and decks as real, distinct DOCX, PDF, XLSX and PPTX files.
+  trackers and decks as real, distinct **12-page DOCX, 12-page PDF, 12-sheet XLSX,
+  and 12-slide PPTX** files with formatted tables, embedded Pillow-generated
+  process architecture diagrams and KPI bar charts, and domain narrative, plus
+  exact (`(copy)`) and near (`(edited copy)`) duplicate pairs for `.docx`,
+  `.pptx`, and `.xlsx`.
 - Each hub's **meeting library** holds recordings and transcripts at the library
   root: one `.mp4`, one `.vtt` and one `.txt` per meeting, named after the
   meeting (`q1-open-enrollment-planning-review.mp4`), never numbered.
@@ -207,16 +275,21 @@ scripts process.
 
 The governance web application includes responsive, high-density layouts optimized
 for desktop, web, tablet, and mobile displays:
-- **In-page document viewer (`/explorer`):** Select any file in the library tree
-  and open the **Preview** tab to render it on the page: Word, Excel and
-  PowerPoint as structured previews, PDF in a viewer, `.mp4` recordings in a
-  video player, and `.vtt`/`.txt` transcripts as text. The API serves the bytes
-  (`GET /documents/{id}/content`) and the office previews
-  (`GET /documents/{id}/preview`), so the browser never needs SharePoint access.
+- **In-page multi-page document viewer (`/explorer`):** The Explorer places the
+  library/folder tree on the left, the **wide Document Preview / Metadata pane in
+  the center (`1fr`)**, and the compact **Permissions pane on the right**.
+  Selecting any file opens the **Document Preview** tab, rendering 10+ page
+  Word (`.docx`), PDF (`.pdf`), PowerPoint (`.pptx`), and Excel (`.xlsx`)
+  documents directly in the page with a multi-page navigation bar (`All (12)`,
+  `Prev`, `1..12`, `Next`), formatted tables, and embedded diagrams/charts, plus
+  `.mp4` video playback and `.vtt`/`.txt` transcripts. The API serves raw bytes
+  (`GET /documents/{id}/content`) and structured multi-page previews
+  (`GET /documents/{id}/preview`), resolving the library GUID across all
+  configured sites automatically.
 - **Side-by-Side Duplicate Viewer (`/cleanup`):** Under the Duplicates segment,
-  open the canonical document and its candidate duplicate next to each other.
-  Both panes render the content in the page using the same viewer; there is no
-  need to open SharePoint or Office.
+  open the canonical document and its candidate duplicate (`.docx`, `.pptx`, or
+  `.xlsx`) next to each other. Both panes render the multi-page content in the
+  page using the same `<app-document-viewer>` component.
 - **Document filtering (`/documents`):** Filter by lifecycle status, data quality
   and authority. Draft content is excluded from retrieval by the knowledge base
   filter (`lifecycle_status eq 'Published'`).
