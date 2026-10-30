@@ -35,6 +35,7 @@ FALSE_TEXT = frozenset({"false", "0", "no", "off"})
 KNOWN_HANDLERS: frozenset[str] = frozenset(
     {
         "userAccess",
+        "libraryAccess",
         "exposure",
         "brokenInheritance",
         "duplicates",
@@ -149,6 +150,9 @@ ANSWER_PLACEHOLDERS: dict[str, frozenset[str]] = {
     "orphanExample": frozenset({"item", "path", "who", "status"}),
     "conflictsSummary": frozenset({"stored", "live"}),
     "conflictExample": frozenset({"first", "second", "similarity"}),
+    "libraryAccessSummary": frozenset({"library", "principals", "links", "inheritance"}),
+    "libraryAccessLine": frozenset({"principal", "kind", "role", "grantedVia", "members"}),
+    "libraryAccessNone": frozenset({"library"}),
     "meetingSummary": frozenset({"meeting", "transcript", "recording"}),
     "meetingExcerpt": frozenset({"excerpt"}),
     "meetingNotFound": frozenset({"meeting"}),
@@ -622,6 +626,9 @@ class AnswerText(_Model):
     orphanExample: str = Field(min_length=1)
     conflictsSummary: str = Field(min_length=1)
     conflictExample: str = Field(min_length=1)
+    libraryAccessSummary: str = Field(min_length=1)
+    libraryAccessLine: str = Field(min_length=1)
+    libraryAccessNone: str = Field(min_length=1)
     meetingSummary: str = Field(min_length=1)
     meetingExcerpt: str = Field(min_length=1)
     meetingNotFound: str = Field(min_length=1)

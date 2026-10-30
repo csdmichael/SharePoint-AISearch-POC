@@ -38,7 +38,8 @@ Covers:
 - `ApiError`: Classification of unreachable, unauthorized, forbidden, notFound, and server errors
 - `MicrosoftLogoComponent`: Microsoft logo mark and wordmark rendering
 - `AgentFabComponent`: Foundry agent floating action button visibility and navigation
-- `DocumentViewerComponent`: Multi-page in-page rendering and pagination (`All`, `Prev`, `1..N`, `Next`) for 10+ page `.docx`, `.pptx`, `.xlsx`, and `.pdf` documents (with tables and embedded diagrams), plus `.mp4` video and `.vtt`/`.txt` transcripts
+- `DocumentViewerComponent`: Multi-page in-page rendering and pagination (`All`, `Prev`, `1..N`, `Next`) for multi-page `.docx`, `.pptx`, `.xlsx`, and `.pdf` documents of varying length (with tables and embedded diagrams), plus `.mp4` video and `.vtt`/`.txt` transcripts
+- `parseMarkdown` / `MarkdownComponent`: Safe Markdown rendering of agent answers (headings, tables, lists, bold, links, citation chips) with no `innerHTML`. The agent page also shows an animated thinking bubble with staged progress text while a reply is pending
 - `groupByIssue`: Issue grouping and first-appearance ordering for prompts
 - `CursorList`: Failed requests expose an error without throwing from data signals, and retry can recover
 

@@ -26,6 +26,7 @@ import io
 import json
 import math
 import os
+import random
 import re
 import shutil
 from datetime import datetime, timedelta, timezone
@@ -92,7 +93,7 @@ def parse_args() -> argparse.Namespace:
 
 
 # ---------------------------------------------------------------------------
-# Document renderers (12 pages / 12 slides / 12 sheets with tables & diagrams)
+# Document renderers (variable-length docx/pdf pages, pptx slides and xlsx sheets with tables & diagrams)
 # ---------------------------------------------------------------------------
 
 SECTION_BLUEPRINTS = [
@@ -107,8 +108,23 @@ SECTION_BLUEPRINTS = [
     ("Exception Handling & Escalations", "Escalations", "Outlines severity tiers, response SLAs, and cross-functional escalation paths."),
     ("Cross-Functional Dependencies", "SLAs", "Documents upstream and downstream team dependencies and service-level commitments."),
     ("Continuous Improvement Roadmap", "Roadmap", "Schedules quarterly optimization milestones, automation targets, and capability reviews."),
+    ("Training & Change Management", "Training", "Plans enablement sessions, communications, and adoption checkpoints for affected teams."),
+    ("Technology & Tooling Landscape", "Tooling", "Lists supporting systems, integrations, configuration owners, and upgrade cadence."),
+    ("Budget & Resource Planning", "Budget", "Summarises staffing, spend by quarter, and approved investment envelopes."),
+    ("Regulatory & Policy References", "References", "Cross-references internal policies, external regulations, and review dates."),
     ("Appendix, Lineage & Sign-off", "Sign-off", "Records document lineage, governance metadata, version history, and owner sign-off."),
 ]
+
+# Inclusive (min, max) section counts per format so documents differ in length.
+SECTION_RANGES = {"docx": (4, 14), "pdf": (3, 12), "pptx": (6, 16), "xlsx": (3, 12)}
+
+
+def _section_count(doc: dict, site_label: str, kind: str) -> int:
+    """Stable pseudo-random length: the same document always gets the same count, different documents differ."""
+
+    low, high = SECTION_RANGES[kind]
+    seed = f"{site_label}|{kind}|{str(doc['title']).replace(' (copy)', '').replace(' (edited copy)', '')}"
+    return random.Random(seed).randint(low, high)
 
 
 def _create_architecture_diagram_png(title: str, site_label: str, department: str) -> bytes:
@@ -194,7 +210,7 @@ def _owner_line(owner: str, generated_at: datetime) -> str:
     return f"Owner: {owner}  |  Last updated: {generated_at.strftime('%B %d, %Y')}"
 
 
-def _build_sections(doc: dict, site_label: str, department: str, generated_at: datetime) -> list[dict]:
+def _build_sections(doc: dict, site_label: str, department: str, generated_at: datetime, kind: str = "docx") -> list[dict]:
     base_table = doc["table"] or [
         ("Control Area", "Owner", "Target SLA", "Verification Status"),
         (department, doc["owner"], "5 business days", "Verified"),
@@ -203,7 +219,9 @@ def _build_sections(doc: dict, site_label: str, department: str, generated_at: d
     ]
     points = list(doc["points"])
     sections: list[dict] = []
-    for idx, (sec_title, short_sheet, sec_desc) in enumerate(SECTION_BLUEPRINTS, start=1):
+    count = _section_count(doc, site_label, kind)
+    blueprints = SECTION_BLUEPRINTS[: count - 1] + SECTION_BLUEPRINTS[-1:]
+    for idx, (sec_title, short_sheet, sec_desc) in enumerate(blueprints, start=1):
         p1 = (
             f"{doc['summary']} Section {idx} ({sec_title}) applies to {department} within {site_label} "
             f"and is maintained by {doc['owner']}. {sec_desc}"
@@ -252,7 +270,7 @@ def render_docx(path: Path, doc: dict, site_label: str, department: str, generat
     document = Document()
     arch_png = _create_architecture_diagram_png(doc["title"], site_label, department)
     chart_png = _create_kpi_chart_png(doc["title"], department)
-    sections = _build_sections(doc, site_label, department, generated_at)
+    sections = _build_sections(doc, site_label, department, generated_at, "docx")
 
     for sec in sections:
         if sec["number"] == 1:
@@ -302,7 +320,7 @@ def render_pdf(path: Path, doc: dict, site_label: str, department: str, generate
     meta_style = ParagraphStyle("Meta", parent=styles["Normal"], textColor=colors.HexColor("#555555"), spaceAfter=10)
     arch_png = _create_architecture_diagram_png(doc["title"], site_label, department)
     chart_png = _create_kpi_chart_png(doc["title"], department)
-    sections = _build_sections(doc, site_label, department, generated_at)
+    sections = _build_sections(doc, site_label, department, generated_at, "pdf")
 
     story = []
     for sec in sections:
@@ -353,7 +371,7 @@ def render_xlsx(path: Path, doc: dict, site_label: str, department: str, generat
     header_fill = PatternFill(start_color="1F4E79", end_color="1F4E79", fill_type="solid")
     arch_png = _create_architecture_diagram_png(doc["title"], site_label, department)
     chart_png = _create_kpi_chart_png(doc["title"], department)
-    sections = _build_sections(doc, site_label, department, generated_at)
+    sections = _build_sections(doc, site_label, department, generated_at, "xlsx")
 
     for sec in sections:
         sheet = workbook.create_sheet(title=sec["sheet_name"])
@@ -405,7 +423,7 @@ def render_pptx(path: Path, doc: dict, site_label: str, department: str, generat
     presentation.slide_height = Inches(7.5)
     arch_png = _create_architecture_diagram_png(doc["title"], site_label, department)
     chart_png = _create_kpi_chart_png(doc["title"], department)
-    sections = _build_sections(doc, site_label, department, generated_at)
+    sections = _build_sections(doc, site_label, department, generated_at, "pptx")
 
     for sec in sections:
         slide = presentation.slides.add_slide(presentation.slide_layouts[1])

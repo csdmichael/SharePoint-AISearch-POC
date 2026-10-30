@@ -22,7 +22,7 @@ const expiry = {
   reviewDate: null, reviewOverdue: false, overdueBy: [], daysOverdue: null, textDates: [],
 };
 
-async function setup(page: Page): Promise<void> {
+async function setup(page: Page, overrides: Record<string, unknown> = {}, agentDelayMs = 0): Promise<void> {
   const outbox: NotificationItem[] = [];
   await configureBrowser(page, async (route) => {
     const request = route.request();
@@ -109,7 +109,10 @@ async function setup(page: Page): Promise<void> {
       item.status = endpoint.endsWith('/approve') ? 'approved' : 'dryRun';
       response = item;
     } else {
-      response = responses[decodeURIComponent(endpoint)];
+      if (agentDelayMs > 0 && endpoint === '/agent/messages') {
+        await new Promise((resolve) => setTimeout(resolve, agentDelayMs));
+      }
+      response = overrides[decodeURIComponent(endpoint)] ?? responses[decodeURIComponent(endpoint)];
     }
     if (response === undefined) {
       throw new Error(`Unexpected test API request: ${request.method()} ${endpoint}`);
@@ -171,6 +174,38 @@ test('cleanup drafts persist in the outbox, approve in dry run, and the agent re
   await page.getByTestId('prompt').first().click();
   await expect(page.getByTestId('agent-answer')).toHaveText('Review the test guide.');
   await expect(page.getByTestId('citations').getByRole('link')).toHaveAttribute('href', document.webUrl!);
+});
+
+test('agent shows a thinking bubble, then renders the answer as formatted markdown', async ({ page }) => {
+  const answer = [
+    '**HR Documents is shared with two groups.**',
+    '',
+    '## Who has access',
+    '| Principal | Role | Granted via |',
+    '| --- | --- | --- |',
+    '| HR Members | Edit | SharePoint group |',
+    '| HR Owners | Full Control | SharePoint group |',
+    '',
+    '### Recommended next steps',
+    '- Review the **Edit** grant for [Test guide](https://contoso.example/guide.docx)',
+  ].join('\n');
+  await setup(page, {
+    '/agent/messages': {
+      conversationId: 'md', answer, mode: 'foundry', intent: 'library-access',
+      evidence: { items: [{ title: document.title }] }, citations: [], warnings: [],
+    },
+  }, 500);
+  await page.goto('/agent');
+  await page.getByTestId('prompt').first().click();
+  await expect(page.getByTestId('agent-sending')).toBeVisible();
+  await expect(page.getByTestId('agent-stage')).not.toBeEmpty();
+  const answerBox = page.getByTestId('agent-answer');
+  await expect(answerBox.locator('table tbody tr')).toHaveCount(2);
+  await expect(answerBox.locator('strong').first()).toHaveText('HR Documents is shared with two groups.');
+  await expect(answerBox.getByRole('heading', { name: 'Who has access' })).toBeVisible();
+  await expect(answerBox.getByRole('link', { name: 'Test guide' })).toHaveAttribute('href', 'https://contoso.example/guide.docx');
+  await expect(page.getByTestId('agent-sending')).toHaveCount(0);
+  await expect(answerBox).not.toContainText('**');
 });
 
 test('compare side by side opens the modal and renders both documents in page', async ({ page }) => {

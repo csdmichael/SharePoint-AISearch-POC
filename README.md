@@ -125,7 +125,7 @@ scoped to each site's dedicated document libraries (`Documents` / `Shared Docume
 flowchart LR
     subgraph M365["Microsoft 365 — SharePoint Online Knowledge Hubs"]
         direction TB
-        SEM["Semiconductor Hub<br/>Library: Semiconductor Knowledge<br/>(11-12 page DOCX, PPTX, XLSX)"]
+        SEM["Semiconductor Hub<br/>Library: Semiconductor Knowledge<br/>(multi-page DOCX, PPTX, XLSX)"]
         HR["HR Knowledge Hub<br/>Libraries: Documents +<br/>Meeting Recordings & Transcripts"]
         MFG["Manufacturing Knowledge Hub<br/>Libraries: Documents +<br/>Meeting Recordings & Transcripts"]
         SALES["Sales & Marketing Hub<br/>Libraries: Documents +<br/>Meeting Recordings & Transcripts"]
@@ -172,7 +172,7 @@ sequenceDiagram
     participant KB as Knowledge Source & Base
     participant UI as Governance UI & Foundry Agent
 
-    Gen->>SPO: Upload 11-12 page DOCX/PDF/PPTX/XLSX (with tables & diagrams) + MP4/VTT/TXT
+    Gen->>SPO: Upload variable-length DOCX/PDF/PPTX/XLSX (with tables & diagrams) + MP4/VTT/TXT
     Sync->>SPO: Seed declared metadata & compute SHA-256 ContentHash, TF-IDF cosine, TrustScore, AIReady
     Idx->>SPO: Crawl includeLibrary URLs + additionalColumns (27 governance columns)
     Idx->>Idx: Extract text -> SplitSkill (512 tokens, 128 overlap) -> AzureOpenAIEmbeddingSkill (1536d)
@@ -232,11 +232,14 @@ department would organise it rather than as numbered placeholder files:
 | Semiconductor (`semiconductorknowledgehub`) | Library `Semiconductor Knowledge`, one folder per Databricks subject area | none |
 
 - Each hub's `Documents` library holds its policies, procedures, reports,
-  trackers and decks as real, distinct **12-page DOCX, 12-page PDF, 12-sheet XLSX,
-  and 12-slide PPTX** files with formatted tables, embedded Pillow-generated
-  process architecture diagrams and KPI bar charts, and domain narrative, plus
-  exact (`(copy)`) and near (`(edited copy)`) duplicate pairs for `.docx`,
-  `.pptx`, and `.xlsx`.
+  trackers and decks as real, distinct **multi-page DOCX, PDF, PPTX and XLSX**
+  files. Length varies per document and is stable per title (DOCX 4-14 pages,
+  PDF 3-12, PPTX 6-16 slides, XLSX 3-12 sheets), with formatted tables, embedded
+  Pillow-generated process architecture diagrams and KPI bar charts, and domain
+  narrative. Exact (`(copy)`) and near (`(edited copy)`) duplicate pairs exist
+  for `.docx`, `.pptx`, and `.xlsx`; a copy is seeded as a **Draft,
+  non-authoritative** duplicate of its original, which is the approved,
+  authoritative document.
 - Each hub's **meeting library** holds recordings and transcripts at the library
   root: one `.mp4`, one `.vtt` and one `.txt` per meeting, named after the
   meeting (`q1-open-enrollment-planning-review.mp4`), never numbered.
@@ -596,7 +599,7 @@ lifecycle_status eq 'Published' and authoritative eq true and ai_ready eq true a
 | Rule | Effect |
 | --- | --- |
 | `lifecycle_status eq 'Published'` | Draft, Under Review, Archived and Superseded documents are never retrieved |
-| `authoritative eq true` | Only the canonical copy is retrieved, never a duplicate such as `(copy).docx` |
+| `authoritative eq true` | Only the canonical document is retrieved. Stray duplicates such as `(copy).docx` are seeded as Draft, non-authoritative and never reach the agent |
 | `ai_ready eq true` | The owner has marked the document as safe for AI answers |
 | `sensitivity eq 'General'` | Confidential and Highly Confidential documents are excluded |
 
@@ -605,8 +608,8 @@ agent's MCP tool calls. A caller can narrow it with `filterAddOn`, never widen
 or replace it. `Provision-SearchIndexes.ps1` and `provision_foundry_agent.ps1`
 both write it from `config/search-indexes.json` and `config/trusted-knowledge.json`,
 so a rebuild cannot drop it. Current counts in `departments-knowledge-index`
-(813 chunks): Draft 343, Published 293, Archived 156, Superseded 21, of which
-157 also satisfy the rest of the filter.
+(607 chunks): Draft 309, Published 206, Archived 73, Superseded 19, of which
+94 also satisfy the rest of the filter.
 
 #### Where the filter lives, and why
 

@@ -250,6 +250,12 @@
     "characterCount": "{count} of {max} characters",
     "tooLong": "Messages can have at most {max} characters.",
     "sending": "Waiting for the agent",
+    "stages": {
+      "routing": "Understanding your question…",
+      "evidence": "Reading live SharePoint permissions and metadata…",
+      "foundry": "Asking the Foundry agent and searching published knowledge…",
+      "composing": "Composing a formatted answer…"
+    },
     "send": "Send",
     "you": "You",
     "assistant": "Foundry agent",

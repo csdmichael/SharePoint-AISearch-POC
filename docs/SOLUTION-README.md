@@ -167,9 +167,11 @@ The source permissions never change in this model. The exception adds a time-lim
 
 The Foundry agent `sharepoint-governance-agent` uses the Responses API with an `agent_reference` ([foundry.py](../app/api/app/agent/foundry.py)). Before the model answers, the API gathers live evidence for the question's intent ([handlers.py](../app/api/app/agent/handlers.py)). Intents are defined in [agent.json](../app/api/config/agent.json):
 
-`overexposure`, `access-review`, `broken-inheritance`, `duplicates`, `expired-content`, `ownership-gaps`, `stale-content`, `owner-notification`, `backlog-summary`, `orphaned-access`, `conflicts`, `help`.
+`overexposure`, `library-access`, `access-review`, `broken-inheritance`, `duplicates`, `expired-content`, `ownership-gaps`, `stale-content`, `owner-notification`, `backlog-summary`, `orphaned-access`, `conflicts`, `meeting-transcripts`, `help`.
 
-If the Foundry call is not configured or fails, the endpoint returns the evidence-based answer and a clear status, not an error. The agent instructions tell the model to quote titles, owners, dates and grant paths exactly as the evidence states them, and to say when the evidence does not contain the answer.
+`library-access` reads the library's real permission entries (SharePoint groups, Entra groups, users and sharing links, with expanded group members and the grant path) so "who can access the HR Documents library?" is answered from actual permissions rather than from over-exposure findings only.
+
+If the Foundry call is not configured or fails, the endpoint returns the evidence-based answer and a clear status, not an error. The agent instructions ([agent.json](../app/api/config/agent.json) `instructions` and [foundry-agent-instructions.md](../config/foundry-agent-instructions.md)) tell the model to quote titles, owners, dates and grant paths exactly as the evidence states them, to say when the evidence does not contain the answer, never to mention JSON or field names, and to format every answer as rich Markdown: a bold one-sentence answer, `##` sections, tables for people, groups and permissions, and next steps. The UI renders that Markdown (headings, tables, lists, links and citation chips) without injecting HTML, and shows an animated thinking bubble with progress stages while the agent works.
 
 ### 5.2 Conflicting decisions
 
@@ -200,7 +202,7 @@ The agent page shows these prompts grouped by issue. Source: [agent-prompts.json
 | 1. Scattered content | Which documents have no knowledge owner? | `ownership-gaps` |
 | 1. Scattered content | Which documents look anomalous or stale compared with their peers? | `stale-content` |
 | 1. Scattered content | Summarize the cleanup backlog by severity and library | `backlog-summary` |
-| 2. Permissions vs audience | Who can access the HR Documents library, and through which group or sharing link? | `overexposure` |
+| 2. Permissions vs audience | Who can access the HR Documents library, and through which group or sharing link? | `library-access` |
 | 2. Permissions vs audience | What can {userUpn} access in this site, and how was each permission granted? | `access-review` |
 | 2. Permissions vs audience | Which folders have broken inheritance together with direct user grants? | `broken-inheritance` |
 | 2. Permissions vs audience | Which documents are shared with Everyone except external users or through anonymous links? | `overexposure` |

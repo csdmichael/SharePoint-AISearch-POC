@@ -21,6 +21,7 @@ from app.services.hygiene import HygieneService
 from app.services.library import LibraryService
 from app.services.membership import STATUS_UNKNOWN
 from app.services.notifications import NotificationService
+from app.services.sites import SiteService
 
 EMAIL = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
 MEETING_NUMBER = re.compile(r"\bmeeting[\s_-]*(\d{1,3})\b", re.IGNORECASE)
@@ -37,6 +38,7 @@ class HandlerContext:
     access: AccessService
     hygiene: HygieneService
     notifications: NotificationService
+    sites: SiteService
     exposure_labels: dict[str, str]
     evidence_limit: int
     limits: AgentLimits
@@ -171,6 +173,72 @@ def handle_exposure(ctx: HandlerContext, prompt: str) -> Evidence:
         "facts": {"total": len(selected), "byType": dict(counts)},
         "items": [_finding_row(f) for f in selected[: ctx.evidence_limit]],
         "citations": _unique_citations(ctx, list(subjects.values())),
+    }
+
+
+def _member_text(members: list[dict[str, Any]], limit: int = 8) -> str:
+    names = [str(m.get("displayName") or m.get("userPrincipalName") or m.get("upn") or "") for m in members]
+    names = [name for name in names if name]
+    if not names:
+        return "n/a"
+    extra = f" and {len(names) - limit} more" if len(names) > limit else ""
+    return ", ".join(names[:limit]) + extra
+
+
+def _libraries_named(ctx: HandlerContext, prompt: str) -> list[Any]:
+    libraries = ctx.libraries.configured()
+    text = prompt.lower()
+    meeting_words = ("meeting", "recording", "transcript", "video")
+    named = [lib for lib in libraries if lib.title.lower() in text]
+    if not named:
+        wants_meetings = any(word in text for word in meeting_words)
+        named = [lib for lib in libraries if (any(w in lib.title.lower() for w in meeting_words)) == wants_meetings]
+    return named or libraries
+
+
+def handle_library_access(ctx: HandlerContext, prompt: str) -> Evidence:
+    answers = ctx.answers
+    lines: list[str] = []
+    rows: list[dict[str, Any]] = []
+    totals = Counter()
+    for library in _libraries_named(ctx, prompt):
+        payload = ctx.sites.permissions(library.id)
+        entries = payload["entries"]
+        links = [e for e in entries if e["principal"]["type"] == "sharingLink"]
+        inheritance = ("This library has unique permissions." if payload["inheritance"]["hasUniquePermissions"]
+                       else "This library inherits permissions from the site.")
+        if not entries:
+            lines.append(answers.libraryAccessNone.format(library=library.title))
+            continue
+        lines.append(answers.libraryAccessSummary.format(
+            library=library.title, principals=len(entries) - len(links), links=len(links), inheritance=inheritance))
+        for entry in entries:
+            principal = entry["principal"]
+            members = entry.get("expandedMembers") or []
+            kind = principal["type"]
+            if kind == "sharingLink":
+                kind = f"{entry.get('linkScope') or 'sharing'} link"
+            totals[entry["grantedVia"]] += 1
+            if len(rows) < ctx.limits.maxExamples:
+                lines.append(answers.libraryAccessLine.format(
+                    principal=principal["displayName"], kind=kind, role=entry["role"],
+                    grantedVia=entry["grantedVia"], members=_member_text(members)))
+            rows.append({
+                "library": library.title,
+                "principal": principal["displayName"],
+                "type": kind,
+                "role": entry["role"],
+                "grantedVia": entry["grantedVia"],
+                "memberCount": len(members),
+                "members": _member_text(members),
+                "linkScope": entry.get("linkScope"),
+                "inherited": entry["inheritedFrom"] is not None,
+            })
+    return {
+        "lines": lines or [answers.libraryAccessNone.format(library="the requested library")],
+        "facts": {"principals": len(rows), "byGrantedVia": dict(totals)},
+        "items": rows[: ctx.evidence_limit],
+        "citations": [],
     }
 
 
@@ -527,6 +595,7 @@ def handle_help(ctx: HandlerContext, prompt: str) -> Evidence:
 HANDLERS: dict[str, Handler] = {
     "exposure": handle_exposure,
     "userAccess": handle_user_access,
+    "libraryAccess": handle_library_access,
     "brokenInheritance": handle_broken_inheritance,
     "duplicates": handle_duplicates,
     "expiry": handle_expiry,

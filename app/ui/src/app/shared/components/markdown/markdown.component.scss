@@ -1,0 +1,126 @@
+.md {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.md__p,
+.md__list,
+.md__quote {
+  margin: 0;
+}
+
+.md__h {
+  margin: var(--space-sm) 0 0;
+  font-weight: 600;
+  color: var(--surface-text);
+
+  &--1 {
+    font-size: 1.125rem;
+  }
+
+  &--2 {
+    font-size: 1rem;
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--surface-border);
+  }
+
+  &--3 {
+    font-size: 0.9375rem;
+  }
+}
+
+.md__list {
+  padding-inline-start: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.md__table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+}
+
+.md__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+
+  th,
+  td {
+    padding: 0.45rem 0.75rem;
+    text-align: start;
+    vertical-align: top;
+    border-bottom: 1px solid var(--surface-border);
+  }
+
+  th {
+    background: var(--surface-table-header);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody tr:nth-child(even) td {
+    background: var(--surface-accent-soft);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.md__quote {
+  padding: var(--space-xs) var(--space-md);
+  border-inline-start: 3px solid var(--surface-accent);
+  background: var(--surface-accent-soft);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.md__code,
+code {
+  font-family: Consolas, 'Cascadia Mono', monospace;
+  font-size: 0.8125rem;
+}
+
+code {
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  background: var(--surface-table-header);
+}
+
+.md__code {
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius);
+  background: var(--surface-table-header);
+  overflow-x: auto;
+}
+
+.md__rule {
+  border: 0;
+  border-top: 1px solid var(--surface-border);
+  width: 100%;
+}
+
+a {
+  color: var(--surface-accent);
+  text-decoration: underline;
+}
+
+.md__cite {
+  display: inline-block;
+  margin-inline: 0.15rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--surface-accent-soft);
+  color: var(--surface-accent);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  vertical-align: super;
+  line-height: 1.3;
+}

@@ -283,7 +283,28 @@ $knowledgeSource = Invoke-Search -Method PUT -Path "knowledgesources/$knowledgeS
             @{ name = 'category' },
             @{ name = 'source_table' },
             @{ name = 'source_system' },
-            @{ name = 'profile_generated_at' }
+            @{ name = 'profile_generated_at' },
+            @{ name = 'knowledge_owner' },
+            @{ name = 'lifecycle_status' },
+            @{ name = 'authoritative' },
+            @{ name = 'ai_ready' },
+            @{ name = 'review_date' },
+            @{ name = 'effective_date' },
+            @{ name = 'expiration_date' },
+            @{ name = 'document_type' },
+            @{ name = 'product_family' },
+            @{ name = 'process_area' },
+            @{ name = 'sensitivity' },
+            @{ name = 'business_unit' },
+            @{ name = 'supersedes_document' },
+            @{ name = 'trust_score' },
+            @{ name = 'trust_reasons' },
+            @{ name = 'data_quality_status' },
+            @{ name = 'conflict_status' },
+            @{ name = 'conflict_with' },
+            @{ name = 'duplicate_of' },
+            @{ name = 'content_hash' },
+            @{ name = 'last_validated_date' }
         )
     }
 }
@@ -471,7 +492,7 @@ if (-not $SkipSmokeTest) {
         $citationUrl = $linkedCitation.Groups['url'].Value
         $citationUri = [Uri]$citationUrl
         $citationPath = [Uri]::UnescapeDataString($citationUri.AbsolutePath)
-        $isSharePointDocument = $citationUri.Host -eq $siteUri.Host -and $citationPath.StartsWith($expectedSitePath)
+        $isSharePointDocument = $citationUri.Host -eq $siteUri.Host -and $citationPath -match '^/sites/[^/]+/'
         $normalizedCitation = Normalize-Url -Url $citationUrl
         $cameFromTool = $normalizedRetrievedUrls -contains $normalizedCitation
         if (-not $isSharePointDocument -or -not $cameFromTool) {

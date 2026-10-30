@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import re
 import shutil
 import tempfile
@@ -110,6 +111,15 @@ def group_rows(profile: dict) -> dict[str, list[dict]]:
     for row in rows:
         grouped[row["source_table"]].append(row)
     return dict(grouped)
+
+
+def vary_length(spec: dict, kind: str, items: tuple, keep_last: bool = False) -> tuple:
+    """Keep a stable pseudo-random number of the optional pages/slides/sheets so documents differ in length."""
+
+    count = random.Random(f"{spec['artifact_id']}|{kind}").randint(0 if not keep_last else 1, len(items))
+    if keep_last:
+        return tuple(items[: count - 1]) + (items[-1],)
+    return tuple(items[:count])
 
 
 def sample_rows(rows: list[dict], document_number: int) -> list[dict]:
@@ -527,7 +537,9 @@ def create_docx(
         ("Quarterly Continuous Improvement Roadmap", "Schedules yield ramp milestones, recipe tightening, and scrap reduction targets."),
         ("Appendix & Executive Sign-off", "Records accountable owner attestation, revision history, and governance compliance."),
     )
-    for extra_idx, (sec_heading, sec_summary) in enumerate(extra_docx_sections, start=5):
+    for extra_idx, (sec_heading, sec_summary) in enumerate(
+        vary_length(spec, "docx", extra_docx_sections, keep_last=True), start=5
+    ):
         document.add_page_break()
         document.add_heading(f"Page {extra_idx}: {sec_heading}", level=2)
         document.add_paragraph(f"{sec_summary} Grounded in {spec['source_table']} ({spec['artifact_id']}).")
@@ -786,12 +798,12 @@ def create_pptx(path: Path, spec: dict, rows: list[dict], aggregate: dict, colum
     note.text_frame.paragraphs[0].font.color.rgb = RGBColor(64, 80, 88)
     add_ppt_footer(slide, spec)
 
-    for extra_slide_title, extra_slide_note in (
+    for extra_slide_title, extra_slide_note in vary_length(spec, "pptx", (
         ("Operational governance gates", "Lot containment, MRB escalation SLAs, and cross-fab sign-off checkpoints."),
         ("Capability & benchmark tracking", "Quarterly Cpk, DPPM, and cycle-time targets tracked against baseline."),
         ("Risk register & mitigations", "Primary excursion, tooling, and supplier lead-time mitigations."),
         ("Continuous improvement roadmap", "Next-quarter automation, recipe optimization, and audit milestones."),
-    ):
+    )):
         extra_slide = presentation.slides.add_slide(blank)
         add_ppt_title(extra_slide, extra_slide_title, accent)
         body_box = extra_slide.shapes.add_textbox(Inches(0.8), Inches(1.4), Inches(11.6), Inches(1.4))
@@ -984,12 +996,12 @@ def create_xlsx(path: Path, spec: dict, rows: list[dict], aggregate: dict, colum
     for column in range(1, 13):
         lineage.column_dimensions[lineage.cell(1, column).column_letter].width = 13
 
-    for extra_sheet_name, extra_desc in (
+    for extra_sheet_name, extra_desc in vary_length(spec, "xlsx", (
         ("Operational Controls", "Lot release gates, excursion containment thresholds, and owner sign-off SLAs."),
         ("Risk Register", "Fab, tooling, and supplier risk items with preventive and contingency controls."),
         ("Quarterly Benchmarks", "Quarter-over-quarter yield, throughput, and quality benchmark progression."),
         ("Governance Audit", "SharePoint metadata verification, review schedule compliance, and AI-readiness checks."),
-    ):
+    )):
         extra_ws = workbook.create_sheet(extra_sheet_name)
         extra_ws["A1"] = f"{spec['title']} - {extra_sheet_name}"
         extra_ws["A1"].font = Font(size=15, bold=True, color=accent)

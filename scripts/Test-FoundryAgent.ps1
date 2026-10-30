@@ -45,6 +45,8 @@ $failures = 0
 foreach ($case in $cases) {
     Write-Host "`n[$($case.Hub)] $($case.Question)" -ForegroundColor Cyan
     try {
+        $freshToken = (az account get-access-token --resource https://ai.azure.com --query accessToken -o tsv).Trim()
+        $headers = @{ Authorization = 'Bearer ' + $freshToken; 'Content-Type' = 'application/json' }
         $conversation = Invoke-RestMethod -Method POST -Uri "$project/openai/v1/conversations" -Headers $headers -Body '{}'
         $body = @{
             conversation    = $conversation.id
@@ -94,7 +96,15 @@ foreach ($leak in $leakCases) {
     } | ConvertTo-Json -Depth 8
     try {
         $result = Invoke-RestMethod -Method POST -Uri "$searchEndpoint/knowledgebases/$($leak.Base)/retrieve?api-version=$retrieveVersion" -Headers $searchHeaders -Body $body -TimeoutSec 180
-        $bad = @($result.references | Where-Object { $_.sourceData -and ($_.sourceData.lifecycle_status -ne 'Published' -or -not $_.sourceData.authoritative -or -not $_.sourceData.ai_ready) })
+        $bad = @($result.references | Where-Object {
+                $data = $_.PSObject.Properties['sourceData']
+                if (-not $data -or -not $data.Value) { return $false }
+                $fields = $data.Value
+                $status = $fields.PSObject.Properties['lifecycle_status']
+                $authoritative = $fields.PSObject.Properties['authoritative']
+                $aiReady = $fields.PSObject.Properties['ai_ready']
+                ($status -and $status.Value -ne 'Published') -or ($authoritative -and -not $authoritative.Value) -or ($aiReady -and -not $aiReady.Value)
+            })
         $ok = $bad.Count -eq 0
         if (-not $ok) { $failures++ }
         Write-Host ("  [{0}] {1} reference(s), {2} non-published: {3}" -f $(if ($ok) { 'PASS' } else { 'FAIL' }), @($result.references).Count, $bad.Count, $leak.Question) -ForegroundColor $(if ($ok) { 'Green' } else { 'Red' })

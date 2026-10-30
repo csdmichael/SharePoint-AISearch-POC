@@ -9,6 +9,7 @@ import { ConfigService } from '../../core/config/config.service';
 import { I18nService, lookupString } from '../../core/i18n/i18n.service';
 import { SessionService, ViewState, resolveViewState } from '../../core/session/session.service';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
+import { MarkdownComponent } from '../../shared/components/markdown/markdown.component';
 import { StateViewComponent } from '../../shared/components/state-view/state-view.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { DisplayService } from '../../shared/util/display.service';
@@ -34,7 +35,7 @@ interface PromptGroup {
 @Component({
   selector: 'app-agent-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonIcon, IonInput, IonTextarea, BadgeComponent, StateViewComponent, TranslatePipe],
+  imports: [IonContent, IonIcon, IonInput, IonTextarea, BadgeComponent, MarkdownComponent, StateViewComponent, TranslatePipe],
   templateUrl: './agent.page.html',
   styleUrl: './agent.page.scss',
   host: { class: 'ion-page' },
@@ -89,6 +90,9 @@ export class AgentPage {
   );
   readonly canSend = computed(() => !this.sending() && this.draft().trim().length > 0 && this.draft().length <= this.maxInputChars);
   private nextMessageId = 1;
+  private readonly stageIndex = signal(0);
+  private readonly stageKeys = ['agent.stages.routing', 'agent.stages.evidence', 'agent.stages.foundry', 'agent.stages.composing'];
+  readonly stageLabel = computed(() => this.i18n.text(this.stageKeys[Math.min(this.stageIndex(), this.stageKeys.length - 1)]));
 
   constructor() {
     effect(() => {
@@ -96,6 +100,14 @@ export class AgentPage {
       untracked(() => {
         this.prompts.reload();
       });
+    });
+    effect((onCleanup) => {
+      if (!this.sending()) {
+        return;
+      }
+      untracked(() => this.stageIndex.set(0));
+      const timer = globalThis.setInterval(() => this.stageIndex.update((index) => index + 1), 4000);
+      onCleanup(() => globalThis.clearInterval(timer));
     });
   }
 
@@ -304,52 +316,11 @@ export class AgentPage {
       }
     }
 
-    if (bars.length === 0 && reply.evidence && reply.evidence.rows.length > 0 && reply.evidence.rows.length <= 15) {
-      const counts = new Map<string, number>();
-      for (const row of reply.evidence.rows) {
-        const val = String(row[1] ?? row[0] ?? '');
-        if (val) counts.set(val, (counts.get(val) ?? 0) + 1);
-      }
-      for (const [k, v] of counts.entries()) {
-        bars.push({ label: k, value: v, color: '#0078D4' });
-      }
+    if (bars.length === 0) {
+      return [];
     }
-
     const max = Math.max(...bars.map((b) => b.value), 1);
     return bars.map((b) => ({ ...b, percent: Math.max(8, Math.round((b.value / max) * 100)) }));
-  }
-
-  parsedBlocks(text: string): { type: 'text' | 'table'; content?: string; headers?: string[]; rows?: string[][] }[] {
-    const lines = text.split('\n');
-    const blocks: { type: 'text' | 'table'; content?: string; headers?: string[]; rows?: string[][] }[] = [];
-    let textBuffer: string[] = [];
-    let i = 0;
-
-    while (i < lines.length) {
-      const line = lines[i];
-      if (line.trim().startsWith('|') && line.trim().endsWith('|') && i + 1 < lines.length && lines[i + 1].includes('---')) {
-        if (textBuffer.length > 0) {
-          blocks.push({ type: 'text', content: textBuffer.join('\n') });
-          textBuffer = [];
-        }
-        const headers = line.split('|').map((s) => s.trim()).filter((s, idx, arr) => idx > 0 && idx < arr.length - 1);
-        i += 2;
-        const rows: string[][] = [];
-        while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
-          const cells = lines[i].split('|').map((s) => s.trim()).filter((s, idx, arr) => idx > 0 && idx < arr.length - 1);
-          rows.push(cells);
-          i++;
-        }
-        blocks.push({ type: 'table', headers, rows });
-      } else {
-        textBuffer.push(line);
-        i++;
-      }
-    }
-    if (textBuffer.length > 0) {
-      blocks.push({ type: 'text', content: textBuffer.join('\n') });
-    }
-    return blocks;
   }
 
   private formatChartLabel(key: string): string {

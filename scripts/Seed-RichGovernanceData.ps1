@@ -211,6 +211,7 @@ function Build-Plan {
     )
     $names = @($Files | ForEach-Object { [string](Get-Prop $_.fields 'FileLeafRef') })
     $baseNames = @($names | ForEach-Object { Get-BaseName $_ } | Sort-Object -Unique)
+    $copyBaseNames = @($names | Where-Object { $_ -match '\s\((edited\s)?copy\)\.[^.]+$' } | ForEach-Object { Get-BaseName $_ })
     $rows = [System.Collections.Generic.List[object]]::new()
     $readyIndex = 0
     $publishedIndex = 0
@@ -234,6 +235,20 @@ function Build-Plan {
                 $supersedes = if ($i -eq 0) { $names[$names.Count - 1] } else { $names[$i - 1] }
             }
             $publishedIndex++
+        }
+        # A stray copy is never the approved, authoritative document: keep it Draft so it cannot reach the agent.
+        if ($name -match '\s\((edited\s)?copy\)\.[^.]+$') {
+            $iteration = 'Draft'
+            $lifecycle = 'Draft'
+            $authoritative = $false
+            $supersedes = $null
+        }
+        elseif ($copyBaseNames -contains (Get-BaseName $name)) {
+            # The original behind a copy is the canonical, approved document.
+            $iteration = 'Approved'
+            $lifecycle = 'Published'
+            $authoritative = $true
+            $supersedes = $null
         }
         $existingArtifact = [string](Get-Prop $Files[$i].fields 'ArtifactId')
         $artifactId = if ($existingArtifact) { $existingArtifact } else { "ART-$($SiteKey.ToUpperInvariant())-$($Files[$i].id)" }

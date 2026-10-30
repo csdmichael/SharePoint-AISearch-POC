@@ -97,8 +97,17 @@ def test_example_limit_comes_from_the_agent_file(build_app, config_path, auth_he
     settings = load_settings(config_path, env={"API_AGENT__limits__maxExamples": "1"})
     client = TestClient(build_app(settings))
     body = ask(client, auth_headers, "Who can access the library through which group or sharing link?")
-    examples = [line for line in body["evidence"]["lines"] if line.startswith("  ")]
-    assert len(examples) <= 1
+    examples = [line for line in body["evidence"]["lines"] if line.startswith("- ")]
+    assert body["intent"] == "library-access"
+    assert 0 < len(examples) <= 1
+
+
+def test_library_access_question_reads_library_permissions(client: TestClient, auth_headers: dict[str, str]) -> None:
+    body = ask(client, auth_headers, "Who can access the HR Documents library, and through which group or sharing link?")
+    assert body["intent"] == "library-access"
+    assert body["evidence"]["facts"]["principals"] > 0
+    assert body["evidence"]["items"][0]["principal"]
+    assert body["evidence"]["items"][0]["grantedVia"]
 
 
 def test_evidence_mode_never_calls_foundry(build_app, config_path, auth_headers: dict[str, str],

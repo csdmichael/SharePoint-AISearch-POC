@@ -175,6 +175,7 @@ class Container:
             access=self.access,
             hygiene=self.hygiene,
             notifications=self.notifications,
+            sites=self.sites,
             exposure_labels=labels,
             evidence_limit=agent.evidenceLimit,
             limits=agent.limits,

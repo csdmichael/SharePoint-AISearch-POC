@@ -29,7 +29,7 @@
     "conflictingAuthoritative": "conflicting-authoritative",
     "conflictsWithAuthoritative": "conflicts-with-authoritative"
   },
-  "instructions": "You are the SharePoint governance assistant for the document libraries of the configured SharePoint site. Answer only from the live evidence supplied with the question. Quote document titles, owners, dates, roles and grant paths exactly as the evidence states them. Say so when the evidence does not contain the answer. Never recommend deleting content; recommend review, approval or notification steps. Owner notifications are drafts until a reviewer approves them.",
+  "instructions": "You are the SharePoint governance assistant for the document libraries of the configured SharePoint site. Answer only from the live evidence supplied with the question; never mention the evidence format, JSON, field names or handlers. Quote document titles, owners, dates, roles and grant paths exactly as the evidence states them. Say so plainly when the evidence does not contain the answer. Never recommend deleting content; recommend review, approval or notification steps. Owner notifications are drafts until a reviewer approves them. Format every answer as rich Markdown: start with a one-sentence bold answer, then use '##' section headings, a Markdown table for any list of people, groups, documents or permissions (include role and how access was granted), bullets for findings, and a final '### Recommended next steps' list. Link documents with [title](url) when a URL is given. Keep it scannable and under 350 words.",
   "messages": {
     "foundryNotConfigured": "Microsoft Foundry is not configured for this API, so the answer is built from live evidence only.",
     "foundryNotRequested": "Microsoft Foundry was not requested, so the answer is built from live evidence only.",
@@ -70,6 +70,9 @@
     "orphanExample": "- {item} ({path}): {who} [{status}]",
     "conflictsSummary": "{stored} document(s) carry a stored conflict status; {live} live conflict candidate(s) found by analysis.",
     "conflictExample": "- \"{first}\" vs \"{second}\": similarity {similarity}",
+    "libraryAccessSummary": "{library}: {principals} principal(s) hold access and {links} sharing link(s) exist. {inheritance}",
+    "libraryAccessLine": "- {principal} ({kind}) holds {role}, granted via {grantedVia}; members: {members}",
+    "libraryAccessNone": "No library-level permissions could be read for {library}.",
     "meetingSummary": "Meeting {meeting}: transcript \"{transcript}\" with recording \"{recording}\".",
     "meetingExcerpt": "Transcript excerpt: {excerpt}",
     "meetingNotFound": "I could not find a non-draft transcript for meeting {meeting} in this site.",
@@ -79,7 +82,8 @@
   },
   "intents": [
     {"id": "meeting-transcripts", "keywords": ["meeting", "transcript", "recording", "video", "vtt"], "handler": "meetingTranscripts"},
-    {"id": "overexposure", "keywords": ["who can access", "through which group", "everyone", "anonymous", "anyone with the link", "shared with", "external users", "sharing link", "overexposed", "over-exposed", "overexposure", "exposure"], "handler": "exposure"},
+    {"id": "library-access", "keywords": ["who can access", "who has access", "which group", "through which group", "library", "sharing link", "permissions on", "permission levels"], "handler": "libraryAccess"},
+    {"id": "overexposure", "keywords": ["everyone", "anonymous", "anyone with the link", "shared with", "external users", "sharing link", "overexposed", "over-exposed", "overexposure", "exposure"], "handler": "exposure"},
     {"id": "access-review", "keywords": ["what can", "can access", "access in this site", "how was each permission", "permissions for", "granted"], "handler": "userAccess"},
     {"id": "broken-inheritance", "keywords": ["broken inheritance", "inheritance", "unique permission", "direct user grant", "direct grant"], "handler": "brokenInheritance"},
     {"id": "duplicates", "keywords": ["duplicate", "canonical", "near-duplicate", "exact and near"], "handler": "duplicates"},

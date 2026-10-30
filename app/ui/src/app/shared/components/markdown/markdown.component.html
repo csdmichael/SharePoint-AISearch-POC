@@ -1,0 +1,89 @@
+<ng-template #inlines let-items>
+  @for (inline of items; track $index) {
+    @switch (inline.kind) {
+      @case ('bold') {
+        <strong>{{ inline.text }}</strong>
+      }
+      @case ('italic') {
+        <em>{{ inline.text }}</em>
+      }
+      @case ('code') {
+        <code>{{ inline.text }}</code>
+      }
+      @case ('cite') {
+        <span class="md__cite" title="Source citation">{{ inline.text }}</span>
+      }
+      @case ('link') {
+        @if (href(inline); as link) {
+          <a [href]="link" target="_blank" rel="noopener noreferrer">{{ inline.text }}</a>
+        } @else {
+          {{ inline.text }}
+        }
+      }
+      @default {
+        {{ inline.text }}
+      }
+    }
+  }
+</ng-template>
+
+<div class="md" data-testid="agent-answer">
+  @for (block of blocks(); track $index) {
+    @switch (block.kind) {
+      @case ('heading') {
+        <div class="md__h" [class.md__h--1]="block.level === 1" [class.md__h--2]="block.level === 2" [class.md__h--3]="block.level > 2" role="heading" [attr.aria-level]="block.level + 1">
+          <ng-container *ngTemplateOutlet="inlines; context: { $implicit: block.inlines }" />
+        </div>
+      }
+      @case ('paragraph') {
+        <p class="md__p"><ng-container *ngTemplateOutlet="inlines; context: { $implicit: block.inlines }" /></p>
+      }
+      @case ('list') {
+        @if (block.ordered) {
+          <ol class="md__list">
+            @for (item of block.items; track $index) {
+              <li><ng-container *ngTemplateOutlet="inlines; context: { $implicit: item }" /></li>
+            }
+          </ol>
+        } @else {
+          <ul class="md__list">
+            @for (item of block.items; track $index) {
+              <li><ng-container *ngTemplateOutlet="inlines; context: { $implicit: item }" /></li>
+            }
+          </ul>
+        }
+      }
+      @case ('table') {
+        <div class="md__table-wrap">
+          <table class="md__table">
+            <thead>
+              <tr>
+                @for (header of block.headers; track $index) {
+                  <th scope="col"><ng-container *ngTemplateOutlet="inlines; context: { $implicit: header }" /></th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of block.rows; track $index) {
+                <tr>
+                  @for (cell of row; track $index) {
+                    <td><ng-container *ngTemplateOutlet="inlines; context: { $implicit: cell }" /></td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      @case ('quote') {
+        <blockquote class="md__quote"><ng-container *ngTemplateOutlet="inlines; context: { $implicit: block.inlines }" /></blockquote>
+      }
+      @case ('code') {
+        <pre class="md__code">{{ block.text }}</pre>
+      }
+      @case ('rule') {
+        <hr class="md__rule" />
+      }
+    }
+  }
+</div>
