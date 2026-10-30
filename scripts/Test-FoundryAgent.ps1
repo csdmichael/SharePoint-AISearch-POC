@@ -29,13 +29,14 @@ $headers = @{ Authorization = $authHeader; 'Content-Type' = 'application/json' }
 $project = $state.projectEndpoint.TrimEnd('/')
 
 $cases = @(
-    @{ Hub = 'hr'; Site = 'hrknowledgehub'; Question = 'How many weeks of paid parental leave does the primary caregiver get, and which document says so?' },
+    @{ Hub = 'hr'; Site = 'hrknowledgehub'; Question = 'What does the flexible work and remote work policy say about eligibility and approvals?' },
     @{ Hub = 'hr'; Site = 'hrknowledgehub'; Question = 'In the 401(k) plan vendor check-in meeting, what did the team say about the auto-enrollment opt-out rate?' },
     @{ Hub = 'manufacturing'; Site = 'manufacturingknowledgehub'; Question = 'What did the Line 3 yield improvement tollgate meeting say about seal leak defects?' },
     @{ Hub = 'manufacturing'; Site = 'manufacturingknowledgehub'; Question = 'What does the changeover standard operating procedure cover?' },
     @{ Hub = 'sales'; Site = 'salesmarketingknowledgehub'; Question = 'In the discovery call coaching session, what should happen before scheduling a demo?' },
     @{ Hub = 'sales'; Site = 'salesmarketingknowledgehub'; Question = 'What does the discovery call guide say about qualifying an economic buyer?' },
-    # Draft-only content: the agent must not cite it.
+    # Draft or superseded content: the agent must not cite it.
+    @{ Hub = 'hr (superseded must stay hidden)'; Forbidden = 'paid-time-off-and-leave-of-absence-policy'; Question = 'How many weeks of paid parental leave does the primary caregiver get, and which document says so?' },
     @{ Hub = 'sales (draft must stay hidden)'; Forbidden = 'competitive-win-loss-debrief'; Question = 'What did the competitive win-loss debrief meeting conclude?' },
     @{ Hub = 'sales (draft must stay hidden)'; Forbidden = 'proposal-and-pricing-template-guide'; Question = 'Summarize the proposal and pricing template guide.' }
 )

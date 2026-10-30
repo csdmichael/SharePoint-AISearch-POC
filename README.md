@@ -604,13 +604,52 @@ A persisted `baseFilter` is ANDed into **every** retrieve call, including the
 agent's MCP tool calls. A caller can narrow it with `filterAddOn`, never widen
 or replace it. `Provision-SearchIndexes.ps1` and `provision_foundry_agent.ps1`
 both write it from `config/search-indexes.json` and `config/trusted-knowledge.json`,
-so a rebuild cannot drop it. Current counts in `departments-knowledge-index`:
-Draft 44, Published 42, Archived 22, Superseded 4 chunks, of which 26 also
-satisfy the rest of the filter.
+so a rebuild cannot drop it. Current counts in `departments-knowledge-index`
+(813 chunks): Draft 343, Published 293, Archived 156, Superseded 21, of which
+157 also satisfy the rest of the filter.
+
+#### Where the filter lives, and why
+
+| Layer | Can it filter by lifecycle? | Decision |
+| --- | --- | --- |
+| SharePoint datasource (`*-sp-source`) | No. The SharePoint indexer's datasource `query` only selects a site or library; it has no column/OData filter. | Not possible |
+| Indexer / skillset | Only by dropping documents at index time, so audits and governance pages could no longer see drafts, and every status change would need a re-index to take effect. | Rejected |
+| Separate "published-only" index | Possible, but doubles storage, embeddings and indexer runs, and can lag the source of truth. | Rejected |
+| **Knowledge source `baseFilter`** | **Yes.** Evaluated at query time against fresh index fields, applied to every retrieve call including the agent's MCP tool, and cannot be bypassed by the caller. | **Chosen** |
+
+Because `lifecycle_status`, `authoritative`, `ai_ready` and `sensitivity` are
+`filterable` index fields, the filter is a cheap pre-filter on the vector and
+keyword search rather than a post-processing step, and a status change in
+SharePoint reaches the agent after the next hourly indexer run without
+rebuilding anything.
+
+#### Evidence
+
+Captured from the live service by `node scripts/capture-filter-evidence.mjs`
+(set `AGENT_TEST_LOG` to the output of `Test-FoundryAgent.ps1` to include the
+agent run). It reads the service with the admin key from `az`, so re-run it
+after any change to the filter.
+
+1. The filter persisted on the knowledge source (`GET /knowledgesources/trusted-knowledge-ks`):
+
+   ![Knowledge source baseFilter](docs/images/search/01-knowledge-source-basefilter.png)
+
+2. The same facet query with and without the filter. The index keeps everything; only Published chunks are visible through the filter:
+
+   ![Index lifecycle facets](docs/images/search/02-index-lifecycle-facets.png)
+
+3. A raw search returns Draft documents, while the knowledge base `retrieve` call that the agent uses returns only Published, authoritative, AI-ready ones:
+
+   ![Retrieve returns published only](docs/images/search/03-retrieve-published-only.png)
+
+4. The Foundry agent end-to-end test, including questions whose only source is a draft or superseded document:
+
+   ![Foundry agent end-to-end test](docs/images/search/04-agent-end-to-end-test.png)
 
 `scripts/Test-FoundryAgent.ps1` proves it end to end. It asks about
-draft-only documents (the competitive win-loss debrief, the proposal and
-pricing template guide) and fails if either is cited, and it retrieves straight
+draft-only and superseded documents (the competitive win-loss debrief, the
+proposal and pricing template guide, the superseded paid-time-off and leave
+policy) and fails if any is cited, and it retrieves straight
 from the knowledge base and fails if any returned reference is not Published,
 authoritative and AI-ready.
 
