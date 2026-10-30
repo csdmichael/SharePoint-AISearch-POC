@@ -66,8 +66,8 @@
       "API_CONFIG__sharedConfig__vocabularyPath": "shared-config/governance-vocabulary.json",
       "API_CONFIG__sharedConfig__policyPath": "shared-config/governance-policy.json",
       "API_AGENT__foundry__accountName": "foundry-myaacoub",
-      "API_AGENT__foundry__projectName": "SharePointGovernance",
-      "API_AGENT__foundry__agentName": "sharepoint-governance-agent"
+      "API_AGENT__foundry__projectName": "proj-default",
+      "API_AGENT__foundry__agentName": "trusted-knowledge-agent"
     }
   }
 }

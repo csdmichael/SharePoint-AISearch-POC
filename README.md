@@ -963,6 +963,26 @@ successful Search indexing response.
 
 ## Foundry agent integration
 
+**Which agent the web app calls.** The API (and so the Site Assistant page) calls
+`trusted-knowledge-agent` in the Foundry project `proj-default`, the agent that
+owns the knowledge-base tool. It is set by `API_AGENT__foundry__projectName` and
+`API_AGENT__foundry__agentName` in [deploy/components/api.json](deploy/components/api.json),
+and the API's managed identity needs the **Foundry User** role on that project:
+
+```powershell
+az role assignment create --assignee-object-id <api-principal-id> --assignee-principal-type ServicePrincipal `
+  --role "Foundry User" --scope <foundry-account-id>/projects/proj-default
+```
+
+The API routes each question by intent. Governance questions (permissions, sharing,
+ownership, expiry, duplicates, backlog, notifications) are sent with live SharePoint
+evidence. Meeting questions send the evidence **and** ask the agent to search the
+knowledge base. Every other question (content of policies, procedures, reports,
+decks) goes to the agent **without** evidence so it answers from the knowledge base.
+`scripts/evaluate_agent.py --via-api` measures that exact path.
+(The older `sharepoint-governance-agent` has no knowledge-base tool and is no longer
+called by the app.)
+
 The deployed `{Foundry Agent}` has one MCP tool: the Foundry IQ
 `knowledge_base_retrieve` operation exposed by `{Knowledge Base}`. The
 knowledge base uses `{Knowledge Source}` to query the promoted Azure AI Search
