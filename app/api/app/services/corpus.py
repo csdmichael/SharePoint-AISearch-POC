@@ -6,9 +6,13 @@ unchanged, so rebuilding a corpus does not download files that were not edited.
 
 from __future__ import annotations
 
+import json
+import logging
+import os
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Callable, Hashable, Iterable, TypeVar
 
 from app.analytics.text import extract_text, normalize_text
@@ -22,6 +26,8 @@ from app.domain.snapshot import ItemRecord, LibraryInfo, LibrarySnapshot
 
 T = TypeVar("T")
 LINK_CLAIM_SCOPES = frozenset({"anonymous", "organization", "users"})
+TEXT_CACHE_VERSION = 1
+logger = logging.getLogger("sp_acl_api")
 
 
 @dataclass(frozen=True)
@@ -41,11 +47,14 @@ class DriveContext:
 
 class TextCache:
     """Extracted text per drive item, valid while the item's content tag is unchanged. One entry per item: a new
-    content tag replaces the old result, so memory stays bounded by the number of files."""
+    content tag replaces the old result, so memory stays bounded by the number of files. With a path, entries are
+    saved to disk after changes and reloaded at the next start, so a restart does not re-download every file."""
 
-    def __init__(self) -> None:
-        self._entries: dict[str, tuple[str, TextResult]] = {}
+    def __init__(self, path: Path | None = None) -> None:
+        self._path = path
         self._lock = threading.Lock()
+        self._dirty = False
+        self._entries: dict[str, tuple[str, TextResult]] = self._load(path) if path is not None else {}
 
     def get(self, key: str, content_tag: str) -> TextResult | None:
         with self._lock:
@@ -57,6 +66,45 @@ class TextCache:
     def put(self, key: str, content_tag: str, result: TextResult) -> None:
         with self._lock:
             self._entries[key] = (content_tag, result)
+            self._dirty = True
+
+    def save(self) -> None:
+        """Writes the entries when they changed since the last save. Failures are logged, never raised."""
+
+        if self._path is None:
+            return
+        with self._lock:
+            if not self._dirty:
+                return
+            rows = {key: [tag, result.status, result.text, result.reason]
+                    for key, (tag, result) in self._entries.items()}
+            self._dirty = False
+        payload = json.dumps({"version": TEXT_CACHE_VERSION, "entries": rows}, ensure_ascii=False)
+        temp = self._path.with_suffix(".tmp")
+        try:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            temp.write_text(payload, encoding="utf-8")
+            os.replace(temp, self._path)
+        except OSError as exc:
+            with self._lock:
+                self._dirty = True
+            logger.warning("Text cache could not be saved to %s: %s", self._path, exc)
+
+    @staticmethod
+    def _load(path: Path) -> dict[str, tuple[str, TextResult]]:
+        if not path.exists():
+            return {}
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            if payload.get("version") != TEXT_CACHE_VERSION:
+                return {}
+            return {
+                str(key): (str(tag), TextResult(str(status), text=text, reason=reason))
+                for key, (tag, status, text, reason) in payload["entries"].items()
+            }
+        except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
+            logger.warning("Text cache at %s is unreadable and will be rebuilt: %s", path, exc)
+            return {}
 
 
 class LibraryCorpus:

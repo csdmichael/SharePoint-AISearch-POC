@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import threading
 import time
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable
 from urllib.parse import urlsplit
 
@@ -12,7 +14,7 @@ from app.clients.sharepoint import SharePointClient
 from app.core.config import Settings
 from app.core.errors import NotFoundError, UpstreamError, UpstreamNotFoundError
 from app.core.governance import Governance
-from app.domain.documents import governance_select
+from app.domain.documents import governance_fragments
 from app.domain.identity import is_system_path, is_within, lower_key, path_depth, split_item_id
 from app.domain.principals import PrincipalClassifier
 from app.domain.snapshot import ItemRecord, LibraryInfo, LibrarySnapshot, item_from_row
@@ -46,6 +48,13 @@ BASE_SELECT: tuple[str, ...] = (
 BASE_EXPAND: tuple[str, ...] = ("Folder", "File")
 
 
+@dataclass(frozen=True)
+class LibraryColumns:
+    select: list[str]
+    expand: list[str]
+    missing: list[str]
+
+
 def origin_of(site_url: str) -> str:
     parts = urlsplit(site_url)
     return f"{parts.scheme}://{parts.netloc}"
@@ -72,13 +81,10 @@ class LibraryService:
         self._libraries: tuple[float, list[LibraryInfo]] | None = None
         self._corpora: dict[str, tuple[float, LibraryCorpus]] = {}
         self._build_locks: dict[str, threading.Lock] = {}
-        self._text_cache = TextCache()
+        self._text_cache = TextCache(path=self._text_cache_path())
         self._lock = threading.RLock()
         self._origin = origin_of(settings.site.site_url)
         self._site_path = urlsplit(settings.site.site_url).path
-        governance_columns, governance_expand = governance_select(governance)
-        self._select = list(BASE_SELECT) + governance_columns
-        self._expand = list(BASE_EXPAND) + governance_expand
 
     @property
     def origin(self) -> str:
@@ -161,6 +167,15 @@ class LibraryService:
         with self._lock:
             return self._build_locks.setdefault(library_id, threading.Lock())
 
+    def _text_cache_path(self) -> Path | None:
+        base = self._settings.api.cache.textCachePath
+        if not base:
+            return None
+        return Path(f"{base}.{self._settings.site.site_id}.json")
+
+    def save_text_cache(self) -> None:
+        self._text_cache.save()
+
     def item(self, item_id: str) -> tuple[LibraryCorpus, ItemRecord]:
         """Resolves a composite item id to its corpus and record, fetching from SharePoint when not in the snapshot."""
 
@@ -171,10 +186,9 @@ class LibraryService:
         known = corpus.snapshot.by_id(item_id)
         if known is not None:
             return corpus, known
+        columns = self._columns(corpus.library)
         try:
-            row = self._sharepoint.item(
-                corpus.library.id, list_item_id, select=self._select, expand=self._expand
-            )
+            row = self._sharepoint.item(corpus.library.id, list_item_id, select=columns.select, expand=columns.expand)
         except UpstreamNotFoundError as exc:
             raise NotFoundError(f"Item {item_id} was not found in the library.") from exc
         record = item_from_row(row, library=corpus.library, governance=self._governance)
@@ -183,19 +197,40 @@ class LibraryService:
         corpus.snapshot.register(record)
         return corpus, record
 
+    def _columns(self, info: LibraryInfo) -> LibraryColumns:
+        """The $select and $expand for one library: only the governance columns that list has. When the list's columns
+        cannot be read, every governance column is requested, as before."""
+
+        try:
+            present: set[str] | None = self._sharepoint.field_names(info.id)
+        except UpstreamError:
+            present = None
+        governance_columns, governance_expand, missing = governance_fragments(self._governance, present)
+        return LibraryColumns(
+            select=list(BASE_SELECT) + governance_columns,
+            expand=list(BASE_EXPAND) + governance_expand,
+            missing=missing,
+        )
+
     def _build_snapshot(self, info: LibraryInfo) -> LibrarySnapshot:
         crawl = self._settings.api.sharePoint.crawl
         system_names = tuple(self._settings.api.sharePoint.systemFolderNames)
         items: list[ItemRecord] = []
         truncated = False
         warnings: list[str] = []
+        columns = self._columns(info)
+        if columns.missing:
+            warnings.append(
+                f"Governance columns missing on library '{info.title}': {', '.join(columns.missing)}. "
+                "Those fields show as not available until the columns are added."
+            )
         try:
-            raw_rows = list(self._sharepoint.list_items(info.id, select=self._select, expand=self._expand))
+            raw_rows = list(self._sharepoint.list_items(info.id, select=columns.select, expand=columns.expand))
         except UpstreamError as exc:
             if exc.code != "upstream_bad_request":
                 raise
             raw_rows = list(self._sharepoint.list_items(info.id, select=list(BASE_SELECT), expand=list(BASE_EXPAND)))
-            warnings.append(f"Governance columns not present on library '{info.title}'.")
+            warnings.append(f"Governance columns could not be read on library '{info.title}'; showing base fields only.")
 
         for row in raw_rows:
             path = str(row.get("FileRef") or "")

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import threading
 import time
+from dataclasses import replace
+from pathlib import Path
 from typing import Any, Iterator
 
 import pytest
@@ -14,6 +16,7 @@ from pydantic import ValidationError
 from app.container import Container
 from app.container_manager import ContainerManager
 from app.core.config import CacheConfig, Settings
+from app.services.corpus import TextCache, TextResult
 from app.services.hygiene import HygieneService
 from app.services.warmer import CacheWarmer
 from tests.helpers.fake_tenant import DEFAULT_LIBRARY_TITLE, FakeTenant
@@ -197,3 +200,35 @@ def test_warm_interval_must_be_shorter_than_the_library_ttl() -> None:
 def test_app_starts_no_warmer_unless_asked(build_app: Any, settings: Settings) -> None:
     with TestClient(build_app(settings)):
         assert not [thread for thread in threading.enumerate() if thread.name == "cache-warmer"]
+
+
+def test_text_cache_reloads_persisted_entries_and_misses_changed_tags(tmp_path: Path) -> None:
+    path = tmp_path / "text-cache.json"
+    cache = TextCache(path=path)
+    cache.put("drive/item-1", "c:1", TextResult("ok", text="hello world"))
+    cache.save()
+
+    reloaded = TextCache(path=path)
+    cached = reloaded.get("drive/item-1", "c:1")
+    assert cached is not None and cached.status == "ok" and cached.text == "hello world"
+    assert reloaded.get("drive/item-1", "c:2") is None
+
+
+def test_unreadable_text_cache_is_ignored(tmp_path: Path) -> None:
+    path = tmp_path / "text-cache.json"
+    path.write_text("{not json", encoding="utf-8")
+    assert TextCache(path=path).get("drive/item-1", "c:1") is None
+
+
+def test_warm_pass_persists_text_for_every_site(tenant: FakeTenant, settings: Settings, tmp_path: Path) -> None:
+    base = tmp_path / "text-cache"
+    api = settings.api.model_copy(update={"cache": settings.api.cache.model_copy(update={"textCachePath": str(base)})})
+    manager = ContainerManager(replace(settings, api=api), transport=tenant.transport(),
+                               credential=StaticCredential(), sleep=lambda _seconds: None)
+    try:
+        outcomes = CacheWarmer(manager, interval_seconds=240).warm_once()
+        for site_id in manager.site_ids():
+            assert outcomes[site_id] == "ok"
+            assert Path(f"{base}.{site_id}.json").exists()
+    finally:
+        manager.close()

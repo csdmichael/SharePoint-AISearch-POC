@@ -204,6 +204,10 @@ class FakeTenant:
                     wanted = match.group(1).replace("''", "'")
                     rows = [row for row in rows if row["FileDirRef"] == wanted]
             return self._page(rows, request)
+        if tail == "/fields":
+            if "fields" not in library:
+                return httpx.Response(404, json={"error": {"message": {"value": "fields are not modelled"}}})
+            return self._page([{"InternalName": name} for name in library["fields"]], request)
         if tail == "/roleassignments":
             return self._page(self._role_rows(library.get("roleAssignments", [])), request)
         match = re.fullmatch(r"/items\((\d+)\)(/roleassignments)?", tail)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime
-from typing import Any, Mapping
+from typing import Any, Collection, Mapping
 
 from app.core.governance import Governance
 
@@ -119,17 +119,30 @@ def parse_governance(row: Mapping[str, Any], governance: Governance) -> dict[str
     }
 
 
+def governance_fragments(governance: Governance, present: Collection[str] | None = None) -> tuple[list[str], list[str], list[str]]:
+    """SharePoint $select and $expand fragments for the governance columns a list has, and the names of the ones it
+    lacks. present=None assumes every governance column exists."""
+
+    select: list[str] = []
+    expand: list[str] = []
+    missing: list[str] = []
+    for key, column in governance.column_names().items():
+        if present is not None and column not in present:
+            missing.append(column)
+            continue
+        if key == "knowledgeOwner":
+            select.extend([f"{column}/Title", f"{column}/EMail", f"{column}/Name"])
+            expand.append(column)
+        else:
+            select.append(column)
+    return sorted(set(select)), expand, missing
+
+
 def governance_select(governance: Governance) -> tuple[list[str], list[str]]:
     """SharePoint $select and $expand fragments for the governance columns."""
 
-    select: list[str] = []
-    for key, column in governance.column_names().items():
-        if key == "knowledgeOwner":
-            select.extend([f"{column}/Title", f"{column}/EMail", f"{column}/Name"])
-        else:
-            select.append(column)
-    expand = [governance.column("knowledgeOwner")]
-    return sorted(set(select)), expand
+    select, expand, _ = governance_fragments(governance)
+    return select, expand
 
 
 def authoritative_claim(governance_fields: Mapping[str, Any], governance: Governance) -> bool:

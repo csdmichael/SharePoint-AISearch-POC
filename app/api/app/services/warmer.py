@@ -51,6 +51,7 @@ class CacheWarmer:
                 for library in container.libraries.configured():
                     container.libraries.corpus(library.id, fresh=True)
                 container.hygiene.refresh()
+                container.libraries.save_text_cache()
                 outcomes[site_id] = "ok"
             except Exception as exc:  # warming is best effort; requests still build caches on demand
                 logger.warning("Cache warm-up failed for site %s: %s", site_id, exc)

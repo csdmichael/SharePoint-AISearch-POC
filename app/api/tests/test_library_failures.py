@@ -1,5 +1,7 @@
 """Regression coverage for libraries without governance columns and failed crawls."""
 
+from urllib.parse import parse_qs, urlsplit
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -24,6 +26,28 @@ def test_missing_governance_columns_fall_back_to_base_metadata(
     coverage = next(row for row in hygiene.json()["libraries"] if row["libraryId"] == library_id)
     assert coverage["documentsScanned"] > 0
     assert any("Governance columns" in warning for warning in coverage["warnings"])
+
+
+def test_only_governance_columns_the_list_has_are_selected(
+    client: TestClient, auth_headers: dict[str, str], tenant: FakeTenant,
+) -> None:
+    library = tenant.library_by_title()
+    library["fields"] = ["Title", "FileLeafRef", "ArtifactId", "LifecycleStatus", "DocumentIteration"]
+    response = client.get("/api/v1/documents", headers=auth_headers)
+    assert response.status_code == 200
+    assert response.json()["total"] > 0
+
+    items_url = next(
+        url for method, url in tenant.calls if method == "GET" and f"lists(guid'{library['id']}')/items?" in url
+    )
+    select = parse_qs(urlsplit(items_url).query)["$select"][0].split(",")
+    assert "LifecycleStatus" in select
+    assert "DocumentIteration" in select
+    assert "TrustScore" not in select
+    hygiene = client.get("/api/v1/hygiene", headers=auth_headers).json()
+    coverage = next(row for row in hygiene["libraries"] if row["libraryId"] == library["id"])
+    assert any("TrustScore" in warning for warning in coverage["warnings"])
+    assert not any("could not be read" in warning for warning in coverage["warnings"])
 
 
 @pytest.mark.parametrize("route", ["/documents", "/hygiene", "/analytics/duplicates"])

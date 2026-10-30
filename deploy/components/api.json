@@ -61,6 +61,7 @@
       "API_CONFIG__cors__allowedOrigins": "https://caldova-aiscr-ui.azurewebsites.net",
       "API_CONFIG__graph__timeoutSeconds": "10",
       "API_CONFIG__graph__maxRetries": "2",
+      "API_CONFIG__cache__textCachePath": "/home/data/caldova-aiscr/text-cache",
       "API_CONFIG__sharedConfig__deploymentPath": "shared-config/trusted-knowledge.json",
       "API_CONFIG__sharedConfig__vocabularyPath": "shared-config/governance-vocabulary.json",
       "API_CONFIG__sharedConfig__policyPath": "shared-config/governance-policy.json",

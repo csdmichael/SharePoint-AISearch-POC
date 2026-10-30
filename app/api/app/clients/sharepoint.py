@@ -107,6 +107,12 @@ class SharePointClient:
             params["$filter"] = filter_text
         return self._pages(f"{self._api}/{self.list_path(list_id)}/items", params)
 
+    def field_names(self, list_id: str) -> set[str]:
+        """Internal names of every column on the list, hidden columns included."""
+
+        rows = self._pages(f"{self._api}/{self.list_path(list_id)}/fields", {"$select": "InternalName"})
+        return {str(row["InternalName"]) for row in rows if row.get("InternalName")}
+
     def item(self, list_id: str, item_id: int, *, select: list[str], expand: list[str]) -> dict[str, Any]:
         params = {"$select": ",".join(select), "$expand": ",".join(expand)}
         return self._get(f"{self._api}/{self.list_path(list_id)}/items({int(item_id)})", params)

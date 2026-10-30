@@ -303,6 +303,7 @@ class CacheConfig(_Model):
     libraryTtlSeconds: int = Field(ge=0)
     membershipTtlSeconds: int = Field(ge=0)
     warmIntervalSeconds: int = Field(default=0, ge=0)
+    textCachePath: str = ""
 
     @model_validator(mode="after")
     def _warm_before_expiry(self) -> "CacheConfig":
