@@ -675,7 +675,11 @@ Parental and Family Leave Policy and must not cite or quote the superseded
 python .\scripts\evaluate_agent.py --workers 3 --threshold 0.9
 ```
 
-Latest run: **184 of 184 answers correct (100%)**, 0 hidden-document citations.
+Latest runs: **184 of 184 correct (100%)** asking the Foundry agent directly, and
+**183 of 184 (99%)** through the deployed API (`--via-api`, the path the UI uses),
+with 0 hidden-document citations in both. The one miss is a title-style question about
+the *Plant Operations and OEE Performance Deck*: the deck is published and indexed
+but the knowledge base does not surface it, so the assistant says it found nothing.
 Requests retry on Foundry rate limits (HTTP 429), so use few workers.
 
 #### Which documents are visible, and why
