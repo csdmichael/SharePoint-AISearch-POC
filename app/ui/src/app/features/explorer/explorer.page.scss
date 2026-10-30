@@ -150,18 +150,6 @@
   justify-content: flex-end;
 }
 
-:root[data-layout='desktop'] .panes {
-  grid-template-columns: minmax(180px, 230px) minmax(220px, 300px) minmax(0, 1fr);
-  grid-template-areas: "master primary detail";
-}
-
-:root[data-layout='tablet'] .panes {
-  grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
-  grid-template-areas:
-    "master detail"
-    "master primary";
-}
-
 .pane--master,
 .pane--primary,
 .pane--detail {

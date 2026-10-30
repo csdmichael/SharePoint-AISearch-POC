@@ -31,7 +31,7 @@ import { MicrosoftLogoComponent } from '../microsoft-logo/microsoft-logo.compone
           <span class="app-header__site-label">{{ siteLabel }}</span>
           <select class="app-header__site-select" [value]="selectedSiteId() ?? ''" (change)="changeSite($event)">
             @for (site of siteOptions(); track site.siteId) {
-              <option [value]="site.siteId">{{ site.displayName }}</option>
+              <option [value]="site.siteId" [selected]="site.siteId === selectedSiteId()">{{ site.displayName }}</option>
             }
           </select>
         </label>

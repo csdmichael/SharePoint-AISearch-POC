@@ -169,6 +169,26 @@ body {
   grid-template-areas: "master primary";
 }
 
+/* Explorer: tree, then the document viewer (widest), then permissions. */
+.panes--explorer {
+  grid-template-areas:
+    "master"
+    "detail"
+    "primary";
+}
+
+:root[data-layout='tablet'] .panes--explorer {
+  grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+  grid-template-areas:
+    "master detail"
+    "master primary";
+}
+
+:root[data-layout='desktop'] .panes--explorer {
+  grid-template-columns: minmax(180px, 230px) minmax(0, 1fr) minmax(260px, 340px);
+  grid-template-areas: "master detail primary";
+}
+
 .pane--master {
   grid-area: master;
 }

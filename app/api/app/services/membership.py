@@ -24,7 +24,10 @@ STATUS_ENABLED = "enabled"
 STATUS_DISABLED = "disabled"
 STATUS_MISSING = "missing"
 STATUS_UNKNOWN = "unknown"
-
+M365_GROUP_CLAIM = re.compile(
+    r"federateddirectoryclaimprovider\|(?P<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?P<owners>_o)?$",
+    re.IGNORECASE,
+)
 
 @dataclass(frozen=True)
 class Member:
@@ -121,6 +124,11 @@ class MembershipService:
                 if len(parsed_users) >= self._max_members:
                     break
                 login = str(row.get("LoginName") or "")
+                claim = M365_GROUP_CLAIM.search(login)
+                if claim:
+                    # A Microsoft 365 group sits in the site group as one claim; its people live in Entra.
+                    members.extend(self._m365_members(claim.group("id"), owners=bool(claim.group("owners"))))
+                    continue
                 match = self._user_pattern.search(login)
                 if match and "upn" in match.re.groupindex and match.group("upn"):
                     upn: str | None = match.group("upn").lower()
@@ -149,6 +157,29 @@ class MembershipService:
                 )
         except UpstreamError as exc:
             return [self._unavailable(f"SharePoint group members could not be expanded: {exc.message}")]
+        return members
+
+    def _m365_members(self, group_id: str, *, owners: bool) -> list[Member]:
+        source = self._graph.group_owners if owners else self._graph.group_users
+        members: list[Member] = []
+        try:
+            for row in source(group_id):
+                if len(members) >= self._max_members:
+                    break
+                upn = str(row["userPrincipalName"]).lower() if row.get("userPrincipalName") else None
+                enabled = row.get("accountEnabled")
+                flag = bool(enabled) if enabled is not None else None
+                members.append(
+                    Member(
+                        id=row.get("id"),
+                        display_name=str(row.get("displayName") or upn or "Unnamed member"),
+                        upn=upn,
+                        account_enabled=flag,
+                        status=_status(flag),
+                    )
+                )
+        except UpstreamError as exc:
+            return [self._unavailable(f"Microsoft 365 group members could not be expanded: {exc.message}")]
         return members
 
     @staticmethod

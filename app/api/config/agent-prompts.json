@@ -1,7 +1,7 @@
 {
   "schemaVersion": "sp-acl-agent-prompts/v1",
   "provisional": false,
-  "note": "Sample prompts that map to the three Seagate issues: (1) content is scattered and inconsistently labelled, (2) source permissions do not match the approved audience, (3) decisions live in email, where AI cannot reach them. Each intent must match an id in agent.json.",
+  "note": "Suggested prompts that map to the governance issues: (1) content is scattered and inconsistently labelled, (2) source permissions do not match the approved audience, (3) decisions live in email, where AI cannot reach them. Each intent must match an id in agent.json.",
   "placeholders": {
     "{userUpn}": "Replaced with the UPN found in the question, or with the caller's UPN when none is given."
   },
@@ -18,8 +18,8 @@
     {"id": "prompt-10", "issueId": "permissions-vs-audience", "issueLabel": "2. Source permissions do not match the approved audience", "intent": "orphaned-access", "text": "Which items can be reached by disabled or deleted accounts?"},
     {"id": "prompt-11", "issueId": "decisions-in-inboxes", "issueLabel": "3. Decisions live in email, where AI cannot reach them", "intent": "conflicts", "text": "Which authoritative documents contradict each other and need an owner decision?"},
     {"id": "prompt-12", "issueId": "decisions-in-inboxes", "issueLabel": "3. Decisions live in email, where AI cannot reach them", "intent": "owner-notification", "text": "Draft approval requests to the owners of expired or unowned documents"},
-    {"id": "prompt-13", "issueId": "meeting-transcripts", "issueLabel": "4. Meeting transcripts and recordings are searchable", "intent": "meeting-transcripts", "text": "Summarize meeting 12 transcript and provide citations to the transcript and corresponding recording."},
-    {"id": "prompt-14", "issueId": "meeting-transcripts", "issueLabel": "4. Meeting transcripts and recordings are searchable", "intent": "meeting-transcripts", "text": "Check whether draft meeting transcript for meeting 3 appears in results (it should be excluded)."},
-    {"id": "prompt-15", "issueId": "meeting-transcripts", "issueLabel": "4. Meeting transcripts and recordings are searchable", "intent": "meeting-transcripts", "text": "For meeting 3, verify that only non-Draft Document Iteration transcript content is returned, and cite both the transcript and recording."}
+    {"id": "prompt-13", "issueId": "meeting-transcripts", "issueLabel": "4. Meeting transcripts and recordings are searchable", "intent": "meeting-transcripts", "text": "Summarize the Line 3 Yield Improvement Weekly Tollgate meeting and cite its transcript and recording."},
+    {"id": "prompt-14", "issueId": "meeting-transcripts", "issueLabel": "4. Meeting transcripts and recordings are searchable", "intent": "meeting-transcripts", "text": "Confirm that draft meeting transcripts, such as the competitive win-loss debrief, are excluded from answers."},
+    {"id": "prompt-15", "issueId": "meeting-transcripts", "issueLabel": "4. Meeting transcripts and recordings are searchable", "intent": "meeting-transcripts", "text": "Verify that only Published, authoritative transcripts are returned for the 401(k) plan vendor check-in, and cite the transcript and recording."}
   ]
 }

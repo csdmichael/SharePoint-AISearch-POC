@@ -448,12 +448,12 @@ Check the indexers and then test the agent end to end:
 `Test-FoundryAgent.ps1` asks the live agent one question per hub, including
 questions only a meeting transcript can answer, and checks that each answer
 returned text, called the knowledge base and cited a document from the right
-SharePoint site. It exits non-zero on any failure.
+SharePoint site. It then asks about draft-only documents and checks they are not\ncited, and retrieves directly from the knowledge base to confirm every returned\nreference is Published, authoritative and AI-ready. It exits non-zero on any failure.
 
 Verified state: all four indexers succeed with zero failed items; the
 semiconductor index holds 289 chunks from 100 documents; the departments index
 holds 112 chunks from 42 HR, 35 Manufacturing and 35 Sales files; 26 of those
-chunks pass the trusted knowledge base filter.
+chunks pass the knowledge source `baseFilter`.
 
 ### 9. Provision the Foundry IQ agent
 
@@ -470,6 +470,76 @@ and runs one citation-bearing smoke query. Confirmed state is written to the
 configured Foundry state path under `.state/`.
 
 ## Azure AI Search design
+
+### How the pieces fit together
+
+```text
+SharePoint site (per hub)                       Azure AI Search                                       Foundry
+-------------------------                       -----------------------------------------------      -------------------------
+Documents library           --+
+Meeting Recordings and        |  datasource      indexer  --> skillset            --> index           knowledge   knowledge   agent
+Transcripts library         --+  (one per site)  (hourly)     split + embed          (chunk rows)       source  --> base  --> (MCP tool)
+                                                                                                       baseFilter
+```
+
+| Object | What it is | Objects in this solution |
+| --- | --- | --- |
+| **Datasource** | A connection to one SharePoint site plus the libraries to crawl (`includeLibrary`), the file types, and the governance columns to read (`additionalColumns`). A datasource reaches one site only. | `semiconductor-sp-source`, `hr-sp-source`, `manufacturing-sp-source`, `sales-sp-source` |
+| **Indexer** | Runs a datasource through a skillset into an index, on a schedule (`PT1H`), picking up adds, edits and deletes incrementally. | `semiconductor-sp-indexer`, `hr-sp-indexer`, `manufacturing-sp-indexer`, `sales-sp-indexer` |
+| **Skillset** | The enrichment pipeline that runs after the indexer extracts text: it **splits** each document into chunks and **embeds** each chunk. | `semiconductor-chunker`, `departments-chunker` |
+| **Index** | The searchable store. One row per chunk, with text, a vector, and the document's SharePoint and governance metadata repeated on every chunk. | `semiconductor-knowledge-index`, `departments-knowledge-index` |
+| **Knowledge source** | A named, reusable pointer to one index that tells Foundry IQ which fields to search and return, and holds the persisted `baseFilter`. | `semiconductor-sharepoint-knowledge-source`, `trusted-knowledge-ks` |
+| **Knowledge base** | The retrieval endpoint (and MCP server) the agent calls. It plans the query, runs hybrid and semantic search through its knowledge sources, and returns cited passages. | `trusted-knowledge-kb`, `semiconductor-sharepoint-knowledge-base` |
+
+What happens to a document, in order:
+
+1. **Crawl.** The indexer lists the library through Microsoft Graph and reads each
+   file in the indexed types (`.docx`, `.pptx`, `.xlsx`, `.pdf`, `.txt`) with its
+   SharePoint columns. Videos (`.mp4`) and `.vtt` files are skipped; the transcript
+   is indexed from its `.txt` twin.
+2. **Extract.** The indexer pulls the text out of the file.
+3. **Chunk.** The Text Split skill cuts the text into 512-token pages with a
+   128-token overlap (see [Chunking](#chunking)).
+4. **Embed.** Each chunk is vectorized with `text-embedding-3-small`
+   (1536 dimensions).
+5. **Project.** An index projection writes one index row per chunk, copying the
+   parent's title, URL and every governance field onto it.
+6. **Retrieve.** The agent asks the knowledge base a question. The knowledge base
+   runs hybrid (keyword plus vector) search with semantic reranking over the
+   index, **restricted by the knowledge source's `baseFilter`**, and returns the
+   top passages with their SharePoint links.
+
+### Which documents the agent can see
+
+The **index holds every document, including drafts, archived and superseded
+files**, so governance pages and audits can see all of them. Visibility to the
+agent is enforced one layer up, by a `baseFilter` stored on each knowledge
+source:
+
+```text
+lifecycle_status eq 'Published' and authoritative eq true and ai_ready eq true and sensitivity eq 'General'
+```
+
+| Rule | Effect |
+| --- | --- |
+| `lifecycle_status eq 'Published'` | Draft, Under Review, Archived and Superseded documents are never retrieved |
+| `authoritative eq true` | Only the canonical copy is retrieved, never a duplicate such as `(copy).docx` |
+| `ai_ready eq true` | The owner has marked the document as safe for AI answers |
+| `sensitivity eq 'General'` | Confidential and Highly Confidential documents are excluded |
+
+A persisted `baseFilter` is ANDed into **every** retrieve call, including the
+agent's MCP tool calls. A caller can narrow it with `filterAddOn`, never widen
+or replace it. `Provision-SearchIndexes.ps1` and `provision_foundry_agent.ps1`
+both write it from `config/search-indexes.json` and `config/trusted-knowledge.json`,
+so a rebuild cannot drop it. Current counts in `departments-knowledge-index`:
+Draft 44, Published 42, Archived 22, Superseded 4 chunks, of which 26 also
+satisfy the rest of the filter.
+
+`scripts/Test-FoundryAgent.ps1` proves it end to end. It asks about
+draft-only documents (the competitive win-loss debrief, the proposal and
+pricing template guide) and fails if either is cited, and it retrieves straight
+from the knowledge base and fails if any returned reference is not Published,
+authoritative and AI-ready.
 
 ### Index configuration
 
@@ -497,7 +567,7 @@ and built by `scripts/Provision-SearchIndexes.ps1`. Service: `semiconductor-sear
   every governance field from `config/governance-policy.json`
   (`lifecycle_status`, `authoritative`, `ai_ready`, `sensitivity`, `trust_score`,
   `knowledge_owner`, review and expiration dates, duplicate and conflict status,
-  and more). The Foundry knowledge base filters on these:
+  and more). The knowledge source `baseFilter` is written against these fields:
   `lifecycle_status eq 'Published' and authoritative eq true and ai_ready eq true and sensitivity eq 'General'`.
   `DocumentIteration` is no longer indexed; lifecycle status replaces it.
 - **Two SharePoint quirks handled in the script.** SharePoint number columns reach

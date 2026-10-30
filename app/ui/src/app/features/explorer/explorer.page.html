@@ -3,7 +3,7 @@
     <h1 class="page-title">{{ 'pages.explorer' | t }}</h1>
     <p class="page-subtitle">{{ 'subtitles.explorer' | t }}</p>
 
-    <div class="panes" data-testid="explorer-panes">
+    <div class="panes panes--explorer" data-testid="explorer-panes">
       <section class="pane pane--master" data-testid="explorer-master">
         <h2 class="section-title">{{ 'explorer.librariesHeading' | t }}</h2>
         <app-state-view [state]="libraryView()" emptyKey="explorer.librariesEmpty" (retry)="reloadLibraries()" />

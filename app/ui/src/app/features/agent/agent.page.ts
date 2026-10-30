@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { IonContent, IonIcon, IonInput, IonTextarea } from '@ionic/angular';
 import { ApiError, asApiError, toApiError } from '../../core/api/api-error';
@@ -93,7 +93,9 @@ export class AgentPage {
   constructor() {
     effect(() => {
       this.api.siteContext();
-      this.prompts.reload();
+      untracked(() => {
+        this.prompts.reload();
+      });
     });
   }
 

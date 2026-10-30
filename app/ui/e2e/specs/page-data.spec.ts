@@ -172,3 +172,37 @@ test('cleanup drafts persist in the outbox, approve in dry run, and the agent re
   await expect(page.getByTestId('agent-answer')).toHaveText('Review the test guide.');
   await expect(page.getByTestId('citations').getByRole('link')).toHaveAttribute('href', document.webUrl!);
 });
+
+test('compare side by side opens the modal and renders both documents in page', async ({ page }) => {
+  await setup(page);
+  const copy = { ...document, id: `${libraryId}.99`, name: 'Test guide (copy).docx', path: '/Test/Test guide (copy).docx' };
+  await page.route('**/api/v1/analytics/duplicates*', (route) => route.fulfill({
+    json: {
+      exact: [{ clusterId: 'c1', libraryId, kind: 'exact', reason: 'same hash', canonical: documentId, size: 2,
+        members: [{ ...document, role: 'canonical' }, { ...copy, role: 'duplicate' }] }],
+      near: [], asOfDate: '2026-10-28', libraries: [],
+    },
+  }));
+  await page.route(`**/api/v1/documents/${copy.id}/preview*`, (route) => route.fulfill({
+    json: { kind: 'docx', name: copy.name, blocks: [{ kind: 'paragraph', text: 'Duplicate copy content' }], tables: [] },
+  }));
+  await page.goto('/cleanup');
+  await page.getByRole('button', { name: 'Compare Side-by-Side' }).click();
+  const dialog = page.getByRole('dialog', { name: /Side-by-Side/ });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText('Test guide content')).toBeVisible();
+  await expect(dialog.getByText('Duplicate copy content')).toBeVisible();
+  await expect(page.locator('.comparison-overlay')).toBeVisible();
+});
+
+test('explorer renders the viewer between the tree and the permissions', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await setup(page);
+  await page.goto('/explorer');
+  await page.getByTestId('library-item').click();
+  await page.getByTestId('tree-item').click();
+  await expect(page.getByTestId('document-viewer')).toContainText('Test guide content');
+  const x = async (id: string) => (await page.getByTestId(id).boundingBox())!.x;
+  expect(await x('explorer-master')).toBeLessThan(await x('explorer-detail'));
+  expect(await x('explorer-detail')).toBeLessThan(await x('explorer-permissions'));
+});

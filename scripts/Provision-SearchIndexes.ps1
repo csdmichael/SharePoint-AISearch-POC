@@ -300,6 +300,8 @@ foreach ($index in $config.indexes) {
             if (-not $fallback) { throw "Knowledge source $($index.knowledgeSource) pins $($index.name) and no retired index has semantic configuration '$semantic' to park it on." }
             $fallbackFields = @(((Invoke-Search -Method GET -Path "indexes/$fallback").fields) | ForEach-Object { $_.name })
             $pinned.searchIndexParameters.searchIndexName = $fallback
+            # The retired fallback index has no governance fields, so the filter cannot be evaluated against it.
+            $pinned.searchIndexParameters.PSObject.Properties.Remove('baseFilter')
             $pinned.searchIndexParameters.sourceDataFields = @($pinned.searchIndexParameters.sourceDataFields | Where-Object { $fallbackFields -contains $_.name })
             $pinned.PSObject.Properties.Remove('@odata.context')
             $pinned.PSObject.Properties.Remove('@odata.etag')
@@ -326,6 +328,10 @@ foreach ($index in $config.indexes) {
     if ($knowledgeSource) {
         $parameters = $knowledgeSource.searchIndexParameters
         $parameters.searchIndexName = $index.name
+        # Persisted on the knowledge source, so it is ANDed into every retrieve call from any caller, including the
+        # agent's MCP tool. Callers can only narrow it with filterAddOn, never widen it.
+        if ($index.baseFilter) { $parameters | Add-Member -NotePropertyName baseFilter -NotePropertyValue $index.baseFilter -Force }
+        if ($index.knowledgeSourceDescription) { $knowledgeSource.description = $index.knowledgeSourceDescription }
         $sourceFields = @($parameters.sourceDataFields | ForEach-Object { $_.name })
         foreach ($name in @($governanceFields | ForEach-Object { $_.name }) + @('document_url') | Select-Object -Unique) {
             if ($sourceFields -notcontains $name) { $parameters.sourceDataFields += [pscustomobject]@{ name = $name } }

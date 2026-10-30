@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonIcon, IonLabel, IonSegment, IonSegmentButton } from '@ionic/angular';
 import { forkJoin } from 'rxjs';
@@ -55,11 +55,13 @@ export class CleanupPage {
   constructor() {
     effect(() => {
       this.api.siteContext();
-      this.selectedIds.set(new Set());
-      this.closeComparison();
-      this.draftSummary.set(null);
-      this.draftError.set(null);
-      this.records.reload();
+      untracked(() => {
+        this.selectedIds.set(new Set());
+        this.closeComparison();
+        this.draftSummary.set(null);
+        this.draftError.set(null);
+        this.records.reload();
+      });
     });
   }
 

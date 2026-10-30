@@ -57,7 +57,9 @@
             "https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub/Semiconductor%20Knowledge"
           ]
         }
-      ]
+      ],
+      "baseFilter": "lifecycle_status eq 'Published' and authoritative eq true and ai_ready eq true and sensitivity eq 'General'",
+      "knowledgeSourceDescription": "Governed semiconductor documents from the Semiconductor Knowledge library. Only Published, Authoritative, AI-ready General documents are visible."
     },
     {
       "name": "departments-knowledge-index",
@@ -99,7 +101,9 @@
             "https://caldova37587778.sharepoint.com/sites/salesmarketingknowledgehub/Meeting%20Recordings%20and%20Transcripts"
           ]
         }
-      ]
+      ],
+      "baseFilter": "lifecycle_status eq 'Published' and authoritative eq true and ai_ready eq true and sensitivity eq 'General'",
+      "knowledgeSourceDescription": "Governed documents and meeting transcripts from the HR, Manufacturing and Sales knowledge hubs. Only Published, Authoritative, AI-ready General documents are visible."
     }
   ],
   "retire": {

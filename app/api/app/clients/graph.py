@@ -92,6 +92,12 @@ class GraphClient:
             {"$select": "id,displayName,userPrincipalName,accountEnabled"},
         )
 
+    def group_owners(self, group_id: str) -> Iterator[dict[str, Any]]:
+        return self._pages(
+            f"{self._base}/groups/{quote(group_id, safe='')}/owners/microsoft.graph.user",
+            {"$select": "id,displayName,userPrincipalName,accountEnabled"},
+        )
+
     def send_mail(self, sender_upn: str, message: dict[str, Any]) -> None:
         url = f"{self._base}/users/{quote(sender_upn, safe='@')}/sendMail"
         response = self._http.request(

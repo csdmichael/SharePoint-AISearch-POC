@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IonContent, IonIcon, IonLabel, IonSegment, IonSegmentButton, IonSelect, IonSelectOption } from '@ionic/angular';
 import { ApiError, asApiError, toApiError } from '../../core/api/api-error';
@@ -160,22 +160,35 @@ export class ExplorerPage {
   constructor() {
     effect(() => {
       this.api.siteContext();
-      this.selectedLibrary.set(null);
-      this.branches.set({});
-      this.expandedFolders.set(new Set());
-      this.selectedItem.set(null);
-      this.selectedPermissionId.set(null);
-      this.expandedPrincipals.set(new Set());
-      this.libraries.reload();
+      untracked(() => {
+        this.selectedLibrary.set(null);
+        this.branches.set({});
+        this.expandedFolders.set(new Set());
+        this.selectedItem.set(null);
+        this.selectedPermissionId.set(null);
+        this.expandedPrincipals.set(new Set());
+        this.libraries.reload();
+      });
     });
     effect(() => {
       const libs = this.libraryItems();
       const current = this.selectedLibrary();
       if (libs.length > 0) {
         if (!current || !libs.some((l) => l.id === current.id)) {
-          this.selectLibrary(libs[0]);
+          untracked(() => this.selectLibrary(libs[0]));
         }
       }
+    });
+    effect(() => {
+      const users = this.userPermissionCount();
+      const groups = this.groupPermissionCount();
+      untracked(() => {
+        if (this.permissionTab() === 'users' && users === 0 && groups > 0) {
+          this.permissionTab.set('groups');
+        } else if (this.permissionTab() === 'groups' && groups === 0 && users > 0) {
+          this.permissionTab.set('users');
+        }
+      });
     });
     effect(() => {
       const selectedId = this.selectedPermissionId();

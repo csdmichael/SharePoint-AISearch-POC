@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { IonContent, IonIcon, IonSearchbar } from '@ionic/angular';
 import { Subject, debounceTime, distinctUntilChanged, map } from 'rxjs';
@@ -112,11 +112,13 @@ export class AccessPage {
   constructor() {
     effect(() => {
       this.api.siteContext();
-      this.selectedUser.set(null);
-      this.expandedKeys.set(new Set());
-      this.itemFilter.set('');
-      this.currentPage.set(1);
-      this.users.reload();
+      untracked(() => {
+        this.selectedUser.set(null);
+        this.expandedKeys.set(new Set());
+        this.itemFilter.set('');
+        this.currentPage.set(1);
+        this.users.reload();
+      });
     });
   }
 

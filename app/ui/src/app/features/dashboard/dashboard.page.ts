@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
@@ -87,9 +87,11 @@ export class DashboardPage {
   constructor() {
     effect(() => {
       this.api.siteContext();
-      this.expanded.set(new Set());
-      this.details.set({});
-      this.summary.reload();
+      untracked(() => {
+        this.expanded.set(new Set());
+        this.details.set({});
+        this.summary.reload();
+      });
     });
   }
 

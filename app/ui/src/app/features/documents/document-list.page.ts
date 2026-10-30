@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonIcon, IonInput, IonLabel, IonSegment, IonSegmentButton } from '@ionic/angular';
 import { ApiService } from '../../core/api/api.service';
@@ -165,10 +165,12 @@ export class DocumentListPage {
   constructor() {
     effect(() => {
       this.api.siteContext();
-      this.category.set('');
-      this.iteration.set('');
-      this.folderQuery.set('');
-      this.documents.reload();
+      untracked(() => {
+        this.category.set('');
+        this.iteration.set('');
+        this.folderQuery.set('');
+        this.documents.reload();
+      });
     });
   }
 
