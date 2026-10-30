@@ -28,7 +28,7 @@
     Site URL, for example https://caldova37587778.sharepoint.com/sites/hrknowledgehub
 
 .PARAMETER LibraryName
-    Display name of the document library, for example "Trusted Knowledge".
+    Display name of the document library, for example "Documents".
 
 .PARAMETER ExactCopies
     Number of source files to copy with identical text.
@@ -43,7 +43,7 @@
     Site tag for ArtifactId values. Defaults to the siteId of the matching site in governance-targets.json.
 
 .EXAMPLE
-    .\scripts\Upload-DuplicatePairs.ps1 -SiteUrl https://caldova37587778.sharepoint.com/sites/hrknowledgehub -LibraryName "Trusted Knowledge"
+    .\scripts\Upload-DuplicatePairs.ps1 -SiteUrl https://caldova37587778.sharepoint.com/sites/hrknowledgehub -LibraryName "Documents"
 #>
 [CmdletBinding()]
 param(

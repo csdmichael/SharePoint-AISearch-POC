@@ -11,10 +11,10 @@
     Microsoft Graph site path, e.g. "contoso.sharepoint.com:/sites/hrknowledgehub".
 
 .PARAMETER LibraryName
-    Display name of the document library to delete, e.g. "Trusted Knowledge".
+    Display name of the document library to delete, e.g. "Documents".
 
 .EXAMPLE
-    .\scripts\Remove-SharePointLibrary.ps1 -SiteGraphPath "caldova37587778.sharepoint.com:/sites/hrknowledgehub" -LibraryName 'Trusted Knowledge'
+    .\scripts\Remove-SharePointLibrary.ps1 -SiteGraphPath "caldova37587778.sharepoint.com:/sites/hrknowledgehub" -LibraryName 'Old Library'
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(

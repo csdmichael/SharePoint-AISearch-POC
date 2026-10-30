@@ -1,7 +1,6 @@
 """Generate a realistic per-site knowledge corpus (documents + meeting recordings).
 
-Replaces the old generic duplicate-template corpus (``expand_site_corpora.py`` /
-``regenerate_site_media.py``) for the hr, manufacturing, and sales sites with:
+Replaces the old generic duplicate-template corpus for the hr, manufacturing, and sales sites with:
 
   - a department-based folder structure that mirrors how the business actually organizes
     its SharePoint knowledge hub (see ``scripts/site_corpus_data.py``);

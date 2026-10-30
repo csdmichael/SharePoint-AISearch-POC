@@ -86,8 +86,8 @@ workflows described in [deploy/README.md](deploy/README.md).
 | API ReDoc | [/redoc](https://caldova-aiscr-api.azurewebsites.net/redoc) | Live. |
 | OpenAPI document | [/openapi.json](https://caldova-aiscr-api.azurewebsites.net/openapi.json) | Live. Machine-readable contract for the UI and other clients. |
 | API health check | [/api/v1/health](https://caldova-aiscr-api.azurewebsites.net/api/v1/health) | Live. Returns status, service name and version. |
-| Trusted Knowledge library | [Trusted Knowledge](https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub/Trusted%20Knowledge/Forms/AllItems.aspx) | Not provisioned yet. Created from `config/trusted-knowledge.json`. |
-| Trusted Knowledge Foundry agent | Not provisioned yet (`trusted-knowledge-agent`) | Pending `scripts/provision_foundry_agent.ps1`. |
+| Foundry knowledge agent | `trusted-knowledge-agent` in project `proj-default` | Live. Answers from the HR, Manufacturing and Sales hubs through `trusted-knowledge-kb`. Verified end to end with `scripts/Test-FoundryAgent.ps1`. |
+| Hub libraries | `Documents` and `Meeting Recordings and Transcripts` on each of the HR, Manufacturing and Sales sites | Live. The former `Trusted Knowledge` libraries were retired. |
 | Knowledge Hygiene dashboard | `.state/knowledge-hygiene/index.html` (local file) | Generated locally by the dashboard script. Not published. |
 
 The `<UI_APP_NAME>` and `<API_APP_NAME>` apps now run this solution. The approved
@@ -149,39 +149,77 @@ Sales, Supply Chain, and Yield. Every artifact includes:
   slides (with schema pagination when needed), or seven named Excel worksheets
   with a chart and conditional formatting.
 
-SharePoint metadata columns are `ArtifactId`, `KnowledgeCategory`,
-`SourceTable`, `SourceSystem`, `DocumentIteration`, and
-`ProfileGeneratedAt`. The Search data source requests these columns with
-`additionalColumns`, and each projected chunk inherits them.
+SharePoint metadata columns are the 27 governance columns defined in
+`config/governance-policy.json` (for example `ArtifactId`, `KnowledgeCategory`,
+`LifecycleStatus`, `Authoritative`, `ReviewDate`, `Sensitivity`, `TrustScore`
+and `AIReady`). The Search data sources request them with `additionalColumns`,
+and each projected chunk inherits them as filterable index fields.
 
-### Document Iteration and Draft Filtering
+### Knowledge hubs, libraries and folders
 
-All provisioned SharePoint document libraries include the mandatory
-**Document Iteration** column (`DocumentIteration`):
-- **Choices:** `Draft`, `Ready`, `In Review`, `Approved`, `Archived`.
-- **Default value:** `Draft`.
-- **Enforcement:** Required on upload and revision workflows. Authors must
-  update this column when publishing or updating a document.
-- **Search index filtering:** The Azure AI Search SharePoint indexers ingest
-  `DocumentIteration`, and retrieval filters explicitly exclude `Draft` items
-  (`(document_iteration eq null or document_iteration ne 'Draft')`) to ensure
-  in-progress drafts are never served as authoritative answers.
-- **One-time provisioning script:** `scripts/Add-DocumentIterationToLibraries.ps1`
-  provisions this required choice column across all document libraries in all
-  provisioned SharePoint sites (`Semiconductor`, `HR`, `Manufacturing`, `Sales`).
-- **Index rebuild script:** `scripts/Update-SearchIndexersAndRebuild.ps1`
-  updates search index fields, skillset projections, and data source queries,
-  then triggers indexer reset and rebuild.
+Four SharePoint sites each hold their own content, organised the way the
+department would organise it rather than as numbered placeholder files:
 
-### Enhanced Governance UI and UX Capabilities
+| Hub (site) | `Documents` library folders | `Meeting Recordings and Transcripts` library |
+| --- | --- | --- |
+| HR (`hrknowledgehub`) | HR Policies, Recruiting and Onboarding, Compensation and Benefits, Employee Relations, Learning and Development | 12 meetings, for example *Q1 Open Enrollment Planning Review* |
+| Manufacturing (`manufacturingknowledgehub`) | Quality Assurance, Process Engineering, Production Operations, Supply Chain and Logistics | 11 meetings, for example *Line 3 Yield Improvement Weekly Tollgate* |
+| Sales and Marketing (`salesmarketingknowledgehub`) | Sales Playbooks, Marketing Campaigns, Customer Success, Competitive Intelligence | 12 meetings, for example *Competitive Win-Loss Debrief* |
+| Semiconductor (`semiconductorknowledgehub`) | Library `Semiconductor Knowledge`, one folder per Databricks subject area | none |
+
+- Each hub's `Documents` library holds its policies, procedures, reports,
+  trackers and decks as real, distinct DOCX, PDF, XLSX and PPTX files.
+- Each hub's **meeting library** holds recordings and transcripts at the library
+  root: one `.mp4`, one `.vtt` and one `.txt` per meeting, named after the
+  meeting (`q1-open-enrollment-planning-review.mp4`), never numbered.
+- The same layout is committed under `data/sites/<site>/`, with meetings in
+  `data/sites/<site>/Meeting Recordings and Transcripts/`.
+- Content is authored in `scripts/site_corpus_data.py` and rendered by
+  `scripts/generate_realistic_site_corpus.py`. Every document has its own
+  text; meetings have named participants and a unique agenda.
+
+Regenerate and publish a hub:
+
+```powershell
+python .\scripts\generate_realistic_site_corpus.py --all
+python .\scripts\sync_site_corpora_to_data.py --clean
+.\scripts\Publish-SiteCorpusToSharePoint.ps1 -SiteGraphPath "<tenant>.sharepoint.com:/sites/hrknowledgehub" `
+    -LibraryName 'Documents' -CorpusPath .state\site-corpora\hr `
+    -ExcludeTopFolder 'Meeting Recordings and Transcripts' -Prune
+.\scripts\Publish-SiteCorpusToSharePoint.ps1 -SiteGraphPath "<tenant>.sharepoint.com:/sites/hrknowledgehub" `
+    -LibraryName 'Meeting Recordings and Transcripts' -CorpusPath .state\site-corpora\hr `
+    -OnlyTopFolder 'Meeting Recordings and Transcripts' -StripTopFolder -Prune
+```
+
+Then seed and compute the governance metadata, and audit it:
+
+```powershell
+.\scripts\Add-GovernanceColumnsToLibrary.ps1 -SiteGraphPath "<tenant>.sharepoint.com:/sites/hrknowledgehub" -LibraryName 'Meeting Recordings and Transcripts' -CreateIfMissing
+.\scripts\Seed-RichGovernanceData.ps1
+python .\scripts\Sync-GovernanceFields.py
+.\scripts\Audit-GovernanceData.ps1
+```
+
+`scripts/governance-targets.json` lists which libraries the seed, sync and audit
+scripts process.
+
+### Governance web application
 
 The governance web application includes responsive, high-density layouts optimized
 for desktop, web, tablet, and mobile displays:
-- **Documents Iteration Filtering (`/documents`):** Filter documents by iteration
-  status with a dedicated segment bar and a one-click **"Show Drafts Only"** toggle.
+- **In-page document viewer (`/explorer`):** Select any file in the library tree
+  and open the **Preview** tab to render it on the page: Word, Excel and
+  PowerPoint as structured previews, PDF in a viewer, `.mp4` recordings in a
+  video player, and `.vtt`/`.txt` transcripts as text. The API serves the bytes
+  (`GET /documents/{id}/content`) and the office previews
+  (`GET /documents/{id}/preview`), so the browser never needs SharePoint access.
 - **Side-by-Side Duplicate Viewer (`/cleanup`):** Under the Duplicates segment,
-  inspect canonical documents and candidate duplicates side-by-side with embedded
-  viewers for Word (`.docx`), PowerPoint (`.pptx`), Excel (`.xlsx`), and PDF (`.pdf`).
+  open the canonical document and its candidate duplicate next to each other.
+  Both panes render the content in the page using the same viewer; there is no
+  need to open SharePoint or Office.
+- **Document filtering (`/documents`):** Filter by lifecycle status, data quality
+  and authority. Draft content is excluded from retrieval by the knowledge base
+  filter (`lifecycle_status eq 'Published'`).
 - **Compact & Expandable Access Review (`/access/by-user`):** High-density user
   access table displaying essential fields (Item Name, Kind, Access Level badge,
   and Grant Path badge) with expandable drawer rows for full lineage paths, plus
@@ -198,32 +236,49 @@ for desktop, web, tablet, and mobile displays:
 |-- README.md
 |-- LICENSE
 |-- requirements.txt
+|-- app/
+|   |-- api/                            # FastAPI governance API (SharePoint, Graph, analytics)
+|   `-- ui/                             # Ionic/Angular governance website
 |-- config/
-|   |-- deployment.json                 # non-secret deployment configuration
-|   |-- profile-agent-prompt.md
+|   |-- search-indexes.json             # Azure AI Search layout: indexes, chunking, capacity, retired objects
+|   |-- governance-policy.json          # 27 governance columns, trust score, index field projection
+|   |-- governance-vocabulary.json
+|   |-- deployment.json                 # semiconductor corpus and infrastructure configuration
+|   |-- trusted-knowledge.json          # Foundry knowledge agent, hubs and API configuration
 |   |-- foundry-agent-instructions.md
 |   `-- search-evaluation.cases
-|-- docs/
-|   `-- deployment-evidence.md
 |-- data/
-|   `-- semiconductor_profile.json       # generated, ignored
-|-- corpus/
-|   |-- manifest.json                    # generated, ignored
-|   `-- <category>/*.docx|*.pptx|*.xlsx  # generated, ignored
+|   `-- sites/<hr|manufacturing|sales>/ # committed hub content: department folders + meeting folder
+|-- deploy/                             # CI/CD component definitions (see deploy/README.md)
+|-- docs/
+|-- infra/                              # Bicep for App Service and the Foundry agent
+|-- tests/
 `-- scripts/
-    |-- deploy_staged.ps1
-  |-- deployment_config.ps1
-  |-- deployment_config.py
-    |-- evaluate_search.ps1
-    |-- fetch_semiconductor_profile.py
-    |-- generate_corpus.py
-    |-- promote_search_index.ps1
-    |-- provision_foundry_agent.ps1
-    |-- provision_search.ps1
-    |-- provision_sharepoint.ps1
-    |-- submit_search_feedback.ps1
+    |-- Provision-SearchIndexes.ps1     # builds indexes, skillsets, datasources, indexers; retires old ones
+    |-- Test-FoundryAgent.ps1           # end-to-end agent test, one question per hub
+    |-- site_corpus_data.py             # authored hub content (documents and meetings)
+    |-- generate_realistic_site_corpus.py
+    |-- sync_site_corpora_to_data.py
+    |-- Publish-SiteCorpusToSharePoint.ps1
+    |-- Add-GovernanceColumnsToLibrary.ps1
+    |-- Remove-SharePointLibrary.ps1
+    |-- Seed-RichGovernanceData.ps1
+    |-- Sync-GovernanceFields.py
+    |-- Audit-GovernanceData.ps1
+    |-- Upload-DuplicatePairs.ps1
+    |-- governance-targets.json
+    |-- trusted_knowledge/              # governance engine (policy, similarity, hygiene)
+    |-- deploy/                         # deploy_tool.py used by the workflows
+    |-- fetch_semiconductor_profile.py  # semiconductor corpus: Databricks profile
+    |-- generate_corpus.py              # semiconductor corpus: Office documents
     |-- validate_corpus.py
-    `-- validate_search.ps1
+    |-- provision_sharepoint.ps1        # one-time: semiconductor site, library and uploads
+    |-- provision_search.ps1            # one-time: ingestion app registration and Search RBAC
+    |-- provision_foundry_agent.ps1     # Foundry knowledge source, knowledge base and agent
+    |-- evaluate_search.ps1
+    |-- validate_search.ps1
+    |-- submit_search_feedback.ps1
+    `-- deployment_config.ps1 / .py
 ```
 
   ## Configuration
@@ -291,32 +346,21 @@ This invokes `{Profile Source Agent}`. It issues bounded, read-only
 queries through the private Databricks MCP server and validates the returned
 JSON shape before writing the profile.
 
-### 3. Run the recommended staged deployment
+### 3. Generate and publish the hub content
+
+The HR, Manufacturing and Sales hubs are generated from authored content, not
+from Databricks. Generate it, mirror it into `data/sites/`, then publish each
+library (see [Knowledge hubs, libraries and folders](#knowledge-hubs-libraries-and-folders)):
 
 ```powershell
-.\scripts\deploy_staged.ps1
+python .\scripts\generate_realistic_site_corpus.py --all
+python .\scripts\sync_site_corpora_to_data.py --clean
 ```
 
-This is the default end-to-end workflow. It executes the requested order:
-
-1. Provision or reuse the SharePoint site, library, folders, and metadata.
-2. Generate `{Bootstrap Document Count}` bootstrap files, distributed across
-  the configured formats and semiconductor domains.
-3. Upload those files to a dedicated bootstrap library, create isolated
-   bootstrap Search resources, validate them, and run the routing suite.
-4. Generate and structurally validate the configured replacement corpus
-   before changing the production library.
-5. Upload the full set, build a versioned candidate index without touching the
-   current index, validate coverage and routing, then atomically promote it
-  through `{Search Index Alias}`.
-
-The previous physical index is retained for rollback. The standing feedback
-index is preserved across document generations. Before production files are
-replaced, the currently served generation's indexer is disabled. After alias
-promotion, only the promoted indexer's schedule remains enabled; rollback
-indexes therefore remain immutable snapshots.
-Use `-RefreshProfile` to query Databricks through the existing Foundry agent
-before generation.
+The semiconductor hub is generated from the Databricks profile with
+`scripts/generate_corpus.py` (step 4) and uploaded with
+`scripts/Publish-SiteCorpusToSharePoint.ps1 -LibraryName 'Semiconductor Knowledge' -CorpusPath corpus -Prune`.
+Use `-RefreshProfile`-style refreshes by re-running step 2 first.
 
 ### 4. Run individual stages
 
@@ -367,52 +411,49 @@ make SharePoint exactly match that manifest before upload.
 
 For the multi-site demo corpus, mirror generated files into per-site folders in
 the repository data tree (documents, recordings, and Teams-style transcript
-files `.vtt`/`.txt`):
+files `.vtt`/`.txt`) and publish each library with
+`scripts/Publish-SiteCorpusToSharePoint.ps1` as shown in
+[Knowledge hubs, libraries and folders](#knowledge-hubs-libraries-and-folders).
+The publisher creates only the folders the manifest needs, uploads and replaces
+files, and with `-Prune` removes files and empty folders that are no longer in
+the manifest. Matching is case-insensitive, as SharePoint paths are.
+
+### 7. Provision the Search indexes
+
+The one-time identity setup (Entra ingestion app, federated credential, Graph
+application permissions and Search RBAC) was done by `scripts/provision_search.ps1`
+and is recorded in `.state/search.json`. Everything else in Azure AI Search is
+declared in [config/search-indexes.json](config/search-indexes.json) and built by:
 
 ```powershell
-python .\scripts\expand_site_corpora.py
-python .\scripts\regenerate_site_media.py --seconds 16 --fps 12
-python .\scripts\sync_site_corpora_to_data.py --clean
+.\scripts\Provision-SearchIndexes.ps1 -Recreate -Prune
 ```
 
-The staged workflow prunes only the isolated bootstrap library. It fully
-generates, validates, and preflights the production corpus before upload.
-Unexpected stale production files cause the exact parent/artifact gate to fail
-before alias promotion rather than being destructively removed up front.
-
-### 7. Provision the direct Search pipeline
-
-```powershell
-.\scripts\provision_search.ps1
-```
-
-The script creates or updates the Entra ingestion app, federated credential,
-Graph application permissions, versioned chunk index, skillset, SharePoint data
-source, scheduled indexer, and independent `{Feedback Index}`.
-Search admin keys are read only into process memory for control-plane setup and
-are then discarded. `-RecreateIndex` deletes and recreates only the document
-index and indexer; feedback and identity resources remain intact.
+The script is idempotent. It creates or updates, in dependency order, each
+index, its skillset, one SharePoint datasource and one indexer per hub, the
+index alias, and the Foundry IQ knowledge source. `-Recreate` rebuilds indexes
+(parking the knowledge source on a compatible old index meanwhile, because a
+knowledge source pins its index). `-Prune` deletes the objects listed under
+`retire` in the config after the new ones are built, and never touches
+objects that are not listed. See [Index configuration](#index-configuration).
 
 ### 8. Validate indexing and retrieval
 
-Wait for the indexer to complete, then run:
+Check the indexers and then test the agent end to end:
 
 ```powershell
-.\scripts\validate_search.ps1
+.\scripts\Test-FoundryAgent.ps1
 ```
 
-Validation requires all of the following:
+`Test-FoundryAgent.ps1` asks the live agent one question per hub, including
+questions only a meeting transcript can answer, and checks that each answer
+returned text, called the knowledge base and cited a document from the right
+SharePoint site. It exits non-zero on any failure.
 
-- The most recent indexer run succeeded with zero failed items.
-- The chunk index contains `{Expected Document Count}` distinct parent IDs.
-- Every configured Office format facet is present.
-- Every configured knowledge category is present.
-- A semantic hybrid query with query-time vectorization returns results.
-
-The verified deployment contains `{Expected Document Count}` distinct parent
-documents and `{Indexed Chunk Count}` projected chunks. All configured formats
-and categories are present. The configured validation query returned a semantic
-result linked to an original SharePoint document.
+Verified state: all four indexers succeed with zero failed items; the
+semiconductor index holds 289 chunks from 100 documents; the departments index
+holds 112 chunks from 42 HR, 35 Manufacturing and 35 Sales files; 26 of those
+chunks pass the trusted knowledge base filter.
 
 ### 9. Provision the Foundry IQ agent
 
@@ -430,28 +471,81 @@ configured Foundry state path under `.state/`.
 
 ## Azure AI Search design
 
+### Index configuration
+
+The whole search layer is declared in [config/search-indexes.json](config/search-indexes.json)
+and built by `scripts/Provision-SearchIndexes.ps1`. Service: `semiconductor-search-myaacoub`
+(Basic, 1 partition, 1 replica).
+
+| Index (alias) | Hubs and libraries indexed | Datasources and indexers | Skillset | Knowledge source |
+| --- | --- | --- | --- | --- |
+| `semiconductor-knowledge-index` (`semiconductor-knowledge`) | Semiconductor: `Semiconductor Knowledge` | `semiconductor-sp-source` / `semiconductor-sp-indexer` | `semiconductor-chunker` | `semiconductor-sharepoint-knowledge-source` |
+| `departments-knowledge-index` (`trusted-knowledge`) | HR, Manufacturing, Sales: `Documents` and `Meeting Recordings and Transcripts` of each | `hr-sp-source`, `manufacturing-sp-source`, `sales-sp-source` and matching `*-sp-indexer` | `departments-chunker` | `trusted-knowledge-ks` |
+
+- **One shared index for the three departments.** The three hubs share one
+  index, one skillset and one knowledge source, with a datasource and indexer
+  per hub, because a SharePoint datasource connects to one site. Cross-hub
+  questions work, and `business_unit` separates hubs when a filter is needed.
+- **Libraries are indexed in place.** Each datasource lists its libraries with
+  repeated `includeLibrary=` entries using the real library URL (the default
+  library's URL is `Shared Documents`, not `Documents`).
+- **Which files are indexed.** `.docx,.pptx,.xlsx,.pdf,.txt`. A meeting
+  transcript is indexed from its `.txt`; the `.vtt` duplicates it and the `.mp4`
+  has no extractable text, so both are skipped. The transcript's SharePoint link
+  leads to the recording folder.
+- **Fields.** 36 per index: the chunk, vector and SharePoint metadata fields plus
+  every governance field from `config/governance-policy.json`
+  (`lifecycle_status`, `authoritative`, `ai_ready`, `sensitivity`, `trust_score`,
+  `knowledge_owner`, review and expiration dates, duplicate and conflict status,
+  and more). The Foundry knowledge base filters on these:
+  `lifecycle_status eq 'Published' and authoritative eq true and ai_ready eq true and sensitivity eq 'General'`.
+  `DocumentIteration` is no longer indexed; lifecycle status replaces it.
+- **Two SharePoint quirks handled in the script.** SharePoint number columns reach
+  the indexer as `Edm.Double`, so `trust_score` is a Double field. SharePoint
+  adds a built-in read-only *Sensitivity* label column, and the indexer resolves
+  `additionalColumns` by display name, so our column is requested by its display
+  name `Content Sensitivity` (escaped as `~2Content Sensitivity~2` in the
+  projection path).
+- **Retired objects.** The superseded semiconductor index generations, the
+  bootstrap index and the per-department `trusted*` indexes, skillsets,
+  datasources and indexers are listed under `retire` and removed by `-Prune`.
+  The `parts-shortages-lakehouse*` Fabric objects and `semiconductor-search-feedback`
+  belong to other workloads and are never touched.
+
+#### Capacity: partitions and replicas
+
+| Setting | Value | Why |
+| --- | --- | --- |
+| Partitions | 1 | The two indexes together hold about 400 chunks and well under 100 MB, against 15 GB per Basic partition. More partitions add cost, not capacity that is used. |
+| Replicas | 1 | Demo query load, no read SLA. Use 2 replicas for the 99.9% query SLA and 3 for the read-write SLA while indexing. |
+
+`service.partitionCount` and `service.replicaCount` in the config are applied
+by the script. Add partitions only when storage nears the per-partition limit
+or indexing throughput is the bottleneck; add replicas for query throughput or
+availability.
+
 ### Direct SharePoint indexing
 
 The [SharePoint in Microsoft 365 indexer](https://learn.microsoft.com/azure/search/search-how-to-index-sharepoint-online)
 uses the preview `sharepoint` data-source type and `useQuery` container.
-`includeLibrary` limits crawling to `{Production Library}`, and
-`additionalColumns` brings corpus lineage into the enrichment tree. The
-indexer accepts the formats in `corpus.formats` and runs on `{Indexer Schedule}`
-for incremental additions, updates, and deletes.
+`includeLibrary` limits crawling to the listed libraries, and
+`additionalColumns` brings the governance and lineage columns into the
+enrichment tree. Each indexer runs on the configured schedule (`PT1H`) for
+incremental additions, updates, and deletes.
 
 ### Chunking
 
 The [Text Split skill](https://learn.microsoft.com/azure/search/cognitive-search-skill-textsplit)
 uses token-aware page splitting. The values below come from
-`config/deployment.json`:
+`config/search-indexes.json`:
 
 | Setting | Value | Rationale |
 | --- | --- | --- |
-| Unit | `{Chunk Unit}` | Keeps chunks aligned with embedding-model input units |
-| Tokenizer | `{Tokenizer}` | Matches the selected embedding family |
-| Maximum length | `{Chunk Size}` | Bounds each embedding input |
-| Overlap | `{Chunk Overlap}` | Carries context across boundaries |
-| Language | `{Corpus Language}` | Matches the generated corpus |
+| Unit | `azureOpenAITokens` | Keeps chunks aligned with embedding-model input units |
+| Tokenizer | `cl100k_base` | Matches the selected embedding family |
+| Maximum length | 512 | Keeps a short policy, a table or a meeting exchange in one or two chunks |
+| Overlap | 128 | Carries context across boundaries |
+| Language | `en` | Matches the corpus |
 
 The overlap improves continuity for table-adjacent narrative and sections
 that cross chunk boundaries. All pages are retained; `maximumPagesToTake` is
@@ -491,7 +585,7 @@ matching while narrative questions benefit from vectors and semantic reranking.
 
 ### Partitions
 
-The POC uses `{Partition Count}` partition(s). Partitions provide index storage and indexing
+The service uses 1 partition. Partitions provide index storage and indexing
 throughput; the application does not manually assign documents to partitions.
 Azure AI Search distributes index data internally. Increase partitions only
 after measuring index size, ingestion throughput, throttling, and query
@@ -501,16 +595,14 @@ $$
 \text{Search units} = \text{replicas} \times \text{partitions}
 $$
 
-For this `{Expected Document Count}`-document corpus, additional partitions
-would add cost without a measured capacity benefit. Generated deployment
-evidence records `{Indexed Chunk Count}`, `{Index Storage Size}`, and
-`{Vector Index Size}` without baking one environment's measurements into this
-document.
+The two indexes hold about 400 chunks and well under 100 MB, so additional
+partitions would add cost without a capacity benefit. Set `service.partitionCount`
+in `config/search-indexes.json` and re-run `Provision-SearchIndexes.ps1` to
+change it.
 
 ### Replicas and replication
 
-The POC uses `{Replica Count}` replica(s) to minimize cost and has no
-availability SLA. Azure
+The service uses 1 replica to minimize cost and has no availability SLA. Azure
 AI Search automatically copies index data across configured replicas; the
 solution does not implement custom file or index replication.
 
@@ -551,11 +643,16 @@ placing permission-sensitive documents in the corpus.
 
 ### Refresh data
 
-1. Refresh the Databricks profile.
-2. Regenerate and validate the corpus.
-3. Re-run the SharePoint provisioning script to replace files and metadata.
-4. Let the scheduled indexer run, or invoke its `/run` endpoint.
-5. Run the Search validation script.
+1. Edit the authored hub content in `scripts/site_corpus_data.py` (or refresh the
+   Databricks profile for the semiconductor hub).
+2. Regenerate (`generate_realistic_site_corpus.py`) and mirror
+   (`sync_site_corpora_to_data.py`), then publish with
+   `Publish-SiteCorpusToSharePoint.ps1`.
+3. Seed and compute governance metadata (`Seed-RichGovernanceData.ps1`,
+   `Sync-GovernanceFields.py`) and audit it (`Audit-GovernanceData.ps1`).
+4. Let the scheduled indexers run (hourly), or run `Provision-SearchIndexes.ps1`
+   to reset and run them now.
+5. Run `Test-FoundryAgent.ps1`.
 
 Avoid renaming SharePoint folders after indexing. The preview indexer treats a
 renamed folder as new content, which can disrupt incremental behavior.
@@ -575,15 +672,18 @@ Azure AI Search is not the primary data store. If the index is lost, recreate
 the schema and rerun the indexer from SharePoint. The generated corpus can also
 be deterministically recreated from a validated Databricks profile.
 
-Use the following command for a clean full rebuild without deleting feedback:
+Use the following command for a clean full rebuild of the indexes (the knowledge
+sources are parked and repointed automatically; feedback and other workloads'
+objects are untouched):
 
 ```powershell
-.\scripts\provision_search.ps1 -RecreateIndex
-.\scripts\validate_search.ps1
+.\scripts\Provision-SearchIndexes.ps1 -Recreate
 ```
 
-For a zero-downtime staged replacement, prefer `deploy_staged.ps1`. It validates
-a versioned candidate and switches the stable alias only after every gate passes.
+To change chunking, capacity, libraries or the indexed file types, edit
+`config/search-indexes.json` and re-run the script. Without `-Recreate` it
+updates objects in place and resets and re-runs the indexers; it only needs
+`-Recreate` when index fields change.
 
 ## Relevance evaluation and feedback
 

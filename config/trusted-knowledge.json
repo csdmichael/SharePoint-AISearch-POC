@@ -8,7 +8,7 @@
   "sharePoint": {
     "siteDisplayName": "Semiconductor Knowledge Hub",
     "mailNickname": "semiconductorknowledgehub",
-    "productionLibraryName": "Trusted Knowledge",
+    "productionLibraryName": "Documents",
     "siteUrl": "https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub",
     "sites": [
       {
@@ -98,7 +98,7 @@
       "retrievalReasoningEffort": "low",
       "outputMode": "extractiveData",
       "baseFilter": "lifecycle_status eq 'Published' and authoritative eq true and ai_ready eq true and sensitivity eq 'General'",
-      "knowledgeSourceDescription": "Governed ApexDrive X500 documents from the Trusted Knowledge SharePoint library. Only Published, Authoritative, AI-ready General documents are visible to this source.",
+      "knowledgeSourceDescription": "Governed documents and meeting transcripts from the HR, Manufacturing and Sales knowledge hubs. Only Published, Authoritative, AI-ready General documents are visible to this source.",
       "knowledgeBaseDescription": "Trusted Knowledge base. Returns only authoritative, current, owned documents and their governance metadata.",
       "retrievalInstructions": "Retrieve passages from the trusted knowledge base for the user's product family, process area, and document type. Preserve title, document_url, knowledge_owner, lifecycle_status, authoritative, review_date, trust_score, trust_reasons, data_quality_status, and conflict_status in every source reference.",
       "answerInstructions": "Return only information present in the retrieved passages. Do not choose between passages that carry conflict_status Conflicting Authoritative. Preserve governance fields for every source.",

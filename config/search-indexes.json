@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "search-indexes/v1",
+  "description": "Declarative Azure AI Search layout for the knowledge hubs. Read by scripts/Provision-SearchIndexes.ps1. Two indexes: one for the semiconductor hub and one shared by the HR, Manufacturing and Sales hubs (one SharePoint datasource and indexer per hub, one shared skillset). Every hub library is indexed in place; no Blob copy.",
+  "service": {
+    "resourceGroup": "m365-myaacoub",
+    "name": "semiconductor-search-myaacoub",
+    "sku": "basic",
+    "partitionCount": 1,
+    "replicaCount": 1,
+    "apiVersion": "2026-08-01-preview",
+    "capacityNote": "The corpus is a few hundred documents and well under 100 MB of chunks and vectors, so one partition (15 GB on Basic) is ample. Add replicas for query throughput or the 2-replica read SLA, and partitions only when storage nears the 15 GB per-partition limit."
+  },
+  "embedding": {
+    "endpoint": "https://foundry-myaacoub-private.openai.azure.com",
+    "deployment": "text-embedding-3-small",
+    "model": "text-embedding-3-small",
+    "dimensions": 1536
+  },
+  "chunking": {
+    "unit": "azureOpenAITokens",
+    "tokenizer": "cl100k_base",
+    "maximumPageLength": 512,
+    "pageOverlapLength": 128,
+    "language": "en",
+    "note": "512-token pages with 128-token overlap keep a short policy, a table or a meeting exchange inside one or two chunks while the overlap preserves context across page breaks."
+  },
+  "vector": {
+    "algorithm": "hnsw",
+    "metric": "cosine",
+    "m": 4,
+    "efConstruction": 400,
+    "efSearch": 500
+  },
+  "indexer": {
+    "schedule": "PT1H",
+    "batchSize": 10,
+    "indexedFileNameExtensions": ".docx,.pptx,.xlsx,.pdf,.txt",
+    "note": "Meeting transcripts are indexed from the .txt file. The .vtt copy duplicates it and the .mp4 recording has no extractable text, so both are skipped. Recordings stay in the meeting library and are reachable from the transcript's SharePoint link."
+  },
+  "indexes": [
+    {
+      "name": "semiconductor-knowledge-index",
+      "alias": "semiconductor-knowledge",
+      "skillset": "semiconductor-chunker",
+      "semanticConfiguration": "semiconductor-semantic-config",
+      "vectorProfile": "semiconductor-vector-profile",
+      "vectorizer": "semiconductor-openai-vectorizer",
+      "algorithm": "semiconductor-hnsw",
+      "knowledgeSource": "semiconductor-sharepoint-knowledge-source",
+      "sources": [
+        {
+          "id": "semiconductor",
+          "datasource": "semiconductor-sp-source",
+          "indexer": "semiconductor-sp-indexer",
+          "siteUrl": "https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub",
+          "libraryUrls": [
+            "https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub/Semiconductor%20Knowledge"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "departments-knowledge-index",
+      "alias": "trusted-knowledge",
+      "skillset": "departments-chunker",
+      "semanticConfiguration": "trusted-semantic-config",
+      "vectorProfile": "trusted-vector-profile",
+      "vectorizer": "trusted-openai-vectorizer",
+      "algorithm": "trusted-hnsw",
+      "knowledgeSource": "trusted-knowledge-ks",
+      "sources": [
+        {
+          "id": "hr",
+          "datasource": "hr-sp-source",
+          "indexer": "hr-sp-indexer",
+          "siteUrl": "https://caldova37587778.sharepoint.com/sites/hrknowledgehub",
+          "libraryUrls": [
+            "https://caldova37587778.sharepoint.com/sites/hrknowledgehub/Shared%20Documents",
+            "https://caldova37587778.sharepoint.com/sites/hrknowledgehub/Meeting%20Recordings%20and%20Transcripts"
+          ]
+        },
+        {
+          "id": "manufacturing",
+          "datasource": "manufacturing-sp-source",
+          "indexer": "manufacturing-sp-indexer",
+          "siteUrl": "https://caldova37587778.sharepoint.com/sites/manufacturingknowledgehub",
+          "libraryUrls": [
+            "https://caldova37587778.sharepoint.com/sites/manufacturingknowledgehub/Shared%20Documents",
+            "https://caldova37587778.sharepoint.com/sites/manufacturingknowledgehub/Meeting%20Recordings%20and%20Transcripts"
+          ]
+        },
+        {
+          "id": "sales",
+          "datasource": "sales-sp-source",
+          "indexer": "sales-sp-indexer",
+          "siteUrl": "https://caldova37587778.sharepoint.com/sites/salesmarketingknowledgehub",
+          "libraryUrls": [
+            "https://caldova37587778.sharepoint.com/sites/salesmarketingknowledgehub/Shared%20Documents",
+            "https://caldova37587778.sharepoint.com/sites/salesmarketingknowledgehub/Meeting%20Recordings%20and%20Transcripts"
+          ]
+        }
+      ]
+    }
+  ],
+  "retire": {
+    "description": "Superseded or unused objects removed after the new ones are built. Feedback indexes and the parts-shortages Fabric lakehouse objects belong to other workloads and are deliberately not listed.",
+    "indexers": [
+      "semiconductor-20260915201033-sharepoint-indexer",
+      "semiconductor-20260915214135-sharepoint-indexer",
+      "semiconductor-bootstrap-sharepoint-indexer",
+      "semiconductor-sharepoint-indexer",
+      "trustedhr-sharepoint-indexer",
+      "trustedmfg-sharepoint-indexer",
+      "trustedsales-sharepoint-indexer"
+    ],
+    "datasources": [
+      "semiconductor-20260915201033-sharepoint-datasource",
+      "semiconductor-20260915214135-sharepoint-datasource",
+      "semiconductor-bootstrap-sharepoint-datasource",
+      "semiconductor-sharepoint-datasource",
+      "trustedhr-sharepoint-datasource",
+      "trustedmfg-sharepoint-datasource",
+      "trustedsales-sharepoint-datasource"
+    ],
+    "skillsets": [
+      "semiconductor-20260915201033-chunking-skillset",
+      "semiconductor-20260915214135-chunking-skillset",
+      "semiconductor-bootstrap-chunking-skillset",
+      "semiconductor-chunking-skillset",
+      "trustedhr-chunking-skillset",
+      "trustedmfg-chunking-skillset",
+      "trustedsales-chunking-skillset"
+    ],
+    "indexes": [
+      "semiconductor-20260915201033-knowledge-chunks",
+      "semiconductor-20260915214135-knowledge-chunks",
+      "semiconductor-bootstrap-knowledge-chunks",
+      "semiconductor-knowledge-chunks",
+      "trustedhr-knowledge-chunks",
+      "trustedmfg-knowledge-chunks",
+      "trustedsales-knowledge-chunks"
+    ]
+  }
+}

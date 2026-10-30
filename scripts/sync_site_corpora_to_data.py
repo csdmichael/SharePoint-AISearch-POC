@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import shutil
 from pathlib import Path
 
@@ -16,10 +15,9 @@ def parse_args() -> argparse.Namespace:
         description="Sync site corpora to the repository data folder."
     )
     parser.add_argument(
-        "--plan",
-        type=Path,
-        default=Path(".state/site-content-plan.json"),
-        help="Path to site-content-plan.json",
+        "--site",
+        action="append",
+        help="Site id to sync (repeatable). Defaults to every folder under --source-root that has a manifest.json.",
     )
     parser.add_argument(
         "--source-root",
@@ -39,12 +37,6 @@ def parse_args() -> argparse.Namespace:
         help="Delete existing destination site folders before copy.",
     )
     return parser.parse_args()
-
-
-def load_plan(path: Path) -> dict:
-    if not path.exists():
-        raise FileNotFoundError(f"Plan file not found: {path}")
-    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def validate_transcript_pairing(site_root: Path) -> None:
@@ -104,15 +96,13 @@ def sync_site(site_id: str, source_root: Path, destination_root: Path, clean: bo
 
 def main() -> int:
     args = parse_args()
-    plan = load_plan(args.plan)
-    sites = plan.get("sites", [])
+    sites = args.site or sorted(
+        folder.name for folder in args.source_root.iterdir() if (folder / "manifest.json").exists()
+    )
     if not sites:
-        raise ValueError("No sites defined in plan.")
+        raise ValueError(f"No site corpora with a manifest.json found under {args.source_root}.")
 
-    for site in sites:
-        site_id = site.get("siteId")
-        if not site_id:
-            raise ValueError("Each site entry must include siteId.")
+    for site_id in sites:
         sync_site(
             site_id=site_id,
             source_root=args.source_root,

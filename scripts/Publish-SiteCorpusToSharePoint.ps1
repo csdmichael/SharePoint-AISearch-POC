@@ -16,10 +16,20 @@
     Microsoft Graph site path, e.g. "contoso.sharepoint.com:/sites/hrknowledgehub".
 
 .PARAMETER LibraryName
-    Display name of the target document library, e.g. "Trusted Knowledge".
+    Display name of the target document library, e.g. "Documents" or "Meeting Recordings and Transcripts".
 
 .PARAMETER CorpusPath
     Local folder containing manifest.json and the files referenced by its relative_path entries.
+
+.PARAMETER OnlyTopFolder
+    Upload only manifest entries whose first path segment is in this list (for example the meeting folder).
+
+.PARAMETER ExcludeTopFolder
+    Skip manifest entries whose first path segment is in this list.
+
+.PARAMETER StripTopFolder
+    Drop the first path segment when uploading, so the files land at the library root. Used for the meeting library,
+    whose recordings and transcripts live at the root rather than under a folder.
 
 .PARAMETER Prune
     Delete files already in the library whose relative path is not present in the new manifest.
@@ -28,9 +38,17 @@
 .EXAMPLE
     .\scripts\Publish-SiteCorpusToSharePoint.ps1 `
         -SiteGraphPath "caldova37587778.sharepoint.com:/sites/hrknowledgehub" `
-        -LibraryName 'Trusted Knowledge' `
+        -LibraryName 'Documents' `
         -CorpusPath '.state\site-corpora\hr' `
+        -ExcludeTopFolder 'Meeting Recordings and Transcripts' `
         -Prune
+
+.EXAMPLE
+    .\scripts\Publish-SiteCorpusToSharePoint.ps1 `
+        -SiteGraphPath "caldova37587778.sharepoint.com:/sites/hrknowledgehub" `
+        -LibraryName 'Meeting Recordings and Transcripts' `
+        -CorpusPath '.state\site-corpora\hr' `
+        -OnlyTopFolder 'Meeting Recordings and Transcripts' -StripTopFolder -Prune
 #>
 [CmdletBinding()]
 param(

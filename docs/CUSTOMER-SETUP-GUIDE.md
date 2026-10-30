@@ -327,10 +327,10 @@ Sign out/in after changing role assignment or consent.
    - New uploads default to `Draft`, but the field is required.
    - When updating or revising a document, authors update this field to reflect
      its active iteration (e.g. promoting from `Draft` to `Ready`).
-   - To apply or verify this column across all libraries in all provisioned sites
-     at once, run:
+   - To add the governance columns to any other library (for example a meeting
+     library), run:
      ```powershell
-     powershell -ExecutionPolicy Bypass -File .\scripts\Add-DocumentIterationToLibraries.ps1
+     .\scripts\Add-GovernanceColumnsToLibrary.ps1 -SiteGraphPath "<tenant>.sharepoint.com:/sites/<site>" -LibraryName '<library>' -CreateIfMissing
      ```
 7. Populate stable Artifact IDs, owners, categories, lifecycle, review dates,
    and other approved metadata. The template creates schema; it does not run
@@ -852,12 +852,12 @@ Connect-AzAccount -Tenant '<TENANT_ID>'
 Set-AzContext -Subscription '<SUBSCRIPTION_ID>'
 # Review config/deployment.json and the script parameters before execution.
 .\scripts\provision_sharepoint.ps1
-.\scripts\provision_search.ps1
-.\scripts\validate_search.ps1
+.\scripts\provision_search.ps1          # one time: ingestion app registration and Search RBAC
+.\scripts\Provision-SearchIndexes.ps1 -Recreate -Prune
 .\scripts\provision_foundry_agent.ps1
-# For multi-site demo content, mirror generated docs/videos/transcripts into data/sites/<siteId>.
-python .\scripts\expand_site_corpora.py
-python .\scripts\regenerate_site_media.py --seconds 16 --fps 12
+.\scripts\Test-FoundryAgent.ps1
+# For multi-site demo content, generate and mirror documents/videos/transcripts into data/sites/<siteId>.
+python .\scripts\generate_realistic_site_corpus.py --all
 python .\scripts\sync_site_corpora_to_data.py --clean
 ```
 

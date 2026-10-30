@@ -20,15 +20,15 @@
   "templates": {
     "expired-documents": {
       "subject": "Action required: expired document \"{documentTitle}\"",
-      "body": "Hello {ownerName},\n\nThe document \"{documentTitle}\" ({documentUrl}) is listed under \"{findingTitle}\" in the Trusted Knowledge governance review. Its expiration date is {expirationDate} and its review date is {reviewDate}.\n\nPlease confirm whether the document should be renewed, superseded or archived, and reply to {reviewerName} with your decision.\n\nThank you."
+      "body": "Hello {ownerName},\n\nThe document \"{documentTitle}\" ({documentUrl}) is listed under \"{findingTitle}\" in the knowledge governance review. Its expiration date is {expirationDate} and its review date is {reviewDate}.\n\nPlease confirm whether the document should be renewed, superseded or archived, and reply to {reviewerName} with your decision.\n\nThank you."
     },
     "requires-review": {
       "subject": "Review needed: \"{documentTitle}\"",
-      "body": "Hello {ownerName},\n\nThe document \"{documentTitle}\" ({documentUrl}) is flagged as \"{findingTitle}\" in the Trusted Knowledge governance review. Its review date is {reviewDate}.\n\nPlease review the content and update its metadata in SharePoint. Reply to {reviewerName} when the review is complete.\n\nThank you."
+      "body": "Hello {ownerName},\n\nThe document \"{documentTitle}\" ({documentUrl}) is flagged as \"{findingTitle}\" in the knowledge governance review. Its review date is {reviewDate}.\n\nPlease review the content and update its metadata in SharePoint. Reply to {reviewerName} when the review is complete.\n\nThank you."
     },
     "draft-documents": {
       "subject": "Draft still open: \"{documentTitle}\"",
-      "body": "Hello {ownerName},\n\nThe document \"{documentTitle}\" ({documentUrl}) is still a draft and is listed under \"{findingTitle}\". Please publish it, supersede it, or confirm it should stay out of Trusted Knowledge.\n\nReply to {reviewerName} with the next step.\n\nThank you."
+      "body": "Hello {ownerName},\n\nThe document \"{documentTitle}\" ({documentUrl}) is still a draft and is listed under \"{findingTitle}\". Please publish it, supersede it, or confirm it should stay out of the knowledge base.\n\nReply to {reviewerName} with the next step.\n\nThank you."
     },
     "superseded-documents": {
       "subject": "Superseded document to retire: \"{documentTitle}\"",

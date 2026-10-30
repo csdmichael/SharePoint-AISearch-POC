@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Seeds declared governance metadata into the Trusted Knowledge and knowledge document libraries.
+    Seeds declared governance metadata into the knowledge document libraries (Documents, meeting libraries and the semiconductor library).
 
 .DESCRIPTION
     Replaces the earlier seeding script, which swallowed every error with an empty catch and reported success

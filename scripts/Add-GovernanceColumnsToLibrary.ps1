@@ -4,7 +4,7 @@
     config/governance-policy.json.
 
 .DESCRIPTION
-    Used to extend libraries that did not originate from the Trusted Knowledge site template (for
+    Used to extend libraries that did not originate from the governed site template (for
     example the default "Documents" library, or a new library created to hold meeting recordings)
     so they can carry the same 27 governance metadata columns and be seeded/audited the same way.
     Existing columns are left untouched; only missing columns are added.

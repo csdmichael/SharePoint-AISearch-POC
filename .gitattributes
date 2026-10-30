@@ -1,0 +1,9 @@
+# Generated hub content must never have line endings rewritten. reportlab PDFs are ASCII85-encoded,
+# so Git would otherwise treat them as text and corrupt them on checkout.
+data/sites/** binary
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.pptx binary
+*.mp4 binary
+*.png binary
