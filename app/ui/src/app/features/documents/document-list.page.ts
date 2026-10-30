@@ -79,9 +79,14 @@ export class DocumentListPage {
     }
     return docs;
   });
-  readonly countText = computed(() =>
-    this.i18n.text('documents.countText', { count: this.i18n.number(this.filteredDocuments().length) }),
-  );
+  readonly countText = computed(() => {
+    const shown = this.i18n.number(this.filteredDocuments().length);
+    const total = this.documents.page()?.total;
+    if (total !== undefined && total > this.documents.items().length) {
+      return this.i18n.text('documents.countOfText', { count: shown, total: this.i18n.number(total) });
+    }
+    return this.i18n.text('documents.countText', { count: shown });
+  });
 
   selectValue(event: { detail: { value?: unknown } }): string {
     const value = event.detail.value;

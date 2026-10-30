@@ -303,6 +303,7 @@
     "folderFilterLabel": "Folder path filter",
     "folderFilterPlaceholder": "Type part of a folder path",
     "countText": "{count} documents",
+    "countOfText": "{count} of {total} documents",
     "empty": "No documents are in this category.",
     "columns": {
       "title": "Title",
