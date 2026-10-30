@@ -1,0 +1,7 @@
+Meeting Transcript: Line 3 Yield Improvement Weekly Tollgate
+
+Linda Park: First-pass yield on Line 3 moved up to ninety-two point one percent this week.
+Carlos Ibarra: That's mostly from the torque spec fix at Station 7, seal leaks are still the biggest remaining category.
+Theo Marsh: What's the plan to tackle the seal leak defects specifically?
+Carlos Ibarra: We're trialing a revised gasket seating pressure on two cells starting Monday.
+Grace Liu: I'll make sure the floor supervisors flag any related quality holds separately so we can isolate the trial data.

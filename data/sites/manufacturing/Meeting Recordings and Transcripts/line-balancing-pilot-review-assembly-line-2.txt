@@ -1,0 +1,7 @@
+Meeting Transcript: Line Balancing Pilot Review - Assembly Line 2
+
+Carlos Ibarra: The pilot moving one sub-assembly step to Station 3 brought the bottleneck within two seconds of takt.
+Grace Liu: Operators adapted quickly, no complaints on the new station layout.
+Theo Marsh: Let's extend the pilot for one more week before making it permanent.
+Carlos Ibarra: I'll track throughput daily and bring final numbers to next week's review.
+Theo Marsh: If it holds, let's plan the rollout to Line 1 as well.

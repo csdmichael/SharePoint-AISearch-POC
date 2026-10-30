@@ -1,0 +1,7 @@
+Meeting Transcript: NPS Survey Results Readout
+
+Tom Bergstrom: Overall NPS came in at forty-two this quarter, up four points from last quarter.
+Rachel Kim: What's driving the improvement, do we know?
+Tom Bergstrom: Promoter comments consistently cite implementation speed as the strength.
+Nina Patel: Detractors still mention reporting flexibility as a gap, which lines up with the competitive teardown.
+Rachel Kim: Let's make sure product management sees both the NPS themes and the teardown findings together.

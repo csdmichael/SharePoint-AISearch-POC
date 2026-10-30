@@ -1,0 +1,7 @@
+Meeting Transcript: Compensation Benchmarking Data Review
+
+Sam Whitfield: The new market data shows our engineering bands are trailing the seventy-fifth percentile in two regions.
+Maria Chen: Which levels are most affected, is this concentrated at senior levels or broader?
+Sam Whitfield: It's concentrated at senior and staff engineer levels specifically.
+Maria Chen: Let's model the cost of a targeted band adjustment before the merit cycle guide goes out.
+Sam Whitfield: I'll have modeling ready for review by the end of the week.

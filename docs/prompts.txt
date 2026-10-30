@@ -1,0 +1,12 @@
+for each site, create a separate document library for meeting recordings and transcripts from that site and move them to it. Rebuild sharepoint indexes based on document iterations to only include documents that are approved (Iteration) by applying filters. Document sharepoint index in readme section for index config. Test end to end flow in foundry agent
+video recordings and transcripts should be organized in their own folders under each site folder here in github repo as well
+why many docs have their metadata fields not available in ui, ensure that the apis for sharepoint read metadata and reflect in ui
+the meeting recordings and transcripts still not moved. Fix this issue. Also, viewers to compare side by side asks to open in browser or sharepoint. The viewers should render content on web
+cleanup old outdated content that is not used
+hr website should not have engineering folder, it should have HR Policies, generate them. And rename Engineering folder to HR. MAke content in sites relevant to site. Also meetings give them names instead of numbers and more real transcripts and videos
+don't name libraries as Trusted Knowledge. Change them to meaningful names. Also, create document libraries for meetings that store video recording and transcripts per site and move content to them. Reindex ai search, test flow end to end.
+Also, update metadata for all docs uploaded to sharepoint to have good variety in lifecycle (remove iteration column), populate knowledge types and other fields. AI Search should only index approved docs. Populate trust scores for approved documents. Meeting Recordings and transcripts should be separate library not folder. Trusted Knowledge library in all sites should be renamed to something else relevant or bettwer, move folders to regular "Documents" library and add metadata there and populate them
+use lifecycle meta data field rather than iteration and delete iteration
+also for duplicate documents, compare side by side feature in ui, it does not open in page but it asks to open in sharepoint or new windows. Fix this issue so viewers open docs in same page for ppt, xls, pdf, word, videos and viewer for vtt transcripts too to render text
+then reindex ai search and test flow end to end
+publish changes to sharepoint, ui, commit code to git as well

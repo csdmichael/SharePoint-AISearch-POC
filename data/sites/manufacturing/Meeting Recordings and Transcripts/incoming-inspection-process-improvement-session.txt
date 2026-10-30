@@ -1,0 +1,7 @@
+Meeting Transcript: Incoming Inspection Process Improvement Session
+
+Linda Park: We're seeing more rejected lots lately, let's check if the sampling plan needs adjusting.
+Omar Haddad: Packaging damage is the top rejection reason, not a dimensional issue.
+Linda Park: That lines up with the open supplier corrective action on pallet packaging.
+Theo Marsh: Let's hold off on changing the sampling plan until that corrective action closes out.
+Linda Park: Agreed, I'll revisit this once we have two clean shipment cycles from the supplier.

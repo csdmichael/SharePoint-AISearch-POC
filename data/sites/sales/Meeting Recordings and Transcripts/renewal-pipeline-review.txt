@@ -1,0 +1,7 @@
+Meeting Transcript: Renewal Pipeline Review
+
+Tom Bergstrom: We have four renewals entering the hundred twenty day window this month.
+Rachel Kim: Any of them showing churn risk signals already?
+Tom Bergstrom: Summit Retail Group is medium risk, usage is down twelve percent but tickets are low.
+Tom Bergstrom: I'll start renewal conversations early on that one given the usage trend.
+Rachel Kim: Let's keep the others on the standard renewal timeline for now.

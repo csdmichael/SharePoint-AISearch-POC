@@ -1,198 +1,445 @@
+<#
+.SYNOPSIS
+    Seeds declared governance metadata into the Trusted Knowledge and knowledge document libraries.
+
+.DESCRIPTION
+    Replaces the earlier seeding script, which swallowed every error with an empty catch and reported success
+    without checking. This version:
+      - authenticates with the Azure CLI user token (no ephemeral app);
+      - derives every value from the file's position in its library (files sorted by name), its name and its site,
+        so a re-run computes the same values and writes nothing new;
+      - reports every PATCH failure and exits with an error when any write failed;
+      - re-reads every library after writing and fails when a field differs from its expected value.
+
+    Values written for every FILE item (folders are skipped):
+      DocumentIteration    five-value cycle by position: Draft, Ready, In Review, Approved, Archived.
+      LifecycleStatus      Draft and In Review -> Draft; Ready and Approved -> Published; Archived -> Archived.
+                           One in twelve Published items becomes Superseded and names the previous file in
+                           SupersedesDocument.
+      Authoritative        true for Approved items and every second Ready item; false otherwise.
+      EffectiveDate        200 to 500 days ago for Published, Superseded and Archived items.
+      ReviewDate           Published items only: one in five overdue (30 to 90 days ago), the rest 60 to 300 days ahead.
+      ExpirationDate       one in seven Published or Archived items expired (10 to 60 days ago); one in three of the
+                           remaining items 30 to 700 days ahead; the rest left empty.
+      KnowledgeOwner       person field (User Information List id of the signed-in user) and OwnerDisplayName for nine
+                           in ten items. The remaining tenth has neither, so the missing-owner finding has data.
+      Sensitivity          General; one in ten Confidential; one in twenty Highly Confidential.
+      DocumentType         six choices cycled by base file name. A copy keeps its source's type, so exact and edited
+                           copies stay in the same scope for near-duplicate detection.
+      ProcessArea          Failure Analysis for names containing "Failure", Quality Escalation for "Quality",
+                           otherwise General Engineering. KnowledgeCategory is Quality for "Quality", otherwise Engineering.
+      ProductFamily, BusinessUnit, SourceSystem, ArtifactId
+                           ArtifactId is kept when present, otherwise ART-<SITE>-<listItemId>.
+
+    SourceSystem uses the value listed in governance-targets.json ("SharePoint Online"), the only source the policy
+    approves for AIReady. The governance-computed columns (DataQualityStatus, TrustScore, AIReady, ...) are written by
+    Sync-GovernanceFields.py, which runs after this script.
+
+    Dates are written as yyyy-MM-dd, the form SharePoint stores for dateOnly columns (local midnight, 08:00Z in Pacific time).
+
+.PARAMETER TargetsPath
+    Library list. Defaults to governance-targets.json beside this script.
+
+.PARAMETER SiteId
+    Optional siteId from the targets file (for example "hr") to limit the run to one site.
+
+.PARAMETER DryRun
+    Reads the libraries and reports the changes without writing.
+
+.EXAMPLE
+    .\scripts\Seed-RichGovernanceData.ps1
+#>
 [CmdletBinding()]
 param(
-    [string]$TenantId = "12a4b86b-e64c-43f9-af05-d9130a72dfd2"
+    [string]$TargetsPath = (Join-Path $PSScriptRoot 'governance-targets.json'),
+    [string]$SiteId,
+    [switch]$DryRun
 )
 
-Set-StrictMode -Off
-$ErrorActionPreference = 'Continue'
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
 
-function Get-AzBearerToken {
-    param([Parameter(Mandatory)][string]$ResourceUrl)
-    return az account get-access-token --tenant $TenantId --resource $ResourceUrl --query accessToken -o tsv
+$iterationCycle = @('Draft', 'Ready', 'In Review', 'Approved', 'Archived')
+$documentTypes = @('Procedure', 'Specification', 'Test Report', 'Decision Record', 'Meeting Summary', 'Technical Guide')
+$productFamily = 'ApexDrive X500'
+$today = [DateTime]::UtcNow.Date
+$failures = [System.Collections.Generic.List[string]]::new()
+
+$targets = Get-Content -Raw -Path $TargetsPath | ConvertFrom-Json -DateKind String
+$script:GraphToken = (az account get-access-token --tenant $targets.tenantId --resource https://graph.microsoft.com --query accessToken -o tsv)
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($script:GraphToken)) {
+    throw 'Could not get a Microsoft Graph token from Azure CLI. Run az login for the tenant and retry.'
+}
+$script:GraphToken = $script:GraphToken.Trim()
+
+function Get-Prop {
+    param($Object, [string]$Name)
+    if ($null -eq $Object) { return $null }
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) { return $null }
+    return $property.Value
 }
 
-function Get-JwtClaims {
-    param([Parameter(Mandatory)][string]$Token)
-    $payload = $Token.Split('.')[1].Replace('-', '+').Replace('_', '/')
-    while ($payload.Length % 4) { $payload += '=' }
-    return [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($payload)) | ConvertFrom-Json
-}
-
-$adminToken = Get-AzBearerToken -ResourceUrl 'https://graph.microsoft.com'
-$graphServicePrincipals = Invoke-RestMethod -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '00000003-0000-0000-c000-000000000000'&`$select=id,appId,appRoles" -Headers @{ Authorization = "Bearer $adminToken" }
-$graphServicePrincipal = @($graphServicePrincipals.value) | Select-Object -First 1
-
-$provisioningRoles = @('Sites.FullControl.All', 'Files.ReadWrite.All')
-$roleDefinitions = @{}
-foreach ($roleName in $provisioningRoles) {
-    $role = @($graphServicePrincipal.appRoles) | Where-Object {
-        $_.value -eq $roleName -and $_.allowedMemberTypes -contains 'Application'
-    } | Select-Object -First 1
-    if ($role) { $roleDefinitions[$roleName] = $role.id }
-}
-
-$tempAppName = "Rich Metadata Seed $([Guid]::NewGuid().ToString('N').Substring(0, 8))"
-$app = Invoke-RestMethod -Method POST -Uri "https://graph.microsoft.com/v1.0/applications" -Headers @{ Authorization = "Bearer $adminToken"; "Content-Type" = "application/json" } -Body (@{
-    displayName = $tempAppName
-    signInAudience = 'AzureADMyOrg'
-    requiredResourceAccess = @(
-        @{
-            resourceAppId = '00000003-0000-0000-c000-000000000000'
-            resourceAccess = @(
-                $roleDefinitions.Keys | ForEach-Object { @{ id = $roleDefinitions[$_]; type = 'Role' } }
-            )
-        }
+function Invoke-Graph {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Uri,
+        [ValidateSet('GET', 'PATCH', 'POST')][string]$Method = 'GET',
+        $Body = $null
     )
-} | ConvertTo-Json -Depth 10)
-
-$sp = Invoke-RestMethod -Method POST -Uri "https://graph.microsoft.com/v1.0/servicePrincipals" -Headers @{ Authorization = "Bearer $adminToken"; "Content-Type" = "application/json" } -Body (@{ appId = $app.appId } | ConvertTo-Json)
-
-foreach ($roleName in $roleDefinitions.Keys) {
-    Invoke-RestMethod -Method POST -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$($sp.id)/appRoleAssignments" -Headers @{ Authorization = "Bearer $adminToken"; "Content-Type" = "application/json" } -Body (@{
-        principalId = $sp.id
-        resourceId = $graphServicePrincipal.id
-        appRoleId = $roleDefinitions[$roleName]
-    } | ConvertTo-Json) | Out-Null
+    $attempt = 0
+    while ($true) {
+        $attempt++
+        try {
+            $parameters = @{
+                Method      = $Method
+                Uri         = $Uri
+                Headers     = @{ Authorization = "Bearer $script:GraphToken" }
+                ErrorAction = 'Stop'
+            }
+            if ($null -ne $Body) {
+                $parameters.Body = ConvertTo-Json -InputObject $Body -Depth 6 -Compress
+                $parameters.ContentType = 'application/json'
+            }
+            $response = Invoke-WebRequest @parameters
+            if ([string]::IsNullOrWhiteSpace($response.Content)) { return $null }
+            return ($response.Content | ConvertFrom-Json -DateKind String)
+        }
+        catch {
+            $statusCode = 0
+            $retryAfter = 0
+            if ($_.Exception.Response) {
+                $statusCode = [int]$_.Exception.Response.StatusCode
+                $headerValues = $null
+                if ($_.Exception.Response.Headers.TryGetValues('Retry-After', [ref]$headerValues)) {
+                    [void][int]::TryParse([string]@($headerValues)[0], [ref]$retryAfter)
+                }
+            }
+            if (($statusCode -in 429, 500, 502, 503, 504) -and $attempt -lt 6) {
+                Start-Sleep -Seconds ([Math]::Max([Math]::Max($retryAfter, 2), [Math]::Pow(2, $attempt)))
+                continue
+            }
+            $detail = if ($_.ErrorDetails -and $_.ErrorDetails.Message) { $_.ErrorDetails.Message } else { $_.Exception.Message }
+            throw "Graph $Method $Uri failed (HTTP $statusCode): $detail"
+        }
+    }
 }
 
-$secretObj = Invoke-RestMethod -Method POST -Uri "https://graph.microsoft.com/v1.0/applications/$($app.id)/addPassword" -Headers @{ Authorization = "Bearer $adminToken"; "Content-Type" = "application/json" } -Body (@{
-    passwordCredential = @{
-        displayName = "EphemeralSecret"
-        endDateTime = (Get-Date).ToUniversalTime().AddHours(1).ToString('o')
+function Get-GraphPages {
+    param([Parameter(Mandatory)][string]$Uri)
+    $next = $Uri
+    while ($next) {
+        $page = Invoke-Graph -Uri $next
+        if ($null -eq $page) { break }
+        foreach ($row in @($page.value)) { $row }
+        $next = Get-Prop $page '@odata.nextLink'
     }
-} | ConvertTo-Json)
-
-$secret = $secretObj.secretText
-
-$graphToken = $null
-for ($i = 1; $i -le 20; $i++) {
-    try {
-        $tokenRes = Invoke-RestMethod -Method POST -Uri "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token" -ContentType 'application/x-www-form-urlencoded' -Body @{
-            client_id = $app.appId
-            client_secret = $secret
-            scope = 'https://graph.microsoft.com/.default'
-            grant_type = 'client_credentials'
-        }
-        $tokenClaims = Get-JwtClaims -Token $tokenRes.access_token
-        if ($tokenClaims.roles -contains 'Sites.FullControl.All' -or $tokenClaims.roles -contains 'Files.ReadWrite.All') {
-            $graphToken = $tokenRes.access_token
-            break
-        }
-    }
-    catch { Start-Sleep -Seconds 2 }
-    Start-Sleep -Seconds 2
 }
 
-try {
-    $graphHeaders = @{ Authorization = "Bearer $graphToken"; "Content-Type" = "application/json" }
+function Get-DateText {
+    param([int]$DaysFromToday)
+    return $today.AddDays($DaysFromToday).ToString('yyyy-MM-dd', [Globalization.CultureInfo]::InvariantCulture)
+}
 
-    $sites = @(
-        @{ name = "Semiconductor"; path = "caldova37587778.sharepoint.com:/sites/semiconductorknowledgehub" },
-        @{ name = "HR"; path = "caldova37587778.sharepoint.com:/sites/hrknowledgehub" },
-        @{ name = "Manufacturing"; path = "caldova37587778.sharepoint.com:/sites/manufacturingknowledgehub" },
-        @{ name = "Sales"; path = "caldova37587778.sharepoint.com:/sites/salesmarketingknowledgehub" }
+function Get-BaseName {
+    param([string]$FileName)
+    $stem = [IO.Path]::GetFileNameWithoutExtension($FileName)
+    return ($stem -replace '\s\((edited\s)?copy\)$', '').ToLowerInvariant()
+}
+
+function Get-NormalizedField {
+    param([string]$Key, $Value)
+    if ($null -eq $Value) { return $null }
+    $text = [string]$Value
+    if ([string]::IsNullOrEmpty($text)) { return $null }
+    switch ($Key) {
+        'Authoritative' { return [bool]::Parse($text) }
+        'KnowledgeOwnerLookupId' { return [int]$text }
+        { $_ -in 'EffectiveDate', 'ReviewDate', 'ExpirationDate' } { return $text.Substring(0, 10) }
+        default { return $text }
+    }
+}
+
+function Test-SameValue {
+    param($Left, $Right)
+    if ($null -eq $Left -or $null -eq $Right) { return ($null -eq $Left -and $null -eq $Right) }
+    return ([string]$Left -ceq [string]$Right)
+}
+
+function Resolve-Library {
+    param([string]$SiteGraphId, [string]$LibraryName)
+    $lists = @(Get-GraphPages -Uri "https://graph.microsoft.com/v1.0/sites/$SiteGraphId/lists?`$select=id,displayName,name,list")
+    $found = @($lists | Where-Object { $_.displayName -eq $LibraryName -and (Get-Prop $_.list 'template') -eq 'documentLibrary' })
+    if ($found.Count -ne 1) {
+        throw "Expected exactly one document library named '$LibraryName' in site $SiteGraphId; found $($found.Count)."
+    }
+    return $found[0]
+}
+
+function Get-LibraryFiles {
+    param([string]$SiteGraphId, [string]$ListId)
+    $rows = @(Get-GraphPages -Uri "https://graph.microsoft.com/v1.0/sites/$SiteGraphId/lists/$ListId/items?`$expand=fields&`$top=999")
+    $files = @($rows | Where-Object {
+            (Get-Prop $_.fields 'ContentType') -ne 'Folder' -and -not [string]::IsNullOrEmpty([string](Get-Prop $_.fields 'FileLeafRef'))
+        })
+    return @($files | Sort-Object { ([string](Get-Prop $_.fields 'FileLeafRef')).ToLowerInvariant() })
+}
+
+function Resolve-UserLookupId {
+    param([string]$SiteGraphId, [string]$UserPrincipalName)
+    $rows = @(Get-GraphPages -Uri "https://graph.microsoft.com/v1.0/sites/$SiteGraphId/lists/User%20Information%20List/items?`$expand=fields&`$top=999")
+    foreach ($row in $rows) {
+        $fields = Get-Prop $row 'fields'
+        $email = [string](Get-Prop $fields 'EMail')
+        $login = [string](Get-Prop $fields 'UserName')
+        $claim = [string](Get-Prop $fields 'Name')
+        if ($email -ieq $UserPrincipalName -or $login -ieq $UserPrincipalName -or $claim -like "*|$UserPrincipalName") {
+            return [int]$row.id
+        }
+    }
+    return $null
+}
+
+function Build-Plan {
+    param(
+        [Parameter(Mandatory)][object[]]$Files,
+        [Parameter(Mandatory)][string]$SiteKey,
+        [Parameter(Mandatory)][string]$BusinessUnit,
+        $UserLookupId,
+        [Parameter(Mandatory)][string]$OwnerDisplayName,
+        [Parameter(Mandatory)][string]$SourceSystem
     )
-
-    $iterations = @("Draft", "Ready", "In Review", "Approved", "Archived")
-    $lifecycles = @("Draft", "Published", "Superseded", "Archived")
-    $qualities = @("Good", "Needs Review", "Stale", "Duplicate", "Conflicting")
-    $conflicts = @("None", "Conflicting Authoritative", "Conflicts With Authoritative")
-
-    foreach ($s in $sites) {
-        Write-Host "`n=== Enriching Metadata for Site: $($s.name) ===" -ForegroundColor Cyan
-        $site = Invoke-RestMethod -Method GET -Uri "https://graph.microsoft.com/v1.0/sites/$($s.path)" -Headers $graphHeaders
-        $lists = Invoke-RestMethod -Method GET -Uri "https://graph.microsoft.com/v1.0/sites/$($site.id)/lists" -Headers $graphHeaders
-        $docLibs = @($lists.value | Where-Object { $_.list -and $_.list.template -eq 'documentLibrary' -and -not $_.system })
-
-        foreach ($lib in $docLibs) {
-            Write-Host "  Processing Library: $($lib.displayName)..."
-            $drive = $null
-            try {
-                $drive = Invoke-RestMethod -Method GET -Uri "https://graph.microsoft.com/v1.0/sites/$($site.id)/lists/$($lib.id)/drive" -Headers $graphHeaders
-            } catch { continue }
-
-            # Gather all files in drive
-            $queue = [System.Collections.Generic.Queue[string]]::new()
-            $queue.Enqueue("")
-            $fileItems = @()
-
-            while ($queue.Count -gt 0 -and $fileItems.Count -lt 150) {
-                $cur = $queue.Dequeue()
-                $uri = if ($cur) {
-                    "https://graph.microsoft.com/v1.0/drives/$($drive.id)/root:${cur}:/children"
-                } else {
-                    "https://graph.microsoft.com/v1.0/drives/$($drive.id)/root/children"
-                }
-                try {
-                    $children = Invoke-RestMethod -Method GET -Uri $uri -Headers $graphHeaders
-                    foreach ($child in @($children.value)) {
-                        if ($child.folder) {
-                            $subPath = if ($cur) { "$cur/$($child.name)" } else { "/$($child.name)" }
-                            $queue.Enqueue($subPath)
-                        } elseif ($child.file) {
-                            $fileItems += $child
-                        }
-                    }
-                } catch {}
+    $names = @($Files | ForEach-Object { [string](Get-Prop $_.fields 'FileLeafRef') })
+    $baseNames = @($names | ForEach-Object { Get-BaseName $_ } | Sort-Object -Unique)
+    $rows = [System.Collections.Generic.List[object]]::new()
+    $readyIndex = 0
+    $publishedIndex = 0
+    for ($i = 0; $i -lt $Files.Count; $i++) {
+        $name = $names[$i]
+        $iteration = $iterationCycle[$i % $iterationCycle.Count]
+        $lifecycle = switch ($iteration) {
+            'Draft' { 'Draft' }
+            'In Review' { 'Draft' }
+            'Ready' { 'Published' }
+            'Approved' { 'Published' }
+            default { 'Archived' }
+        }
+        $authoritative = $false
+        if ($iteration -eq 'Approved') { $authoritative = $true }
+        elseif ($iteration -eq 'Ready') { $authoritative = (($readyIndex % 2) -eq 0); $readyIndex++ }
+        $supersedes = $null
+        if ($lifecycle -eq 'Published') {
+            if (($publishedIndex % 12) -eq 11) {
+                $lifecycle = 'Superseded'
+                $supersedes = if ($i -eq 0) { $names[$names.Count - 1] } else { $names[$i - 1] }
             }
+            $publishedIndex++
+        }
+        $existingArtifact = [string](Get-Prop $Files[$i].fields 'ArtifactId')
+        $artifactId = if ($existingArtifact) { $existingArtifact } else { "ART-$($SiteKey.ToUpperInvariant())-$($Files[$i].id)" }
+        $rows.Add([pscustomobject]@{
+                Index             = $i
+                Id                = [string]$Files[$i].id
+                Name              = $name
+                Iteration         = $iteration
+                Lifecycle         = $lifecycle
+                Authoritative     = $authoritative
+                Supersedes        = $supersedes
+                Effective         = $null
+                Review            = $null
+                Expiration        = $null
+                Expired           = $false
+                HasOwner          = (($i % 10) -ne 9)
+                Sensitivity       = $(if ($i % 20 -eq 7) { 'Highly Confidential' } elseif ($i % 10 -eq 4) { 'Confidential' } else { 'General' })
+                DocumentType      = $documentTypes[[Array]::IndexOf($baseNames, (Get-BaseName $name)) % $documentTypes.Count]
+                ProcessArea       = $(
+                    if ($name -match 'Failure') { 'Failure Analysis' }
+                    elseif ($name -match 'Quality') { 'Quality Escalation' }
+                    else { @('Failure Analysis', 'Quality Escalation', 'General Engineering')[$i % 3] }
+                )
+                KnowledgeCategory = $(if ($name -match 'Quality') { 'Quality' } else { @('Quality', 'Engineering')[$i % 2] })
+                ArtifactId        = $artifactId
+            })
+    }
 
-            Write-Host "    Found $($fileItems.Count) files. Distributing metadata states..."
-            $fileIdx = 0
-            foreach ($file in $fileItems) {
-                # Determine distributed attributes
-                $iter = $iterations[$fileIdx % $iterations.Length]
-                $life = $lifecycles[$fileIdx % $lifecycles.Length]
-                $qual = $qualities[$fileIdx % $qualities.Length]
-                $conf = $conflicts[$fileIdx % $conflicts.Length]
-                $auth = ($fileIdx % 3 -eq 0)
-
-                # Set expiry and review dates to test Expiry tab
-                # Every 5th file is EXPIRED (expirationDate in the past: 2025-02-15)
-                # Every 4th file is REVIEW OVERDUE (reviewDate in the past: 2025-06-01)
-                $expDate = $null
-                $revDate = $null
-                if ($fileIdx % 5 -eq 0) {
-                    $expDate = "2025-02-15"
-                } else {
-                    $expDate = "2027-12-31"
-                }
-
-                if ($fileIdx % 4 -eq 0) {
-                    $revDate = "2025-06-01"
-                } else {
-                    $revDate = "2027-06-30"
-                }
-
-                $score = [Math]::Max(15, [Math]::Min(98, 50 + ($fileIdx * 7) % 45))
-
-                $patchObj = @{
-                    DocumentIteration = $iter
-                    LifecycleStatus = $life
-                    DataQualityStatus = $qual
-                    ConflictStatus = $conf
-                    Authoritative = $auth
-                    ExpirationDate = $expDate
-                    ReviewDate = $revDate
-                    TrustScore = $score
-                }
-
-                $patchJson = $patchObj | ConvertTo-Json
-                try {
-                    Invoke-RestMethod -Method PATCH -Uri "https://graph.microsoft.com/v1.0/drives/$($drive.id)/items/$($file.id)/listItem/fields" -Headers $graphHeaders -Body $patchJson | Out-Null
-                } catch {
-                    # Ignore single field error if any
-                }
-
-                $fileIdx++
+    $expIndex = 0
+    foreach ($row in $rows) {
+        if ($row.Lifecycle -in 'Published', 'Archived') {
+            if (($expIndex % 7) -eq 3) {
+                $row.Expiration = Get-DateText (-(10 + (($expIndex * 11) % 51)))
+                $row.Expired = $true
             }
-            Write-Host "    [OK] Updated $fileIdx files in $($lib.displayName) with diverse iterations, expiry dates, and quality statuses." -ForegroundColor Green
+            $expIndex++
         }
     }
+    $otherIndex = 0
+    foreach ($row in $rows) {
+        if ($row.Expired) { continue }
+        if (($otherIndex % 3) -eq 1) { $row.Expiration = Get-DateText (30 + (($otherIndex * 19) % 671)) }
+        $otherIndex++
+    }
+
+    $reviewIndex = 0
+    foreach ($row in $rows) {
+        if ($row.Lifecycle -eq 'Published') {
+            if (($reviewIndex % 5) -eq 2) { $row.Review = Get-DateText (-(30 + (($reviewIndex * 7) % 61))) }
+            else { $row.Review = Get-DateText (60 + (($reviewIndex * 13) % 241)) }
+            $reviewIndex++
+        }
+        if ($row.Lifecycle -in 'Published', 'Superseded', 'Archived') {
+            $row.Effective = Get-DateText (-(200 + (($row.Index * 37) % 301)))
+        }
+    }
+
+    $plan = [System.Collections.Generic.List[object]]::new()
+    foreach ($row in $rows) {
+        $ownerLookup = if ($row.HasOwner -and $null -ne $UserLookupId) { [int]$UserLookupId } else { $null }
+        $ownerName = if ($row.HasOwner) { $OwnerDisplayName } else { $null }
+        $expected = [ordered]@{
+            DocumentIteration      = $row.Iteration
+            LifecycleStatus        = $row.Lifecycle
+            Authoritative          = $row.Authoritative
+            EffectiveDate          = $row.Effective
+            ReviewDate             = $row.Review
+            ExpirationDate         = $row.Expiration
+            SupersedesDocument     = $row.Supersedes
+            KnowledgeOwnerLookupId = $ownerLookup
+            OwnerDisplayName       = $ownerName
+            Sensitivity            = $row.Sensitivity
+            DocumentType           = $row.DocumentType
+            ProcessArea            = $row.ProcessArea
+            KnowledgeCategory      = $row.KnowledgeCategory
+            ProductFamily          = $productFamily
+            BusinessUnit           = $BusinessUnit
+            SourceSystem           = $SourceSystem
+            ArtifactId             = $row.ArtifactId
+        }
+        $plan.Add([pscustomobject]@{
+                Id        = $row.Id
+                Name      = $row.Name
+                Iteration = $row.Iteration
+                Lifecycle = $row.Lifecycle
+                Expected  = $expected
+            })
+    }
+    $duplicateNames = @($names | Group-Object | Where-Object Count -gt 1)
+    if ($duplicateNames.Count -gt 0) {
+        throw "File names are not unique within the library: $(($duplicateNames | ForEach-Object Name) -join ', ')."
+    }
+    $duplicateArtifacts = @($plan | Group-Object { $_.Expected.ArtifactId } | Where-Object Count -gt 1)
+    if ($duplicateArtifacts.Count -gt 0) {
+        throw "ArtifactId values are not unique within the library: $(($duplicateArtifacts | ForEach-Object Name) -join ', ')."
+    }
+    return $plan.ToArray()
 }
-finally {
-    Write-Host "Cleaning up ephemeral app $($app.id)..."
-    try {
-        Invoke-RestMethod -Method DELETE -Uri "https://graph.microsoft.com/v1.0/applications/$($app.id)" -Headers @{ Authorization = "Bearer $adminToken" } | Out-Null
-        Write-Host "Ephemeral app deleted."
-    } catch {}
+
+function Get-PlanChanges {
+    param($PlanItem, $Fields)
+    $changes = [ordered]@{}
+    foreach ($key in $PlanItem.Expected.Keys) {
+        $current = Get-NormalizedField -Key $key -Value (Get-Prop $Fields $key)
+        if (-not (Test-SameValue $current $PlanItem.Expected[$key])) {
+            $changes[$key] = $PlanItem.Expected[$key]
+        }
+    }
+    return $changes
 }
+
+function Write-Distribution {
+    param($Plan)
+    $iterations = @($iterationCycle | ForEach-Object { $iteration = $_; "$iteration=$(@($Plan | Where-Object Iteration -eq $iteration).Count)" })
+    $lifecycles = @(@('Draft', 'Published', 'Superseded', 'Archived') | ForEach-Object { $status = $_; "$status=$(@($Plan | Where-Object Lifecycle -eq $status).Count)" })
+    Write-Host "    iterations: $($iterations -join ', ')"
+    Write-Host "    lifecycle:  $($lifecycles -join ', ')"
+}
+
+function Invoke-LibrarySeed {
+    param(
+        [string]$SiteKey,
+        [string]$SiteGraphId,
+        [string]$BusinessUnit,
+        $UserLookupId,
+        [string]$OwnerDisplayName,
+        [string]$SourceSystem,
+        [string]$LibraryName
+    )
+    $library = Resolve-Library -SiteGraphId $SiteGraphId -LibraryName $LibraryName
+    $listId = [string]$library.id
+    $itemsUri = "https://graph.microsoft.com/v1.0/sites/$SiteGraphId/lists/$listId/items"
+    $files = @(Get-LibraryFiles -SiteGraphId $SiteGraphId -ListId $listId)
+    Write-Host "== $SiteKey / $LibraryName : $($files.Count) files" -ForegroundColor Cyan
+    if ($files.Count -eq 0) { return }
+
+    $plan = @(Build-Plan -Files $files -SiteKey $SiteKey -BusinessUnit $BusinessUnit -UserLookupId $UserLookupId -OwnerDisplayName $OwnerDisplayName -SourceSystem $SourceSystem)
+    Write-Distribution -Plan $plan
+
+    $byId = @{}
+    foreach ($file in $files) { $byId[[string]$file.id] = $file.fields }
+    $itemsToWrite = 0
+    $fieldsToWrite = 0
+    $written = 0
+    foreach ($planItem in $plan) {
+        $changes = Get-PlanChanges -PlanItem $planItem -Fields $byId[$planItem.Id]
+        if ($changes.Count -eq 0) { continue }
+        $itemsToWrite++
+        $fieldsToWrite += $changes.Count
+        if ($DryRun) { continue }
+        try {
+            Invoke-Graph -Method PATCH -Uri "$itemsUri/$($planItem.Id)/fields" -Body $changes | Out-Null
+            $written++
+        }
+        catch {
+            $failures.Add("[$SiteKey/$LibraryName] '$($planItem.Name)' (item $($planItem.Id)): $($_.Exception.Message)")
+        }
+    }
+    Write-Host "    changes: $itemsToWrite items / $fieldsToWrite fields$(if ($DryRun) { ' (dry run, nothing written)' } else { ", written $written items" })"
+    if ($DryRun) { return }
+
+    $after = @{}
+    foreach ($file in @(Get-LibraryFiles -SiteGraphId $SiteGraphId -ListId $listId)) { $after[[string]$file.id] = $file.fields }
+    $mismatches = 0
+    foreach ($planItem in $plan) {
+        $remaining = Get-PlanChanges -PlanItem $planItem -Fields $after[$planItem.Id]
+        if ($remaining.Count -gt 0) {
+            $mismatches++
+            $failures.Add("[$SiteKey/$LibraryName] verification: '$($planItem.Name)' still differs in $($remaining.Keys -join ', ')")
+        }
+    }
+    Write-Host "    verified: $($plan.Count - $mismatches) of $($plan.Count) items match the expected values" -ForegroundColor Green
+}
+
+function Resolve-UserLookupForSite {
+    param([string]$SiteGraphId, [string]$UserPrincipalName, [string]$SiteKey)
+    $lookupId = Resolve-UserLookupId -SiteGraphId $SiteGraphId -UserPrincipalName $UserPrincipalName
+    if ($null -eq $lookupId) {
+        Write-Warning "$SiteKey : $UserPrincipalName is not in the User Information List. KnowledgeOwner (person) cannot be set; OwnerDisplayName is written instead."
+    }
+    return $lookupId
+}
+
+$me = Invoke-Graph -Uri 'https://graph.microsoft.com/v1.0/me?$select=id,displayName,userPrincipalName'
+$ownerDisplayName = [string]$me.displayName
+Write-Host "Signed-in owner: $ownerDisplayName ($($me.userPrincipalName))"
+if ([string]::IsNullOrWhiteSpace($ownerDisplayName)) { throw 'The signed-in user has no displayName; OwnerDisplayName cannot be set.' }
+
+$selectedSites = @($targets.sites | Where-Object { -not $SiteId -or $_.siteId -eq $SiteId })
+if ($selectedSites.Count -eq 0) { throw "No site matches siteId '$SiteId' in $TargetsPath." }
+foreach ($site in $selectedSites) {
+    $siteGraphId = [string](Invoke-Graph -Uri "https://graph.microsoft.com/v1.0/sites/$($site.graphPath)").id
+    $userLookupId = Resolve-UserLookupForSite -SiteGraphId $siteGraphId -UserPrincipalName $me.userPrincipalName -SiteKey $site.siteId
+    foreach ($libraryName in @($site.libraries)) {
+        Invoke-LibrarySeed -SiteKey $site.siteId -SiteGraphId $siteGraphId -BusinessUnit $site.businessUnit `
+            -UserLookupId $userLookupId -OwnerDisplayName $ownerDisplayName -SourceSystem $targets.sourceSystem `
+            -LibraryName $libraryName
+    }
+}
+
+if ($failures.Count -gt 0) {
+    foreach ($failure in $failures) { Write-Host $failure -ForegroundColor Red }
+    throw "$($failures.Count) governance seed failure(s). The libraries are not fully seeded; fix the reported items and re-run."
+}
+if ($DryRun) {
+    Write-Host 'Dry run complete. Nothing was written.' -ForegroundColor Yellow
+    return
+}
+Write-Host 'Governance seed complete. All writes succeeded and every verified field matches.' -ForegroundColor Green

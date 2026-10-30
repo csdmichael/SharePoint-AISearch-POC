@@ -1,0 +1,7 @@
+Meeting Transcript: Competitive Win-Loss Debrief
+
+Nina Patel: This quarter's win-loss data shows implementation speed as the top reason we win deals.
+Rachel Kim: And price is still the top reason we lose, correct?
+Nina Patel: Yes, specifically against lower-cost competitors at the entry tier.
+Marcus Lee: That lines up with what we're seeing in the field, the objection handling guide should reflect it.
+Nina Patel: I'll update the guide and share the refreshed battlecard with the team this week.

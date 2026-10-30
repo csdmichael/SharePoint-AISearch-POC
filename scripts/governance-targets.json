@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "governance-seed-targets/v1",
+  "description": "Document libraries that receive governance seed data. Read by Seed-RichGovernanceData.ps1, Sync-GovernanceFields.py and Audit-GovernanceData.ps1. System libraries such as Agent Assets are deliberately not listed. Libraries are matched by display name and must be document libraries.",
+  "tenantId": "12a4b86b-e64c-43f9-af05-d9130a72dfd2",
+  "sourceSystem": "SharePoint Online",
+  "sites": [
+    {
+      "siteId": "semiconductor",
+      "siteUrl": "https://caldova37587778.sharepoint.com/sites/semiconductorknowledgehub",
+      "graphPath": "caldova37587778.sharepoint.com:/sites/semiconductorknowledgehub",
+      "businessUnit": "Semiconductor Operations",
+      "libraries": ["Documents", "Semiconductor Knowledge Bootstrap", "Semiconductor Knowledge"]
+    },
+    {
+      "siteId": "hr",
+      "siteUrl": "https://caldova37587778.sharepoint.com/sites/hrknowledgehub",
+      "graphPath": "caldova37587778.sharepoint.com:/sites/hrknowledgehub",
+      "businessUnit": "Human Resources",
+      "libraries": ["Documents", "Trusted Knowledge"]
+    },
+    {
+      "siteId": "manufacturing",
+      "siteUrl": "https://caldova37587778.sharepoint.com/sites/manufacturingknowledgehub",
+      "graphPath": "caldova37587778.sharepoint.com:/sites/manufacturingknowledgehub",
+      "businessUnit": "Manufacturing",
+      "libraries": ["Documents", "Trusted Knowledge"]
+    },
+    {
+      "siteId": "sales",
+      "siteUrl": "https://caldova37587778.sharepoint.com/sites/salesmarketingknowledgehub",
+      "graphPath": "caldova37587778.sharepoint.com:/sites/salesmarketingknowledgehub",
+      "businessUnit": "Sales and Marketing",
+      "libraries": ["Documents", "Trusted Knowledge"]
+    }
+  ]
+}

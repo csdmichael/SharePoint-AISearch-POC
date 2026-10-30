@@ -1,0 +1,7 @@
+Meeting Transcript: 401(k) Plan Vendor Check-in
+
+Sam Whitfield: The vendor flagged a lower than expected auto-enrollment opt-out rate, which is good news.
+Maria Chen: Do we know if that's related to the recent employee communication campaign?
+Sam Whitfield: Likely yes, enrollment emails went out right before the auto-enrollment window closed.
+Maria Chen: Let's keep that cadence for the next plan year and measure the impact again.
+Sam Whitfield: I'll document that in the enrollment guide update for next year.

@@ -971,9 +971,9 @@ def build_specs(
         occurrence[(table_name, extension)] += 1
         variant = occurrence[(table_name, extension)]
         perspective = PERSPECTIVES[(index + variant - 2) % len(PERSPECTIVES)]
-        title = f"{display_name}: {perspective} {variant}"
+        title = f"{display_name}: {perspective}"
         artifact_id = f"SEM-{index:03d}"
-        filename = f"{artifact_id.lower()}-{slug(title)}.{extension}"
+        filename = f"{slug(title)}.{extension}"
         specs.append(
             {
                 "number": index,
@@ -984,7 +984,7 @@ def build_specs(
                 "accent": accent,
                 "extension": extension,
                 "filename": filename,
-                "relative_path": f"{slug(category)}/{filename}",
+                "relative_path": f"{category}/{filename}",
                 "source_table": table_name,
                 "source_system": SOURCE_SYSTEM,
                 "profile_generated_at": profile["generated_at"],

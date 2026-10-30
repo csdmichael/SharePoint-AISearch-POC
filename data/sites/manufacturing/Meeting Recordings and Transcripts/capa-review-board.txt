@@ -1,0 +1,7 @@
+Meeting Transcript: CAPA Review Board
+
+Linda Park: CAPA-118 on the label print smearing is still open, what's blocking closure?
+Carlos Ibarra: We're waiting on the printhead vendor to confirm the replacement part ships this week.
+Linda Park: Let's set a hard follow-up date and escalate if it slips again.
+Grace Liu: I can confirm the part tracking number and update the log today.
+Linda Park: Good, and CAPA-114 on the seal leak is ready to move to verification.
