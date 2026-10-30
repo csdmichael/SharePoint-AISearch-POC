@@ -1,6 +1,7 @@
 """Per-library corpus: the SharePoint snapshot plus lazily cached Graph data (sharing links, content text)
 and memoized analysis results. A corpus lives for the library cache TTL, so every answer is live data
-no older than that TTL.
+no older than that TTL. Extracted text is kept per drive item for as long as its content tag (cTag) is
+unchanged, so rebuilding a corpus does not download files that were not edited.
 """
 
 from __future__ import annotations
@@ -38,6 +39,26 @@ class DriveContext:
     list_by_drive_item: dict[str, int]
 
 
+class TextCache:
+    """Extracted text per drive item, valid while the item's content tag is unchanged. One entry per item: a new
+    content tag replaces the old result, so memory stays bounded by the number of files."""
+
+    def __init__(self) -> None:
+        self._entries: dict[str, tuple[str, TextResult]] = {}
+        self._lock = threading.Lock()
+
+    def get(self, key: str, content_tag: str) -> TextResult | None:
+        with self._lock:
+            entry = self._entries.get(key)
+        if entry is not None and entry[0] == content_tag:
+            return entry[1]
+        return None
+
+    def put(self, key: str, content_tag: str, result: TextResult) -> None:
+        with self._lock:
+            self._entries[key] = (content_tag, result)
+
+
 class LibraryCorpus:
     def __init__(
         self,
@@ -48,6 +69,7 @@ class LibraryCorpus:
         settings: Settings,
         origin: str,
         workers: int,
+        text_cache: TextCache | None = None,
     ) -> None:
         self.library = library
         self.snapshot = snapshot
@@ -55,6 +77,7 @@ class LibraryCorpus:
         self._settings = settings
         self._origin = origin
         self._workers = max(1, workers)
+        self._text_cache = text_cache if text_cache is not None else TextCache()
         self._drive: DriveContext | None = None
         self._links: dict[str, list[PermissionEntry]] = {}
         self._link_errors: dict[str, str] = {}
@@ -365,8 +388,9 @@ class LibraryCorpus:
             result = TextResult("error", reason=exc.message)
         except Exception as exc:
             result = TextResult("error", reason=str(exc))
-        with self._lock:
-            self._texts[item.item_id] = result
+        if result.status != "error":  # transient failures are not memoized, so the next analysis retries them
+            with self._lock:
+                self._texts[item.item_id] = result
         return result
 
     def _load_text(self, item: ItemRecord) -> TextResult:
@@ -382,10 +406,23 @@ class LibraryCorpus:
         drive_item = context.by_list_id.get(item.list_item_id)
         if drive_item is None:
             return TextResult("noDriveItem", reason="no drive item is linked to this list item")
+        cache_key = f"{context.drive_id}/{drive_item['id']}"
+        content_tag = str(drive_item["cTag"]) if drive_item.get("cTag") else None
+        if content_tag is not None:
+            cached = self._text_cache.get(cache_key, content_tag)
+            if cached is not None:
+                return cached
         try:
             content = self._graph.drive_item_content(context.drive_id, str(drive_item["id"]))
         except UpstreamError as exc:
             return TextResult("error", reason=exc.message)
+        result = self._extract_text(extension, content)
+        if content_tag is not None:
+            self._text_cache.put(cache_key, content_tag, result)
+        return result
+
+    def _extract_text(self, extension: str, content: bytes) -> TextResult:
+        extraction = self._settings.analytics.extraction
         if len(content) > extraction.maxFileBytes:
             return TextResult("tooLarge", reason="file exceeds the analysis size limit")
         try:

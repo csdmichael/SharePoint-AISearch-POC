@@ -64,6 +64,7 @@ class HygieneService:
         self._clock = clock
         self._model_cache: tuple[float, HygieneModel] | None = None
         self._lock = threading.RLock()
+        self._build_lock = threading.Lock()
 
     def _documents(self) -> tuple[list[HygieneDoc], list[dict[str, Any]]]:
         docs: list[HygieneDoc] = []
@@ -209,13 +210,38 @@ class HygieneService:
             for metric in governance.metrics
         ]
 
-    def _get_model(self) -> HygieneModel:
+    def _current_model(self, *, not_before: float | None) -> HygieneModel | None:
         with self._lock:
-            now = self._clock()
-            if self._model_cache is not None and now - self._model_cache[0] < self._ttl:
-                return self._model_cache[1]
+            cached = self._model_cache
+        if cached is None:
+            return None
+        built_at, model = cached
+        if not_before is not None and built_at < not_before:
+            return None
+        if self._clock() - built_at >= self._ttl:
+            return None
+        return model
+
+    def _get_model(self) -> HygieneModel:
+        model = self._current_model(not_before=None)
+        if model is not None:
+            return model
+        return self._rebuild(requested_at=self._clock())
+
+    def refresh(self) -> None:
+        """Rebuilds the model now unless a build that started after this call already finished (background warmer)."""
+
+        self._rebuild(requested_at=self._clock())
+
+    def _rebuild(self, *, requested_at: float) -> HygieneModel:
+        with self._build_lock:
+            model = self._current_model(not_before=requested_at)
+            if model is not None:
+                return model
+            started = self._clock()
             model = self._build()
-            self._model_cache = (now, model)
+            with self._lock:
+                self._model_cache = (started, model)
             return model
 
     def summary(self) -> dict[str, Any]:

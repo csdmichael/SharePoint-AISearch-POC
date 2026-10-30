@@ -54,6 +54,9 @@ class ContainerManager:
             self._containers[target.site_id] = container
             return container
 
+    def site_ids(self) -> list[str]:
+        return [site.site_id for site in self._settings.site_catalog]
+
     def _resolve_site(self, selector: str | None):
         if selector is None or not selector.strip():
             return self._settings.site

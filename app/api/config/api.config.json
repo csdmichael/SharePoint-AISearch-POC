@@ -103,7 +103,8 @@
   },
   "cache": {
     "libraryTtlSeconds": 300,
-    "membershipTtlSeconds": 900
+    "membershipTtlSeconds": 900,
+    "warmIntervalSeconds": 240
   },
   "sharedConfig": {
     "deploymentPath": "../../config/trusted-knowledge.json",

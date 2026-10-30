@@ -16,7 +16,7 @@ from app.domain.documents import governance_select
 from app.domain.identity import is_system_path, is_within, lower_key, path_depth, split_item_id
 from app.domain.principals import PrincipalClassifier
 from app.domain.snapshot import ItemRecord, LibraryInfo, LibrarySnapshot, item_from_row
-from app.services.corpus import LibraryCorpus
+from app.services.corpus import LibraryCorpus, TextCache
 
 SYSTEM_LIBRARY_TITLES: frozenset[str] = frozenset(
     {
@@ -71,6 +71,8 @@ class LibraryService:
         self._ttl = settings.api.cache.libraryTtlSeconds
         self._libraries: tuple[float, list[LibraryInfo]] | None = None
         self._corpora: dict[str, tuple[float, LibraryCorpus]] = {}
+        self._build_locks: dict[str, threading.Lock] = {}
+        self._text_cache = TextCache()
         self._lock = threading.RLock()
         self._origin = origin_of(settings.site.site_url)
         self._site_path = urlsplit(settings.site.site_url).path
@@ -115,13 +117,21 @@ class LibraryService:
                 return info
         raise NotFoundError(f"Library {library_id} is not configured for this API.")
 
-    def corpus(self, library_id: str) -> LibraryCorpus:
+    def corpus(self, library_id: str, *, fresh: bool = False) -> LibraryCorpus:
+        """The library's corpus, rebuilt once per TTL. fresh=True forces a rebuild unless a build that started after
+        this call already finished. Builds run outside the shared lock, one at a time per library."""
+
         info = self.find(library_id)
-        with self._lock:
-            now = self._clock()
-            cached = self._corpora.get(info.id)
-            if cached is not None and now - cached[0] < self._ttl:
-                return cached[1]
+        requested_at = self._clock()
+        if not fresh:
+            cached = self._current_corpus(info.id, not_before=None)
+            if cached is not None:
+                return cached
+        with self._build_lock(info.id):
+            cached = self._current_corpus(info.id, not_before=requested_at)
+            if cached is not None:
+                return cached
+            started = self._clock()
             corpus = LibraryCorpus(
                 library=info,
                 snapshot=self._build_snapshot(info),
@@ -129,9 +139,27 @@ class LibraryService:
                 settings=self._settings,
                 origin=self._origin,
                 workers=self._settings.api.graph.maxConcurrency,
+                text_cache=self._text_cache,
             )
-            self._corpora[info.id] = (now, corpus)
+            with self._lock:
+                self._corpora[info.id] = (started, corpus)
             return corpus
+
+    def _current_corpus(self, library_id: str, *, not_before: float | None) -> LibraryCorpus | None:
+        with self._lock:
+            cached = self._corpora.get(library_id)
+        if cached is None:
+            return None
+        built_at, corpus = cached
+        if not_before is not None and built_at < not_before:
+            return None
+        if self._clock() - built_at >= self._ttl:
+            return None
+        return corpus
+
+    def _build_lock(self, library_id: str) -> threading.Lock:
+        with self._lock:
+            return self._build_locks.setdefault(library_id, threading.Lock())
 
     def item(self, item_id: str) -> tuple[LibraryCorpus, ItemRecord]:
         """Resolves a composite item id to its corpus and record, fetching from SharePoint when not in the snapshot."""

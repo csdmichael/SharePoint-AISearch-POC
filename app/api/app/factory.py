@@ -15,6 +15,7 @@ from app.api.errors import register_error_handlers
 from app.api.routes import access, agent, analytics, documents, hygiene, notifications, sites, system
 from app.container_manager import ContainerManager
 from app.core.config import Settings
+from app.services.warmer import CacheWarmer
 
 
 def create_app(
@@ -24,6 +25,7 @@ def create_app(
     credential: Any = None,
     environ: Mapping[str, str] | None = None,
     sleep: Callable[[float], None] = time.sleep,
+    warm: bool = False,
 ) -> FastAPI:
     container_manager = ContainerManager(
         settings,
@@ -33,12 +35,18 @@ def create_app(
         sleep=sleep,
     )
     container = container_manager.default_container
+    interval = settings.api.cache.warmIntervalSeconds
+    warmer = CacheWarmer(container_manager, interval_seconds=interval) if warm and interval > 0 else None
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        if warmer is not None:
+            warmer.start()
         try:
             yield
         finally:
+            if warmer is not None:
+                warmer.stop()
             container_manager.close()
 
     api = settings.api

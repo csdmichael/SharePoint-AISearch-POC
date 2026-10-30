@@ -7,4 +7,5 @@ from app.core.config import load_settings, resolve_path
 from app.factory import create_app
 
 PACKAGE_ROOT = Path(__file__).resolve().parent.parent
-app = create_app(load_settings(resolve_path(PACKAGE_ROOT, os.environ.get("API_CONFIG_PATH", "config/api.config.json"))))
+app = create_app(load_settings(resolve_path(PACKAGE_ROOT, os.environ.get("API_CONFIG_PATH", "config/api.config.json"))),
+                 warm=True)

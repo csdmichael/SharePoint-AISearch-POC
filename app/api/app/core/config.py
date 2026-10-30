@@ -302,6 +302,13 @@ class HygieneSection(_Model):
 class CacheConfig(_Model):
     libraryTtlSeconds: int = Field(ge=0)
     membershipTtlSeconds: int = Field(ge=0)
+    warmIntervalSeconds: int = Field(default=0, ge=0)
+
+    @model_validator(mode="after")
+    def _warm_before_expiry(self) -> "CacheConfig":
+        if self.warmIntervalSeconds and self.warmIntervalSeconds >= self.libraryTtlSeconds:
+            raise ValueError("cache.warmIntervalSeconds must be shorter than cache.libraryTtlSeconds.")
+        return self
 
 
 class SharedConfigPaths(_Model):

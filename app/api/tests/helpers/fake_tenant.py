@@ -52,6 +52,7 @@ class FakeTenant:
     })
     foundry_calls: list[dict[str, Any]] = field(default_factory=list)
     scopes_seen: list[str] = field(default_factory=list)
+    content_versions: dict[str, int] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         # key -> (library, item, list item id). List item ids are per library, starting at 1, in fixture order.
@@ -109,6 +110,11 @@ class FakeTenant:
     def add_rule(self, contains: str, status: int, *, times: int = 1, headers: dict[str, str] | None = None,
                  body: Any = None) -> None:
         self.rules.append(Rule(contains=contains, status=status, times=times, headers=headers or {}, body=body))
+
+    def bump_content(self, key: str) -> None:
+        """Edits one file: its content tag changes, as it does in SharePoint after a save."""
+
+        self.content_versions[key] = self.content_versions.get(key, 0) + 1
 
     # ---- routing --------------------------------------------------------------------------------------------
 
@@ -295,6 +301,7 @@ class FakeTenant:
                     "driveItem": {
                         "id": f"drv-{item['key']}",
                         "name": item["path"].rsplit("/", 1)[-1],
+                        "cTag": f"c:{item['key']}:{self.content_versions.get(item['key'], 0)}",
                         "parentReference": {"driveId": library["driveId"]},
                         "folder": {} if item["kind"] == "folder" else None,
                         "file": {} if item["kind"] == "file" else None,
