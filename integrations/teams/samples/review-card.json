@@ -1,0 +1,322 @@
+{
+  "type": "AdaptiveCard",
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.4",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "Promote to Knowledge",
+      "wrap": true,
+      "size": "Large",
+      "weight": "Bolder"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Review and edit before publishing. Nothing is saved until you select Publish to SharePoint.",
+      "wrap": true,
+      "isSubtle": true
+    },
+    {
+      "type": "Container",
+      "style": "emphasis",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "AI detected",
+          "wrap": true,
+          "weight": "Bolder"
+        },
+        {
+          "type": "FactSet",
+          "facts": [
+            {
+              "title": "Type",
+              "value": "Troubleshooting"
+            },
+            {
+              "title": "Title",
+              "value": "Firmware 4.8.2 Adaptive Polling Workaround"
+            },
+            {
+              "title": "Department",
+              "value": "Engineering"
+            },
+            {
+              "title": "Source",
+              "value": "Teams collaboration"
+            },
+            {
+              "title": "Status",
+              "value": "Draft"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "TextBlock",
+      "text": "Extraction: Demo extractor (scripted for the sample conversation; Microsoft Foundry model not configured)",
+      "wrap": true,
+      "isSubtle": true,
+      "color": "Warning"
+    },
+    {
+      "type": "Input.Text",
+      "id": "title",
+      "label": "Title (AI suggested)",
+      "value": "Firmware 4.8.2 Adaptive Polling Workaround",
+      "isMultiline": false,
+      "maxLength": 300,
+      "isRequired": true,
+      "errorMessage": "Required"
+    },
+    {
+      "type": "Input.Text",
+      "id": "executiveSummary",
+      "label": "Executive summary (AI suggested)",
+      "value": "Qualification failures on the ApexDrive X500 were traced to firmware 4.8.2. Until firmware 4.8.3 ships, support teams should disable adaptive polling as the recommended workaround.",
+      "isMultiline": true,
+      "maxLength": 4000,
+      "isRequired": true,
+      "errorMessage": "Required"
+    },
+    {
+      "type": "Input.ChoiceSet",
+      "id": "category",
+      "label": "Category (AI suggested)",
+      "style": "compact",
+      "value": "Troubleshooting",
+      "choices": [
+        {
+          "title": "Decision",
+          "value": "Decision"
+        },
+        {
+          "title": "How-To",
+          "value": "How-To"
+        },
+        {
+          "title": "Troubleshooting",
+          "value": "Troubleshooting"
+        },
+        {
+          "title": "Lesson Learned",
+          "value": "Lesson Learned"
+        },
+        {
+          "title": "FAQ",
+          "value": "FAQ"
+        },
+        {
+          "title": "Project Knowledge",
+          "value": "Project Knowledge"
+        },
+        {
+          "title": "Policy / Procedure",
+          "value": "Policy / Procedure"
+        },
+        {
+          "title": "Other",
+          "value": "Other"
+        }
+      ],
+      "isRequired": true,
+      "errorMessage": "Required"
+    },
+    {
+      "type": "Input.Text",
+      "id": "issueContext",
+      "label": "Issue / context (from the message)",
+      "value": "Qualification runs on the ApexDrive X500 began failing at the polling stage.",
+      "isMultiline": true,
+      "maxLength": 4000
+    },
+    {
+      "type": "Input.Text",
+      "id": "rootCause",
+      "label": "Root cause (from the message)",
+      "value": "Firmware 4.8.2 caused the qualification issue, as confirmed by the engineering team.",
+      "isMultiline": true,
+      "maxLength": 4000
+    },
+    {
+      "type": "Input.Text",
+      "id": "decision",
+      "label": "Decision (from the message)",
+      "value": "Disabling adaptive polling is the recommended workaround for the support teams until firmware 4.8.3 ships.",
+      "isMultiline": true,
+      "maxLength": 4000
+    },
+    {
+      "type": "Input.Text",
+      "id": "recommendedAction",
+      "label": "Recommended action (from the message)",
+      "value": "Disable adaptive polling in the configuration of affected units. No reflash is needed for units already on 4.8.2. Turn adaptive polling back on once firmware 4.8.3 is installed.",
+      "isMultiline": true,
+      "maxLength": 4000
+    },
+    {
+      "type": "Input.Text",
+      "id": "keyFacts",
+      "label": "Key facts (one per line) (from the message)",
+      "value": "Affected firmware version: 4.8.2.\nFixed in firmware 4.8.3 (not yet shipped when this was captured).\nWorkaround: disable adaptive polling.\nUnits already on 4.8.2 do not need a reflash; changing the configuration is enough.",
+      "isMultiline": true,
+      "maxLength": 4000
+    },
+    {
+      "type": "Input.ChoiceSet",
+      "id": "department",
+      "label": "Department (AI suggested)",
+      "style": "compact",
+      "value": "Engineering",
+      "choices": [
+        {
+          "title": "Engineering",
+          "value": "Engineering"
+        },
+        {
+          "title": "Manufacturing",
+          "value": "Manufacturing"
+        },
+        {
+          "title": "Quality",
+          "value": "Quality"
+        },
+        {
+          "title": "Support",
+          "value": "Support"
+        },
+        {
+          "title": "HR",
+          "value": "HR"
+        },
+        {
+          "title": "Sales and Marketing",
+          "value": "Sales and Marketing"
+        },
+        {
+          "title": "Other",
+          "value": "Other"
+        }
+      ]
+    },
+    {
+      "type": "Input.Text",
+      "id": "product",
+      "label": "Product (from the message)",
+      "value": "ApexDrive X500",
+      "isMultiline": false,
+      "maxLength": 300
+    },
+    {
+      "type": "Input.Text",
+      "id": "ownerUpn",
+      "label": "Knowledge owner (email) (default, please confirm)",
+      "value": "auditor@contoso.com",
+      "isMultiline": false,
+      "maxLength": 300,
+      "isRequired": true,
+      "errorMessage": "Required"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Mentioned in the message: Sofia Lindqvist (Project Lead)",
+      "wrap": true,
+      "isSubtle": true,
+      "size": "Small"
+    },
+    {
+      "type": "Input.ChoiceSet",
+      "id": "sensitivity",
+      "label": "Sensitivity (AI suggested)",
+      "style": "compact",
+      "value": "General",
+      "choices": [
+        {
+          "title": "General",
+          "value": "General"
+        },
+        {
+          "title": "Confidential",
+          "value": "Confidential"
+        },
+        {
+          "title": "Highly Confidential",
+          "value": "Highly Confidential"
+        }
+      ],
+      "isRequired": true,
+      "errorMessage": "Required"
+    },
+    {
+      "type": "Input.Date",
+      "id": "reviewDate",
+      "label": "Review date (default, please confirm)",
+      "value": "2027-04-30",
+      "isRequired": true,
+      "errorMessage": "Required"
+    },
+    {
+      "type": "Input.Text",
+      "id": "tags",
+      "label": "Tags (comma separated) (AI suggested)",
+      "value": "firmware 4.8.2, firmware 4.8.3, adaptive polling, qualification, workaround, ApexDrive X500",
+      "isMultiline": false,
+      "maxLength": 300
+    },
+    {
+      "type": "Input.Toggle",
+      "id": "authoritative",
+      "title": "Mark as authoritative (I am accountable for it)",
+      "value": "true",
+      "valueOn": "true",
+      "valueOff": "false"
+    },
+    {
+      "type": "Input.Toggle",
+      "id": "attested",
+      "title": "I reviewed this content and approve publishing it to SharePoint",
+      "value": "false",
+      "valueOn": "true",
+      "valueOff": "false",
+      "isRequired": true,
+      "errorMessage": "Confirm before publishing"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Only this summary is stored. The Teams conversation is not archived.",
+      "wrap": true,
+      "isSubtle": true,
+      "size": "Small"
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.Submit",
+      "title": "Publish to SharePoint",
+      "style": "positive",
+      "data": {
+        "action": "publish",
+        "confidence": "0.86",
+        "extractionProvider": "demo",
+        "selectedMessageCount": "1",
+        "sourceType": "Teams Collaboration",
+        "sourceDescription": "Teams group chat between a support engineer, a firmware engineer and the project lead.",
+        "ownerName": "Test Auditor"
+      }
+    },
+    {
+      "type": "Action.Submit",
+      "title": "Cancel",
+      "associatedInputs": "none",
+      "data": {
+        "action": "cancel"
+      }
+    },
+    {
+      "type": "Action.OpenUrl",
+      "title": "Open source message",
+      "url": "https://teams.microsoft.com/l/message/19:chat-id@thread.v2/1730301240000"
+    }
+  ]
+}

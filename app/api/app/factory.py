@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.api.errors import register_error_handlers
-from app.api.routes import access, agent, analytics, documents, hygiene, notifications, sites, system
+from app.api.routes import access, agent, analytics, documents, hygiene, knowledge, notifications, sites, system
 from app.container_manager import ContainerManager
 from app.core.config import Settings
 from app.services.warmer import CacheWarmer
@@ -81,4 +81,5 @@ def create_app(
     app.include_router(hygiene.router, prefix=prefix)
     app.include_router(notifications.router, prefix=prefix)
     app.include_router(agent.router, prefix=prefix)
+    app.include_router(knowledge.router, prefix=prefix)
     return app

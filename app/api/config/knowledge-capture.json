@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "sp-acl-knowledge-capture/v1",
+  "description": "Save to Knowledge. Promote deliberately selected collaboration content into governed SharePoint knowledge. Nothing is archived automatically and nothing is published without the user's review.",
+  "enabled": true,
+  "extraction": {
+    "mode": "auto",
+    "modelDeployment": null,
+    "timeoutSeconds": 60,
+    "maxMessages": 40,
+    "maxSourceChars": 12000,
+    "maxOutputTokens": 2000,
+    "defaultReviewMonths": 6,
+    "maxReviewMonths": 36,
+    "lowConfidenceThreshold": 0.6,
+    "demoProviderLabel": "Demo extractor (scripted for the sample conversation; Microsoft Foundry model not configured)",
+    "foundryProviderLabel": "Microsoft Foundry model",
+    "systemPrompt": "You turn a few deliberately selected collaboration messages into one durable knowledge artifact. Use ONLY facts stated in the messages. Never invent product names, versions, dates, owners, numbers or causes. When the messages do not state something, return null (or an empty list) for that field and do not guess. Write in neutral, third-person business language, never copy chat banter, never include names of private individuals unless a role is the only way to describe the source. Choose category and sensitivity from the allowed values. department and product are suggestions: only fill them when the messages clearly imply them. Set confidence between 0 and 1 for how well the messages support the artifact. In fieldOrigins, mark each of title, executiveSummary, issueContext, rootCause, decision, recommendedAction, keyFacts as 'source' when it restates the messages, 'ai' when you inferred or generalised it, and 'unknown' when you returned null; mark category, department, product, sensitivity, tags as 'ai'."
+  },
+  "taxonomy": {
+    "categories": ["Decision", "How-To", "Troubleshooting", "Lesson Learned", "FAQ", "Project Knowledge", "Policy / Procedure", "Other"],
+    "departments": ["Engineering", "Manufacturing", "Quality", "Support", "HR", "Sales and Marketing", "Other"],
+    "fallbackCategory": "Other"
+  },
+  "publish": {
+    "mode": "demo",
+    "siteId": "manufacturing",
+    "libraryName": "Documents",
+    "folder": "Knowledge Capture",
+    "artifactIdPrefix": "KNW",
+    "sourceType": "Teams Collaboration",
+    "sourceSystem": "SharePoint Online",
+    "documentIteration": "Approved",
+    "defaultKnowledgeCategory": "Engineering",
+    "departmentToKnowledgeCategory": {
+      "Engineering": "Engineering",
+      "Support": "Engineering",
+      "Manufacturing": "Engineering",
+      "Quality": "Quality"
+    },
+    "categoryToDocumentType": {
+      "Decision": "Decision Record",
+      "How-To": "Procedure",
+      "Troubleshooting": "Technical Guide",
+      "Lesson Learned": "Technical Guide",
+      "FAQ": "Technical Guide",
+      "Project Knowledge": "Technical Guide",
+      "Policy / Procedure": "Procedure",
+      "Other": "Technical Guide"
+    },
+    "demoStatePath": "../../.state/knowledge-capture",
+    "maxDocumentBytes": 262144
+  },
+  "indexing": {
+    "mode": "demo",
+    "serviceName": null,
+    "endpointTemplate": "https://{serviceName}.search.windows.net",
+    "apiVersion": "2025-09-01",
+    "tokenScope": "https://search.azure.com/.default",
+    "indexerTemplate": "{siteId}-sp-indexer",
+    "defaultIndexAlias": "trusted-knowledge",
+    "indexAliasBySiteId": {
+      "semiconductor": "semiconductor-knowledge"
+    },
+    "scheduleHint": "The SharePoint indexer runs on its schedule (hourly by default). Use Refresh index to start a run now.",
+    "expectedDelaySeconds": 900,
+    "demoIndexingSeconds": 12
+  },
+  "teams": {
+    "webAppUrl": null
+  },
+  "demo": {
+    "query": "What is the recommended workaround for the firmware 4.8.2 adaptive polling issue and why?",
+    "conversation": {
+      "id": "demo-teams-firmware-482",
+      "title": "ApexDrive X500 qualification",
+      "channel": "Teams group chat (simulated)",
+      "participants": ["Priya Raman", "Daniel Okafor", "Sofia Lindqvist", "Marcus Chen"],
+      "keyMessageIds": ["m2"],
+      "messages": [
+        { "id": "m1", "author": "Priya Raman", "role": "Support Engineer", "postedAt": "09:02", "text": "Qualification runs on the ApexDrive X500 keep failing at the polling stage since Monday. Is anyone else seeing this?" },
+        { "id": "m2", "author": "Daniel Okafor", "role": "Engineer", "postedAt": "09:14", "text": "We confirmed the qualification issue was caused by firmware 4.8.2. The workaround is to disable adaptive polling until 4.8.3 ships." },
+        { "id": "m3", "author": "Sofia Lindqvist", "role": "Project Lead", "postedAt": "09:18", "text": "Great. Let's make this the recommended workaround for the support teams." },
+        { "id": "m4", "author": "Marcus Chen", "role": "Test Engineer", "postedAt": "09:25", "text": "Unrelated: the lab is closed Friday afternoon for the fire drill. Grab your fixtures before 2pm." },
+        { "id": "m5", "author": "Daniel Okafor", "role": "Engineer", "postedAt": "09:31", "text": "Units already on 4.8.2 do not need a reflash. Turning adaptive polling off in the configuration is enough, and it can be turned back on once 4.8.3 is installed." },
+        { "id": "m6", "author": "Priya Raman", "role": "Support Engineer", "postedAt": "09:40", "text": "Anyone up for lunch at noon?" }
+      ]
+    },
+    "scriptedExtraction": {
+      "demo-teams-firmware-482": {
+        "title": "Firmware 4.8.2 Adaptive Polling Workaround",
+        "executiveSummary": "Qualification failures on the ApexDrive X500 were traced to firmware 4.8.2. Until firmware 4.8.3 ships, support teams should disable adaptive polling as the recommended workaround.",
+        "category": "Troubleshooting",
+        "issueContext": "Qualification runs on the ApexDrive X500 began failing at the polling stage.",
+        "rootCause": "Firmware 4.8.2 caused the qualification issue, as confirmed by the engineering team.",
+        "decision": "Disabling adaptive polling is the recommended workaround for the support teams until firmware 4.8.3 ships.",
+        "recommendedAction": "Disable adaptive polling in the configuration of affected units. No reflash is needed for units already on 4.8.2. Turn adaptive polling back on once firmware 4.8.3 is installed.",
+        "keyFacts": [
+          "Affected firmware version: 4.8.2.",
+          "Fixed in firmware 4.8.3 (not yet shipped when this was captured).",
+          "Workaround: disable adaptive polling.",
+          "Units already on 4.8.2 do not need a reflash; changing the configuration is enough."
+        ],
+        "department": "Engineering",
+        "product": "ApexDrive X500",
+        "owner": "Sofia Lindqvist (Project Lead)",
+        "sourceDescription": "Teams group chat between a support engineer, a firmware engineer and the project lead.",
+        "sensitivity": "General",
+        "suggestedReviewDate": null,
+        "tags": ["firmware 4.8.2", "firmware 4.8.3", "adaptive polling", "qualification", "workaround", "ApexDrive X500"],
+        "confidence": 0.86,
+        "fieldOrigins": [
+          { "field": "title", "origin": "ai" },
+          { "field": "executiveSummary", "origin": "ai" },
+          { "field": "issueContext", "origin": "source" },
+          { "field": "rootCause", "origin": "source" },
+          { "field": "decision", "origin": "source" },
+          { "field": "recommendedAction", "origin": "source" },
+          { "field": "keyFacts", "origin": "source" },
+          { "field": "category", "origin": "ai" },
+          { "field": "department", "origin": "ai" },
+          { "field": "product", "origin": "source" },
+          { "field": "sensitivity", "origin": "ai" },
+          { "field": "tags", "origin": "ai" }
+        ]
+      }
+    }
+  }
+}

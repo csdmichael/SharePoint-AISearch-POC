@@ -1,4 +1,5 @@
-"""SharePoint REST client. Read-only: libraries, items, role assignments, site groups and site users."""
+"""SharePoint REST client. Reads libraries, items, role assignments, site groups and site users. The only write is
+ensure_user_id, which Save to Knowledge uses to resolve the knowledge owner."""
 
 from __future__ import annotations
 
@@ -134,3 +135,22 @@ class SharePointClient:
 
     def site_users(self) -> Iterator[dict[str, Any]]:
         return self._pages(f"{self._api}/web/siteusers", {"$select": USER_SELECT})
+
+    def ensure_user_id(self, user_principal_name: str) -> int:
+        """Id of the user in the site's User Information List, adding the user when needed.
+
+        Used only by Save to Knowledge so the reviewed owner can be stored in the KnowledgeOwner person column.
+        """
+
+        response = self._http.request(
+            "POST",
+            f"{self._api}/web/ensureuser",
+            tokens=self._tokens,
+            headers={**JSON_LIGHT, "Content-Type": "application/json;odata=nometadata"},
+            json_body={"logonName": f"i:0#.f|membership|{user_principal_name}"},
+        )
+        check_response(self.service, response)
+        payload = response.json()
+        if not isinstance(payload, dict) or not isinstance(payload.get("Id"), int):
+            raise UpstreamError(self.service, "did not return the user for the knowledge owner")
+        return int(payload["Id"])

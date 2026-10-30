@@ -27,11 +27,12 @@ SharePoint Online remains the document system of record.
 12. [Operations and validation](#operations-and-validation)
 13. [Relevance evaluation and feedback](#relevance-evaluation-and-feedback)
 14. [Foundry agent integration](#foundry-agent-integration)
-15. [Sample prompts](#sample-prompts)
-16. [Preview limitations](#preview-limitations)
-17. [Cost and production scaling](#cost-and-production-scaling)
-18. [Additional references](#additional-references)
-19. [License](#license)
+15. [Save to Knowledge Demo](#save-to-knowledge-demo)
+16. [Sample prompts](#sample-prompts)
+17. [Preview limitations](#preview-limitations)
+18. [Cost and production scaling](#cost-and-production-scaling)
+19. [Additional references](#additional-references)
+20. [License](#license)
 
 ## Solution status
 
@@ -329,6 +330,7 @@ for desktop, web, tablet, and mobile displays:
 |-- deploy/                             # CI/CD component definitions (see deploy/README.md)
 |-- docs/
 |-- infra/                              # Bicep for App Service and the Foundry agent
+|-- integrations/teams/                 # Save as Knowledge Teams flow: connector definition, cards, setup guide
 |-- tests/
 `-- scripts/
     |-- Provision-SearchIndexes.ps1     # builds indexes, skillsets, datasources, indexers; retires old ones
@@ -1003,6 +1005,160 @@ runtime tool on `{Foundry Agent}`. Retrieved Search passages preserve
 `document_url`, `title`, `artifact_id`, `source_table`, and
 `profile_generated_at`, allowing the agent to cite SharePoint and explain data
 freshness without claiming that the documents are live Databricks results.
+
+## Save to Knowledge Demo
+
+**Promote, do not archive.** The customer keeps a 90-day Teams chat retention policy. Chat is for short-lived
+conversation, but people sometimes make decisions or find fixes in it. *Save to Knowledge* lets a person
+**deliberately select** useful content and promote it into governed SharePoint knowledge. It is not a way to
+preserve chats before retention deletes them: nothing is captured automatically, only the selected messages are
+used, the person reviews and edits everything, only the summary and its provenance are stored (never the
+conversation), and SharePoint remains the system of record with its normal permissions.
+
+```text
+Teams chat → select → Save as Knowledge → AI extracts durable knowledge → review and edit → Publish
+   → SharePoint (governed metadata) → existing Azure AI Search indexer → Foundry IQ agent answers with citations
+```
+
+| Chat | Teams channels | SharePoint |
+| --- | --- | --- |
+| Informal, short-lived communication | Ongoing team and project collaboration | Durable organizational knowledge and authoritative records |
+
+It extends this application; there is no second app, search system or metadata model.
+
+### Where it lives
+
+| Piece | Location |
+| --- | --- |
+| Web experience (Select → Review → Publish → Ask AI) | `/knowledge` page, `app/ui/src/app/features/knowledge/` |
+| Teams message action (Power Automate flow) | [integrations/teams/](integrations/teams/README.md) |
+| API | `/api/v1/knowledge/*`, `app/api/app/knowledge/` and `app/api/app/api/routes/knowledge.py` |
+| Configuration | `app/api/config/knowledge-capture.json` (override with `API_KNOWLEDGE__<SECTION>__<KEY>`) |
+| Tests | `app/api/tests/test_knowledge*.py`, `app/ui/src/app/features/knowledge/*.spec.ts`, `app/ui/e2e/specs/knowledge.spec.ts` |
+
+### How it works
+
+1. **Select.** The page shows a realistic, clearly simulated Teams conversation (from `knowledge-capture.json`; no
+   Teams integration is used by the page). The user selects messages and chooses **Save as Knowledge**.
+2. **AI extraction.** `POST /knowledge/extract` sends only the selected text to the Microsoft Foundry project's
+   Responses API with a model deployment and a **strict JSON schema** (the reply is parsed as data). It returns title,
+   executive summary, category, issue/context, root cause, decision, recommended action, key facts, department,
+   product/project, owner, source description, sensitivity, suggested review date, tags and a confidence score.
+   The prompt forbids inventing facts; anything not stated comes back empty and is marked *Not stated*. The call uses
+   `store: false`.
+3. **Human review.** The page shows *AI detected* (Type, Title, Department, Source, Status = Draft) and an editable
+   form. Each field is tagged *From the conversation*, *AI suggested*, *Default* or *Not stated*. Publishing requires an
+   explicit confirmation; **Authoritative** is a choice the reviewer makes, never the AI's.
+4. **Publish.** `POST /knowledge/publish` validates the metadata, generates a clean DOCX
+   (Title, Summary, Context, Root Cause, Decision, Recommended Action, Key Facts, Source, Governance Information),
+   uploads it to the configured library through Microsoft Graph and writes the governance columns.
+5. **Success.** *Knowledge preserved*: title, SharePoint location, category, owner, published date, review date,
+   lifecycle status, **Open in SharePoint** and **Ask AI about this**.
+6. **Indexing.** *Published to SharePoint → Indexing… → Available to AI.* The status comes from the existing SharePoint
+   indexer and the existing index; **Refresh index now** starts the indexer instead of waiting for its schedule.
+7. **Ask AI.** The button opens the existing Site Assistant with the demo question, which the existing Foundry IQ agent
+   answers from the new artifact with its normal SharePoint citation.
+
+### SharePoint fields used
+
+No new columns. The artifact uses the existing governance columns (`config/governance-policy.json`):
+
+| Column | Value |
+| --- | --- |
+| `ArtifactId` | `KNW-<8 hex>` (unique) |
+| `Title` | Reviewed title |
+| `KnowledgeCategory` | Existing choice mapped from the department (`publish.departmentToKnowledgeCategory`; default `Engineering`) |
+| `DocumentType` | The AI category mapped to an existing choice (`publish.categoryToDocumentType`, for example Decision → Decision Record, Troubleshooting → Technical Guide) |
+| `LifecycleStatus` | `Published` |
+| `DocumentIteration` | `Approved` (so it is not excluded as a draft) |
+| `Authoritative` | `true` when the reviewer keeps the default and confirms (never set by the AI) |
+| `KnowledgeOwner` / `OwnerDisplayName` | The reviewed owner, resolved to a SharePoint user (defaults to the signed-in user) |
+| `ReviewDate`, `EffectiveDate`, `LastValidatedDate` | Reviewed review date (default +6 months, at most 36); today |
+| `Sensitivity` | Reviewed value; only `General` can become AI-ready |
+| `SourceSystem` | `SharePoint Online` (the approved system of record, required for AI-readiness) |
+| `SourceTable` | Provenance, e.g. `Teams Collaboration: <description>`. The existing lineage column is reused because there is no `SourceType` column |
+| `BusinessUnit`, `ProductFamily`, `ProcessArea` | Department; product when it matches an existing choice; process area from the vocabulary rules |
+| `AIReady`, `TrustScore`, `DataQualityStatus`, `ConflictStatus`, `ContentHash`, `TrustReasons` | Computed with the same policy the governance sync uses; the sync recomputes them (including duplicate and conflict detection) on its next run |
+
+Columns that do not exist on the target library are skipped and reported; missing *required* governance columns stop
+the publish with the command to fix them (`scripts/Add-GovernanceColumnsToLibrary.ps1`).
+
+### How indexing works
+
+The document is written to a library that the existing per-hub SharePoint indexer already crawls
+(`<siteId>-sp-indexer`, hourly). Because the artifact is `Published`, `Authoritative`, `AIReady` and `General`, the
+existing knowledge base filter exposes it. **No second search system exists**: the API only runs the indexer
+(`POST /indexers/{name}/run`), reads the indexer status and checks the index alias for the `artifact_id`. If it is not
+visible after `indexing.expectedDelaySeconds` the UI says *Indexing is delayed*; indexer errors surface as
+*Indexing failed*. Content that is not AI-ready is reported as such and never shown as available.
+
+### Required configuration
+
+Defaults run the whole story locally **in demo mode** (no Azure writes). For the live scenario set:
+
+| Setting | Purpose |
+| --- | --- |
+| `API_AGENT__foundry__accountName`, `API_AGENT__foundry__projectName` | The Foundry project (already used by the agent) |
+| `API_KNOWLEDGE__extraction__modelDeployment` | A chat model deployment in that project that supports structured outputs (for example the deployment named in `config/trusted-knowledge.json`). Without it, `extraction.mode = auto` uses the labelled **demo extractor**; `mode = foundry` reports that extraction is unavailable |
+| `API_KNOWLEDGE__publish__mode=graph` | Write to SharePoint. Also set `publish.siteId` and `publish.libraryName` (default `manufacturing` / `Documents`, which the shared `departments-knowledge-index` crawls) |
+| `API_KNOWLEDGE__indexing__mode=search` and `API_KNOWLEDGE__indexing__serviceName` | Real indexer status and refresh |
+| `API_KNOWLEDGE__teams__webAppUrl` | URL of the web app, for **Ask AI about this** in Teams |
+
+Permissions (least privilege; the existing read grants are unchanged):
+
+- SharePoint write: the API's managed identity needs **Sites.Selected with the `write` role** on the one publish site,
+  for both Microsoft Graph and SharePoint (the same two resources described in the
+  [customer setup guide](docs/CUSTOMER-SETUP-GUIDE.md)). It cannot write anywhere else. Without it publishing fails with
+  `sharepoint_write_denied` and nothing is saved.
+- Azure AI Search: **Search Service Contributor** to run the indexer; **Search Index Data Reader** (already granted to the
+  project identity) to confirm the document is searchable. If these are missing the UI falls back to the schedule.
+- Callers still need the `Auditor` app role; the signed-in user is the default knowledge owner.
+
+### Run it
+
+```powershell
+# API (demo mode by default)
+cd app\api
+python -m venv .venv; .\.venv\Scripts\python.exe -m pip install -r requirements.txt -r requirements-dev.txt
+$env:API_CONFIG__auth__audience = "api://<API_APP_CLIENT_ID>"; $env:API_CONFIG__auth__clientId = "<API_APP_CLIENT_ID>"
+.\.venv\Scripts\python.exe -m uvicorn app.asgi:app --port 8000     # see app\api\README.md (sign in with Azure CLI for Graph)
+
+# UI
+cd ..\ui; npm install; npm start               # open http://localhost:4200/knowledge
+```
+
+Tests: `cd app\api; .\.venv\Scripts\python.exe -m pytest` and `cd app\ui; npm run lint; npm test; npx playwright test`.
+
+### Customer demo sequence
+
+1. Open **Knowledge Capture**. Point at *Teams Chat → SharePoint → AI* and the chat / channels / SharePoint roles.
+2. In the simulated chat select the two messages that hold the fix ("We confirmed the qualification issue was caused by
+   firmware 4.8.2..." and "Great. Let's make this the recommended workaround..."). Leave the lunch and fire-drill messages
+   alone. Say: *only what you select goes anywhere.* Choose **Save as Knowledge**.
+3. Review: *AI detected* Type = Troubleshooting, Title = Firmware 4.8.2 Adaptive Polling Workaround, Department =
+   Engineering, Status = Draft. Show the origin tags, edit a field, note the confidence and that unknown fields are empty.
+4. Tick the confirmation and **Publish to SharePoint**. Show *Knowledge preserved*, then **Open in SharePoint** to show
+   the document and its governance columns (Published, Authoritative, AI ready, review date, owner).
+5. Watch *Published → Indexing… → Available to AI* (use **Refresh index now** to skip the hourly schedule).
+6. Choose **Ask AI about this** (or ask *"What is the recommended workaround for the firmware 4.8.2 adaptive polling
+   issue and why?"*). The existing assistant answers from the new artifact with its SharePoint citation.
+7. Optional, in Teams: run the **Save as Knowledge** message action ([integrations/teams/](integrations/teams/README.md))
+   on a real chat message and review the same draft in an Adaptive Card.
+
+### Limitations
+
+- The page uses a simulated conversation by design; the Teams integration is the Power Automate flow in
+  `integrations/teams/`, which you build in your tenant (the API contract, connector definition and cards are provided
+  and tested; the flow itself is not importable from this repo). The Teams trigger sends one selected message.
+- Live publishing, indexing status and Teams were exercised against mocks of Graph, SharePoint, Search and Foundry,
+  not against a real tenant. Expect to validate the Sites.Selected write grant, the model deployment and the indexer
+  name once.
+- In demo mode the document is saved under `.state/knowledge-capture` and the Site Assistant answers the demo question
+  from that local copy (clearly labelled); there is no Search involved. Live mode uses the real index.
+- Duplicate and conflict detection run in the governance sync, not at publish time, so a new artifact starts as
+  non-duplicate with `TrustScore` computed from its own metadata.
+- Authoritative content is the reviewer's declaration; the API does not check that the reviewer is entitled to
+  approve it beyond the `Auditor` role and the SharePoint permissions of the target library.
 
 ## Sample prompts
 

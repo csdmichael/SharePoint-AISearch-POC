@@ -141,6 +141,19 @@ class Governance:
     def labels(self, group: str) -> dict[str, str]:
         return {str(k): str(v) for k, v in self.vocabulary["labels"][group].items()}
 
+    def choices(self, column: str) -> list[str]:
+        """Allowed values of a Choice column, read from the policy's sharePointColumns. Empty for other column types."""
+
+        for definition in self.policy.get("sharePointColumns", []):
+            if definition.get("name") == column:
+                return [str(item) for item in (definition.get("choice") or {}).get("choices", [])]
+        return []
+
+    def classification(self, key: str) -> dict[str, Any]:
+        """The keyword classification block for documentType, processArea or sensitivity, with its default."""
+
+        return dict((self.vocabulary.get("classification") or {}).get(key) or {})
+
     def key_for_label(self, group: str, value: str | None) -> str | None:
         if value is None:
             return None

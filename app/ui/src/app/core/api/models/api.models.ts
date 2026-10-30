@@ -550,3 +550,126 @@ export interface DocumentPage extends Page<DocumentSummary> {
   knowledgeCategories: string[];
   documentIterations?: string[];
 }
+
+/* ---- Save to Knowledge --------------------------------------------------------------------------------------- */
+
+export type KnowledgeOrigin = 'source' | 'ai' | 'default' | 'unknown';
+
+export interface KnowledgeMessage {
+  id: string;
+  author: string;
+  role: string | null;
+  postedAt: string | null;
+  text: string;
+}
+
+export interface KnowledgeConfig {
+  enabled: boolean;
+  caller: { upn: string | null; name: string | null };
+  taxonomy: { categories: string[]; departments: string[]; sensitivities: string[] };
+  review: { defaultMonths: number; maxMonths: number; lowConfidenceThreshold: number };
+  extraction: { provider: string | null; label: string | null; demo: boolean; maxMessages: number; maxSourceChars: number };
+  publishing: { mode: 'graph' | 'demo'; demo: boolean; siteName: string; libraryName: string; folder: string; sourceType: string };
+  indexing: { mode: 'search' | 'demo'; scheduleHint: string };
+  demo: {
+    query: string;
+    conversation: { id: string; title: string; channel: string; participants: string[]; keyMessageIds: string[]; messages: KnowledgeMessage[] };
+  };
+}
+
+export interface KnowledgeDraft {
+  title: string;
+  executiveSummary: string;
+  category: string;
+  issueContext: string;
+  rootCause: string;
+  decision: string;
+  recommendedAction: string;
+  keyFacts: string[];
+  department: string;
+  product: string;
+  ownerName: string;
+  ownerUpn: string;
+  ownerMention: string;
+  sourceType: string;
+  sourceDescription: string;
+  sensitivity: string;
+  reviewDate: string;
+  tags: string[];
+  confidence: number;
+  status: string;
+  origins: Record<string, KnowledgeOrigin>;
+}
+
+export interface KnowledgeExtractRequest {
+  conversationId: string | null;
+  sourceDescription: string | null;
+  messages: { id: string; author: string; role: string | null; text: string; postedAt: string | null }[];
+}
+
+export interface KnowledgeExtractResponse {
+  draft: KnowledgeDraft;
+  provider: string;
+  providerLabel: string;
+  demo: boolean;
+  messageCount: number;
+  warnings: string[];
+}
+
+export interface KnowledgePublishRequest {
+  title: string;
+  executiveSummary: string;
+  category: string;
+  issueContext: string;
+  rootCause: string;
+  decision: string;
+  recommendedAction: string;
+  keyFacts: string[];
+  department: string;
+  product: string;
+  ownerName: string;
+  ownerUpn: string;
+  sourceType: string;
+  sourceDescription: string;
+  sensitivity: string;
+  reviewDate: string;
+  tags: string[];
+  confidence: number;
+  extractionProvider: string;
+  selectedMessageCount: number;
+  authoritative: boolean;
+  attested: boolean;
+}
+
+export type KnowledgeIndexStage = 'notReady' | 'published' | 'indexing' | 'available' | 'delayed' | 'failed';
+
+export interface KnowledgeIndexingStatus {
+  stage: KnowledgeIndexStage;
+  message: string;
+  mode: 'search' | 'demo';
+  indexer: string | null;
+  checkedAt: string;
+  canTrigger: boolean;
+}
+
+export interface KnowledgePublishResult {
+  artifactId: string;
+  title: string;
+  fileName: string;
+  category: string;
+  ownerName: string;
+  ownerUpn: string;
+  publishedAt: string;
+  reviewDate: string;
+  lifecycleStatus: string;
+  authoritative: boolean;
+  aiReady: boolean;
+  aiReadyBlockers: string[];
+  trustScore: number;
+  location: { mode: 'graph' | 'demo'; siteName: string; libraryName: string; folder: string; webUrl: string | null };
+  demo: boolean;
+  appliedFields: Record<string, string | number | boolean>;
+  skippedFields: string[];
+  warnings: string[];
+  indexing: KnowledgeIndexingStatus;
+}

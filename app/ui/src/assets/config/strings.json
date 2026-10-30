@@ -25,6 +25,7 @@
     "access": "Access by user",
     "cleanup": "Cleanup",
     "notifications": "Notifications",
+    "knowledge": "Knowledge Capture",
     "agent": "Agent"
   },
   "navGroups": {
@@ -39,6 +40,7 @@
     "access": "Access by user",
     "cleanup": "Cleanup",
     "notifications": "Notifications",
+    "knowledge": "Knowledge Capture",
     "agent": "Site Assistant",
     "document": "Document governance",
     "notFound": "Page not found"
@@ -51,6 +53,7 @@
     "document": "Governance facts, trust, and conflicts for one document.",
     "cleanup": "Review duplicates, expired documents, anomalies, and exposure. Draft owner notifications for items that need action.",
     "notifications": "Owner notifications from draft to delivery. Nothing is sent without approval.",
+    "knowledge": "Promote useful content from a conversation into governed SharePoint knowledge. You review everything before it is published.",
     "agent": "Ask a governance question. Answers come from live evidence and cite SharePoint documents."
   },
   "buttons": {
@@ -233,6 +236,137 @@
     "sentHint": "This notification has already been sent.",
     "recipientFormat": "{name} ({upn})",
     "actionFailed": "The notification action could not be completed."
+  },
+  "knowledge": {
+    "flow": {
+      "chat": { "title": "Teams Chat", "body": "Short-lived conversation" },
+      "promote": "Promote important knowledge",
+      "sharepoint": { "title": "SharePoint", "body": "Governed organizational knowledge" },
+      "search": "Azure AI Search / Foundry IQ",
+      "ai": { "title": "AI", "body": "Discoverable with citations" }
+    },
+    "roles": {
+      "heading": "Where knowledge belongs",
+      "chat": "Chat: informal, short-lived communication.",
+      "channels": "Teams Channels: ongoing team and project collaboration.",
+      "sharepoint": "SharePoint: durable organizational knowledge and authoritative records."
+    },
+    "principle": "Only the messages you select are used. Nothing is saved until you review and publish. This promotes durable knowledge; it does not archive conversations.",
+    "steps": { "select": "Select", "review": "Review", "publish": "Publish", "ask": "Ask AI" },
+    "select": {
+      "heading": "Select what is worth keeping",
+      "channel": "Simulated Teams conversation",
+      "hint": "Select one or more messages that hold a decision, a fix or a lesson.",
+      "selected": "{count} selected",
+      "messageLabel": "Select message from {author}",
+      "action": "Save as Knowledge",
+      "needSelection": "Select at least one message.",
+      "tooMany": "Select at most {max} messages."
+    },
+    "extracting": { "title": "Extracting durable knowledge", "body": "Reading only the selected messages…" },
+    "extractFailed": {
+      "title": "The draft could not be created",
+      "body": "You can try again, or continue with an empty draft and write the knowledge yourself.",
+      "retry": "Try again",
+      "manual": "Start a blank draft"
+    },
+    "review": {
+      "heading": "Review before publishing",
+      "detected": "AI detected",
+      "type": "Type",
+      "titleLabel": "Title",
+      "department": "Department",
+      "source": "Source",
+      "sourceValue": "Teams collaboration",
+      "status": "Status",
+      "draft": "Draft",
+      "providerLabel": "Extraction",
+      "confidence": "Confidence {value}",
+      "lowConfidence": "Low confidence. Check every field.",
+      "legend": "Each field shows where its value came from.",
+      "ownerMention": "Mentioned in the conversation: {name}",
+      "attestation": "I reviewed this content and approve publishing it to SharePoint.",
+      "authoritative": "Mark as authoritative. I am accountable for this knowledge.",
+      "storeNote": "Only this summary is stored. The conversation itself is not saved.",
+      "publish": "Publish to SharePoint",
+      "publishing": "Publishing to SharePoint…",
+      "cancel": "Cancel",
+      "back": "Back to messages",
+      "fixErrors": "Fix the highlighted fields before publishing."
+    },
+    "origin": {
+      "source": "From the conversation",
+      "ai": "AI suggested",
+      "default": "Default, please confirm",
+      "unknown": "Not stated, please complete"
+    },
+    "fields": {
+      "title": "Title",
+      "executiveSummary": "Executive summary",
+      "category": "Knowledge category",
+      "issueContext": "Issue / context",
+      "rootCause": "Root cause",
+      "decision": "Decision",
+      "recommendedAction": "Recommended action / resolution",
+      "keyFacts": "Key facts (one per line)",
+      "department": "Department",
+      "product": "Product / project",
+      "owner": "Owner (email)",
+      "sourceType": "Source type",
+      "sourceDescription": "Source description",
+      "sensitivity": "Sensitivity",
+      "reviewDate": "Suggested review date",
+      "tags": "Tags (comma separated)"
+    },
+    "errors": {
+      "title": "Enter a title of at least 5 characters.",
+      "executiveSummary": "Enter an executive summary.",
+      "category": "Choose a category.",
+      "owner": "Enter the owner's email address.",
+      "sensitivity": "Choose a sensitivity.",
+      "reviewDate": "Choose a future review date within {months} months.",
+      "content": "Add a decision, a root cause or a recommended action.",
+      "attestation": "Confirm that you reviewed the content."
+    },
+    "publishFailed": {
+      "title": "Not published",
+      "forbidden": "You do not have permission to publish knowledge.",
+      "generic": "The knowledge could not be published. Nothing was saved. Review the message and try again."
+    },
+    "success": {
+      "title": "Knowledge preserved",
+      "location": "SharePoint location",
+      "category": "Category",
+      "owner": "Owner",
+      "published": "Published",
+      "reviewDate": "Review date",
+      "lifecycle": "Lifecycle status",
+      "aiReady": "AI ready",
+      "trust": "Trust score",
+      "open": "Open in SharePoint",
+      "openDemo": "Download the generated document",
+      "ask": "Ask AI about this",
+      "another": "Capture another",
+      "demoNote": "Demo mode: the document was saved locally and nothing was written to SharePoint.",
+      "notAiReady": "Published, but the AI will not use it yet:",
+      "skipped": "Columns not present on the library: {columns}"
+    },
+    "indexing": {
+      "heading": "From SharePoint to AI",
+      "published": "Published to SharePoint",
+      "indexing": "Indexing…",
+      "available": "Available to AI",
+      "notReady": "Not AI-ready",
+      "delayed": "Indexing is delayed",
+      "failed": "Indexing failed",
+      "refresh": "Refresh index now",
+      "refreshing": "Starting the indexer…",
+      "statusFailed": "The indexing status could not be read."
+    },
+    "demoQuery": {
+      "heading": "Demo question",
+      "body": "After indexing, ask the existing assistant:"
+    }
   },
   "agent": {
     "fabLabel": "Open Site Assistant",

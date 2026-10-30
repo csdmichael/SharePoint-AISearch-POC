@@ -21,6 +21,7 @@ export const routes = [
   ['/access/by-user', 'Access by user'],
   ['/cleanup', 'Cleanup'],
   ['/notifications', 'Notifications'],
+  ['/knowledge', 'Knowledge Capture'],
   ['/agent', 'Site Assistant'],
 ] as const;
 

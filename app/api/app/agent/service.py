@@ -41,6 +41,7 @@ class AgentService:
         router: IntentRouter,
         context_for: Callable[[Caller], HandlerContext],
         foundry: FoundryClient | None,
+        demo_answer: Callable[[str], dict[str, Any] | None] | None = None,
     ) -> None:
         self._agent = agent
         self._limits = agent.limits
@@ -48,6 +49,7 @@ class AgentService:
         self._router = router
         self._context_for = context_for
         self._foundry = foundry
+        self._demo_answer = demo_answer
         self._conversations: OrderedDict[str, list[dict[str, Any]]] = OrderedDict()
         self._lock = threading.Lock()
 
@@ -103,6 +105,11 @@ class AgentService:
                 logger.exception("Microsoft Foundry call failed unexpectedly")
                 warnings.append(messages.foundryUnexpected)
                 foundry = {"status": FOUNDRY_UNAVAILABLE, "message": messages.foundryUnexpected}
+        if routed.fallback and self._demo_answer is not None:
+            demo = self._demo_answer(question)
+            if demo is not None:
+                answer_text, citations, answer_mode = demo["answer"], demo["citations"], MODE_EVIDENCE
+                warnings.append(demo["notice"])
         conversation = conversation_id or uuid.uuid4().hex
         self._remember(conversation, question, routed.id, answer_mode)
         return {

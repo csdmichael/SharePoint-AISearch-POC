@@ -35,6 +35,13 @@ import {
   HealthResponse,
   HygieneFindingDetail,
   HygieneSummary,
+  KnowledgeConfig,
+  KnowledgeDraft,
+  KnowledgeExtractRequest,
+  KnowledgeExtractResponse,
+  KnowledgeIndexingStatus,
+  KnowledgePublishRequest,
+  KnowledgePublishResult,
   LibraryList,
   NotificationItem,
   NotificationListResponse,
@@ -200,6 +207,36 @@ export class ApiService {
     return this.send<AgentMessageResponse>('POST', this.config.app.apiBaseUrl.replace(/\/+$/, '') + this.config.agent.messagesPath, {
       body: request,
     }).pipe(map((response) => agentReply(response)));
+  }
+
+  knowledgeConfig(): Observable<KnowledgeConfig> {
+    return this.send<KnowledgeConfig>('GET', this.endpoint('knowledgeConfig'), { skipSiteContext: true });
+  }
+
+  knowledgeExtract(request: KnowledgeExtractRequest): Observable<KnowledgeExtractResponse> {
+    return this.send<KnowledgeExtractResponse>('POST', this.endpoint('knowledgeExtract'), { body: request, skipSiteContext: true });
+  }
+
+  knowledgeBlankDraft(): Observable<KnowledgeDraft> {
+    return this.send<KnowledgeDraft>('GET', this.endpoint('knowledgeBlankDraft'), { skipSiteContext: true });
+  }
+
+  knowledgePublish(request: KnowledgePublishRequest): Observable<KnowledgePublishResult> {
+    return this.send<KnowledgePublishResult>('POST', this.endpoint('knowledgePublish'), { body: request, skipSiteContext: true });
+  }
+
+  knowledgeIndexing(result: Pick<KnowledgePublishResult, 'artifactId' | 'publishedAt' | 'aiReady'>, refresh = false): Observable<KnowledgeIndexingStatus> {
+    return this.send<KnowledgeIndexingStatus>(refresh ? 'POST' : 'GET', this.endpoint('knowledgeIndexing', { id: result.artifactId }), {
+      params: { publishedAt: result.publishedAt, aiReady: String(result.aiReady) },
+      skipSiteContext: true,
+    });
+  }
+
+  knowledgeDocument(artifactId: string): Observable<Blob> {
+    return this.http.get(this.endpoint('knowledgeDocument', { id: artifactId }), { responseType: 'blob' }).pipe(
+      timeout(this.config.app.requestTimeoutMs),
+      catchError((error: unknown) => throwError(() => toApiError(error))),
+    );
   }
 
   setSiteContext(siteId: string | null): void {

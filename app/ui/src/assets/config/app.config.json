@@ -21,7 +21,13 @@
     "notifications": "/notifications",
     "notificationDrafts": "/notifications/drafts",
     "notificationApprove": "/notifications/{id}/approve",
-    "notificationSend": "/notifications/{id}/send"
+    "notificationSend": "/notifications/{id}/send",
+    "knowledgeConfig": "/knowledge/config",
+    "knowledgeExtract": "/knowledge/extract",
+    "knowledgeBlankDraft": "/knowledge/draft/blank",
+    "knowledgePublish": "/knowledge/publish",
+    "knowledgeIndexing": "/knowledge/artifacts/{id}/indexing",
+    "knowledgeDocument": "/knowledge/artifacts/{id}/document"
   },
   "auth": {
     "clientId": "",

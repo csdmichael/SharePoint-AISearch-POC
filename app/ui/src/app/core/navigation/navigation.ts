@@ -53,6 +53,7 @@ const PAGE_LOADERS: Record<string, () => Promise<Type<unknown>>> = {
   cleanup: () => import('../../features/cleanup/cleanup.page').then((m) => m.CleanupPage),
   notifications: () => import('../../features/notifications/notifications.page').then((m) => m.NotificationsPage),
   agent: () => import('../../features/agent/agent.page').then((m) => m.AgentPage),
+  knowledge: () => import('../../features/knowledge/knowledge.page').then((m) => m.KnowledgePage),
   documentDetail: () => import('../../features/documents/document-detail.page').then((m) => m.DocumentDetailPage),
 };
 

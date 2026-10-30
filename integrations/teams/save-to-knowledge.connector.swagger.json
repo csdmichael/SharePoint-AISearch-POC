@@ -1,0 +1,196 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Save to Knowledge",
+    "description": "Promote deliberately selected Teams content into governed SharePoint knowledge. Drafts the knowledge with AI, returns an editable Adaptive Card for review and publishes only after the user approves. Used by the Power Automate flow 'Save as Knowledge' (For a selected message).",
+    "version": "1.0.0"
+  },
+  "host": "REPLACE-WITH-API-HOST.azurewebsites.net",
+  "basePath": "/api/v1",
+  "schemes": ["https"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "securityDefinitions": {
+    "oauth2-auth": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "https://login.microsoftonline.com/common/oauth2/authorize",
+      "tokenUrl": "https://login.windows.net/common/oauth2/authorize",
+      "scopes": {}
+    }
+  },
+  "security": [{ "oauth2-auth": [] }],
+  "paths": {
+    "/knowledge/teams/draft": {
+      "post": {
+        "operationId": "DraftFromTeamsMessage",
+        "summary": "Draft knowledge from a Teams message",
+        "description": "Extracts a structured knowledge draft from the selected message and returns the review Adaptive Card. Nothing is saved.",
+        "x-ms-visibility": "important",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["messageText"],
+              "properties": {
+                "messageText": { "type": "string", "title": "Message text", "description": "Plain text of the selected message ('Plain text message output')." },
+                "senderName": { "type": "string", "title": "Sender", "description": "Sender display name." },
+                "senderRole": { "type": "string", "title": "Sender role", "x-ms-visibility": "advanced" },
+                "messageId": { "type": "string", "title": "Message ID", "x-ms-visibility": "advanced" },
+                "messageLink": { "type": "string", "title": "Link to message", "x-ms-visibility": "advanced" },
+                "postedAt": { "type": "string", "title": "Posted at", "x-ms-visibility": "advanced" },
+                "chatTopic": { "type": "string", "title": "Chat topic", "x-ms-visibility": "advanced" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The draft and its review card",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "card": { "type": "object", "title": "Review card", "description": "Adaptive Card JSON. Pass it to 'Post adaptive card and wait for a response' as text." },
+                "draft": { "type": "object", "title": "Draft" },
+                "provider": { "type": "string", "title": "Extraction provider" },
+                "providerLabel": { "type": "string", "title": "Extraction provider label" },
+                "demo": { "type": "boolean", "title": "Demo extraction" },
+                "warnings": { "type": "array", "title": "Warnings", "items": { "type": "string" } }
+              }
+            }
+          },
+          "default": { "description": "Error", "schema": { "$ref": "#/definitions/Error" } }
+        }
+      }
+    },
+    "/knowledge/teams/publish": {
+      "post": {
+        "operationId": "PublishFromTeamsCard",
+        "summary": "Publish the reviewed knowledge to SharePoint",
+        "description": "Validates the values submitted from the review card and publishes the artifact. Send the card's submitted data. A cancel action saves nothing.",
+        "x-ms-visibility": "important",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["action"],
+              "properties": {
+                "action": { "type": "string", "title": "Action", "description": "publish or cancel (the card's submit action)." },
+                "title": { "type": "string" },
+                "executiveSummary": { "type": "string" },
+                "category": { "type": "string" },
+                "issueContext": { "type": "string" },
+                "rootCause": { "type": "string" },
+                "decision": { "type": "string" },
+                "recommendedAction": { "type": "string" },
+                "keyFacts": { "type": "string", "description": "One fact per line." },
+                "department": { "type": "string" },
+                "product": { "type": "string" },
+                "ownerUpn": { "type": "string" },
+                "ownerName": { "type": "string" },
+                "sourceType": { "type": "string" },
+                "sourceDescription": { "type": "string" },
+                "sensitivity": { "type": "string" },
+                "reviewDate": { "type": "string" },
+                "tags": { "type": "string", "description": "Comma separated." },
+                "confidence": { "type": "string" },
+                "extractionProvider": { "type": "string" },
+                "selectedMessageCount": { "type": "string" },
+                "authoritative": { "type": "string" },
+                "attested": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published or cancelled",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "string", "title": "Status", "description": "published or cancelled" },
+                "summary": { "type": "string", "title": "Summary" },
+                "card": { "type": "object", "title": "Result card" },
+                "result": {
+                  "type": "object",
+                  "title": "Result",
+                  "properties": {
+                    "artifactId": { "type": "string", "title": "Artifact ID" },
+                    "title": { "type": "string", "title": "Title" },
+                    "publishedAt": { "type": "string", "title": "Published at" },
+                    "aiReady": { "type": "boolean", "title": "AI ready" },
+                    "reviewDate": { "type": "string", "title": "Review date" },
+                    "location": { "type": "object", "title": "Location", "properties": { "webUrl": { "type": "string", "title": "SharePoint URL" } } },
+                    "indexing": { "type": "object", "title": "Indexing", "properties": { "stage": { "type": "string", "title": "Indexing stage" }, "message": { "type": "string", "title": "Indexing message" } } }
+                  }
+                }
+              }
+            }
+          },
+          "default": { "description": "Error", "schema": { "$ref": "#/definitions/Error" } }
+        }
+      }
+    },
+    "/knowledge/artifacts/{artifactId}/indexing": {
+      "get": {
+        "operationId": "GetIndexingStatus",
+        "summary": "Get indexing status",
+        "description": "Published, indexing or available to AI.",
+        "parameters": [
+          { "name": "artifactId", "in": "path", "required": true, "type": "string", "x-ms-summary": "Artifact ID" },
+          { "name": "publishedAt", "in": "query", "required": false, "type": "string", "x-ms-summary": "Published at" },
+          { "name": "aiReady", "in": "query", "required": false, "type": "boolean", "x-ms-summary": "AI ready" }
+        ],
+        "responses": {
+          "200": { "description": "Indexing status", "schema": { "$ref": "#/definitions/IndexingStatus" } },
+          "default": { "description": "Error", "schema": { "$ref": "#/definitions/Error" } }
+        }
+      },
+      "post": {
+        "operationId": "RefreshIndex",
+        "summary": "Refresh the index now",
+        "description": "Starts the SharePoint indexer instead of waiting for its schedule.",
+        "parameters": [
+          { "name": "artifactId", "in": "path", "required": true, "type": "string", "x-ms-summary": "Artifact ID" },
+          { "name": "publishedAt", "in": "query", "required": false, "type": "string", "x-ms-summary": "Published at" },
+          { "name": "aiReady", "in": "query", "required": false, "type": "boolean", "x-ms-summary": "AI ready" }
+        ],
+        "responses": {
+          "200": { "description": "Indexing status", "schema": { "$ref": "#/definitions/IndexingStatus" } },
+          "default": { "description": "Error", "schema": { "$ref": "#/definitions/Error" } }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "IndexingStatus": {
+      "type": "object",
+      "properties": {
+        "stage": { "type": "string", "title": "Stage", "description": "notReady, published, indexing, available, delayed or failed" },
+        "message": { "type": "string", "title": "Message" },
+        "mode": { "type": "string", "title": "Mode" },
+        "indexer": { "type": "string", "title": "Indexer" },
+        "checkedAt": { "type": "string", "title": "Checked at" },
+        "canTrigger": { "type": "boolean", "title": "Can refresh now" }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": { "type": "string", "title": "Error code" },
+            "message": { "type": "string", "title": "Error message" }
+          }
+        }
+      }
+    }
+  }
+}

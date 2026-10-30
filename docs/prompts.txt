@@ -11,3 +11,360 @@ also for duplicate documents, compare side by side feature in ui, it does not op
 then reindex ai search and test flow end to end
 publish changes to sharepoint, ui, commit code to git as well
 at end, cleanup any old code, old scripts, old readme info that no longer applies to new changes.
+-----------------------------------------------------
+
+I want you to extend this existing SharePoint-AISearch-POC with a new end-to-end feature called "Save to Knowledge" / "Promote to Knowledge".
+
+First, inspect the entire repository and understand the current architecture, frontend, backend, SharePoint integration, Azure AI Search integration, Foundry/agent integration, authentication model, configuration, and existing SharePoint governance metadata.
+
+IMPORTANT:
+Do not replace the existing architecture or create a parallel application.
+Extend the existing application and reuse its current components, services, authentication, configuration patterns, metadata fields, APIs, and UI conventions wherever possible.
+
+BUSINESS PROBLEM
+
+The customer uses a 90-day Teams Chat retention policy.
+
+Teams Chat is intended for short-lived conversation, but employees sometimes make useful decisions, discover troubleshooting solutions, document lessons learned, or create reusable knowledge inside chat.
+
+The goal is NOT to circumvent the customer's retention policy or automatically archive Teams conversations.
+
+Instead, users should be able to deliberately promote useful information into governed organizational knowledge stored in SharePoint.
+
+The experience should demonstrate:
+
+Teams Chat / collaboration
+        ↓
+User selects useful content
+        ↓
+Save to Knowledge
+        ↓
+AI extracts durable knowledge
+        ↓
+User reviews and edits
+        ↓
+Publish
+        ↓
+SharePoint
+        ↓
+Existing Azure AI Search / Foundry IQ pipeline
+        ↓
+Knowledge becomes discoverable by the existing AI experience
+
+USER EXPERIENCE
+
+Add a new "Knowledge Capture" experience to the existing POC.
+
+For demo purposes, create a realistic simulated Teams conversation inside the application. Do not build a Teams integration unless this repository already contains one.
+
+Example conversation:
+
+Engineer:
+"We confirmed the qualification issue was caused by firmware 4.8.2. The workaround is to disable adaptive polling until 4.8.3 ships."
+
+Project Lead:
+"Great. Let's make this the recommended workaround for the support teams."
+
+Allow the user to select one or more messages.
+
+Add a primary action:
+
+"Save as Knowledge"
+
+When clicked, open a "Promote to Knowledge" workflow.
+
+STEP 1 — AI KNOWLEDGE EXTRACTION
+
+Use the project's existing Azure OpenAI / Foundry model integration if available.
+
+Take the selected conversation and transform it into a structured knowledge artifact.
+
+Extract/generate:
+
+- Title
+- Executive summary
+- Knowledge category
+- Issue / context
+- Root cause
+- Decision
+- Recommended action / resolution
+- Key facts
+- Department
+- Product / project
+- Owner
+- Source type
+- Source description
+- Sensitivity
+- Suggested review date
+- Tags / keywords
+- Confidence score
+
+Knowledge categories should include at least:
+
+- Decision
+- How-To
+- Troubleshooting
+- Lesson Learned
+- FAQ
+- Project Knowledge
+- Policy / Procedure
+- Other
+
+Use structured JSON output from the LLM rather than parsing free-form text.
+
+Do not hallucinate missing information. Mark uncertain/generated values appropriately and make them editable.
+
+STEP 2 — HUMAN REVIEW
+
+Display a polished review screen before anything is published.
+
+Show:
+
+AI detected:
+
+Type: Troubleshooting
+Title: Firmware 4.8.2 Adaptive Polling Workaround
+Department: Engineering
+Source: Teams collaboration
+Status: Draft
+
+Then display editable form fields for all generated information.
+
+Clearly differentiate information extracted from the source from AI-suggested metadata if practical.
+
+Provide:
+
+"Publish to SharePoint"
+"Cancel"
+
+Nothing should be saved automatically.
+
+The user must explicitly publish the knowledge.
+
+STEP 3 — SHAREPOINT STORAGE
+
+On Publish, use the application's EXISTING SharePoint integration.
+
+Before implementing this, inspect the repository for the existing SharePoint sites, lists, libraries, Graph APIs, authentication patterns, and metadata schema.
+
+Do not invent a completely new metadata model if an equivalent field already exists.
+
+Map the knowledge artifact to existing governance metadata, especially fields such as these if they actually exist in the repository:
+
+- ArtifactId
+- KnowledgeCategory
+- LifecycleStatus
+- Authoritative
+- ReviewDate
+- Sensitivity
+- TrustScore
+- AIReady
+
+Set appropriate initial values, for example:
+
+LifecycleStatus = Published
+Authoritative = true
+AIReady = true
+SourceType = Teams Collaboration
+
+Generate a clean knowledge document/page containing:
+
+# Title
+
+## Summary
+
+## Context
+
+## Root Cause
+
+## Decision
+
+## Recommended Action
+
+## Key Facts
+
+## Source
+
+## Governance Information
+
+Do NOT store the complete Teams conversation unless necessary.
+
+The durable knowledge artifact should normally contain the summarized business knowledge plus enough provenance to understand its origin.
+
+This feature must NOT be designed as a mechanism to bypass Teams retention or compliance policies.
+
+STEP 4 — SUCCESS EXPERIENCE
+
+After publishing, show a success state:
+
+"Knowledge preserved"
+
+Display:
+
+- Knowledge title
+- SharePoint location
+- Knowledge category
+- Owner
+- Published date
+- Review date
+- Lifecycle status
+
+Include:
+
+"Open in SharePoint"
+
+and if supported by the existing application:
+
+"Ask AI about this"
+
+STEP 5 — SEARCH / AI INTEGRATION
+
+Reuse the POC's existing Azure AI Search and Foundry IQ architecture.
+
+Do not create a second search system.
+
+The newly published SharePoint artifact should eventually become searchable using the existing ingestion/indexing mechanism.
+
+If the repository has a way to trigger or refresh indexing, expose it appropriately.
+
+If indexing is asynchronous, show status such as:
+
+Published to SharePoint
+Indexing...
+Available to AI
+
+Add a demo query:
+
+"What is the recommended workaround for the firmware 4.8.2 adaptive polling issue and why?"
+
+The existing AI experience should answer using the newly created SharePoint knowledge artifact and provide its normal citation/source link.
+
+STEP 6 — DEMO DASHBOARD
+
+Add a simple visual explanation somewhere in the Knowledge Capture experience:
+
+Teams Chat
+Short-lived conversation
+
+→ Promote important knowledge →
+
+SharePoint
+Governed organizational knowledge
+
+→ Azure AI Search / Foundry IQ →
+
+AI
+Discoverable with citations
+
+Also explain:
+
+Chat = informal / short-lived communication
+Teams Channels = ongoing team/project collaboration
+SharePoint = durable organizational knowledge and authoritative records
+
+Keep this concise and visual.
+
+ARCHITECTURE REQUIREMENTS
+
+1. Reuse the existing repository architecture.
+2. Reuse the existing authentication/security model.
+3. Reuse existing SharePoint services and Graph APIs.
+4. Reuse existing Azure AI Search infrastructure.
+5. Reuse the existing Foundry/LLM integration.
+6. Reuse the existing metadata/schema wherever possible.
+7. Do not hard-code credentials, tenant IDs, site IDs, secrets, URLs, or API keys.
+8. Follow the repository's existing environment-variable/configuration pattern.
+9. Maintain existing functionality.
+10. Add error handling for:
+   - LLM extraction failure
+   - SharePoint write failure
+   - invalid metadata
+   - authentication/authorization failure
+   - indexing delay/failure
+
+SECURITY AND GOVERNANCE
+
+The feature must preserve the customer's compliance intent.
+
+Explicitly avoid implementing automatic archiving of Teams chat.
+
+The design is:
+
+"Promote durable knowledge"
+
+not:
+
+"Preserve chats before retention deletes them."
+
+Only explicitly selected content should enter the workflow.
+
+The user must review the generated knowledge before publishing.
+
+SharePoint remains the durable system of record.
+
+Use the existing SharePoint permission model and do not create broader access to extracted content.
+
+DEMO QUALITY
+
+This is a customer-facing Microsoft POC.
+
+Make the UX polished and simple.
+
+The workflow should feel like:
+
+Select → Save as Knowledge → Review → Publish → Ask AI
+
+Avoid exposing implementation complexity to the end user.
+
+Add loading indicators, validation, useful errors, and success states.
+
+Keep styling consistent with the existing application.
+
+IMPLEMENTATION PROCESS
+
+Before modifying code:
+
+1. Inspect the repository.
+2. Identify the existing frontend architecture.
+3. Identify the backend/API architecture.
+4. Identify existing SharePoint integration.
+5. Identify Azure AI Search integration.
+6. Identify Foundry/LLM integration.
+7. Identify the existing governance metadata schema.
+8. Identify authentication/authorization.
+9. Identify how SharePoint content currently reaches AI Search.
+10. Produce a concise implementation plan listing the files you intend to create or modify.
+
+Then implement the feature completely.
+
+After implementation:
+
+1. Build the application.
+2. Run existing tests.
+3. Fix compilation/type/lint errors caused by your changes.
+4. Add appropriate tests for the new workflow.
+5. Update README documentation.
+6. Add a README section titled "Save to Knowledge Demo".
+7. Document how to configure and run the workflow.
+8. Document the customer demo sequence.
+
+Do not stop after creating mockups or placeholder components.
+
+Implement as much of the working end-to-end feature as the existing repository and configured services support.
+
+Where a real service cannot be exercised locally, create a clean abstraction with a clearly labeled demo/mock implementation so that the customer demo can still run.
+
+At the end, summarize:
+
+- Files changed
+- Architecture changes
+- New APIs/components
+- SharePoint fields used
+- AI extraction schema
+- How indexing works
+- Required configuration
+- How to demo the scenario
+- Any remaining limitations
+
+Start by inspecting the repository and give me the implementation plan. Then proceed with the implementation.
+

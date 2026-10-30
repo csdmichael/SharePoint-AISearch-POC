@@ -1,6 +1,9 @@
 import { addIcons } from 'ionicons';
 import {
+  arrowForwardOutline,
+  bookmarksOutline,
   checkboxOutline,
+  checkmarkCircleOutline,
   checkmarkDoneOutline,
   checkmarkOutline,
   chatbubblesOutline,
@@ -51,7 +54,10 @@ import {
 
 /** Every icon named in layout.json, navigation.json and agent.json. Registered at startup, so no icon is fetched at runtime. */
 export const ICON_REGISTRY: Record<string, string> = {
+  'arrow-forward-outline': arrowForwardOutline,
+  'bookmarks-outline': bookmarksOutline,
   'checkbox-outline': checkboxOutline,
+  'checkmark-circle-outline': checkmarkCircleOutline,
   'checkmark-done-outline': checkmarkDoneOutline,
   'checkmark-outline': checkmarkOutline,
   'chatbubbles-outline': chatbubblesOutline,

@@ -1,0 +1,318 @@
+<ion-content>
+  <div class="page-frame" data-testid="page-knowledge">
+    <h1 class="page-title">{{ 'pages.knowledge' | t }}</h1>
+    <p class="page-subtitle">{{ 'subtitles.knowledge' | t }}</p>
+
+    <app-state-view [state]="view()" (retry)="retry()" />
+
+    @if (view().kind === 'ready' && settingsData(); as data) {
+      <!-- Promote, do not archive: the whole story in one glance -->
+      <section class="journey" data-testid="knowledge-journey" aria-label="Knowledge journey">
+        <div class="journey__node journey__node--chat">
+          <ion-icon [name]="'chatbubbles-outline'" aria-hidden="true" />
+          <strong>{{ 'knowledge.flow.chat.title' | t }}</strong>
+          <span>{{ 'knowledge.flow.chat.body' | t }}</span>
+        </div>
+        <div class="journey__link"><span>{{ 'knowledge.flow.promote' | t }}</span><ion-icon [name]="'arrow-forward-outline'" aria-hidden="true" /></div>
+        <div class="journey__node journey__node--sharepoint">
+          <ion-icon [name]="icons.library" aria-hidden="true" />
+          <strong>{{ 'knowledge.flow.sharepoint.title' | t }}</strong>
+          <span>{{ 'knowledge.flow.sharepoint.body' | t }}</span>
+        </div>
+        <div class="journey__link"><span>{{ 'knowledge.flow.search' | t }}</span><ion-icon [name]="'arrow-forward-outline'" aria-hidden="true" /></div>
+        <div class="journey__node journey__node--ai">
+          <ion-icon [name]="'sparkles-outline'" aria-hidden="true" />
+          <strong>{{ 'knowledge.flow.ai.title' | t }}</strong>
+          <span>{{ 'knowledge.flow.ai.body' | t }}</span>
+        </div>
+      </section>
+
+      <div class="roles" data-testid="knowledge-roles">
+        <span class="roles__title">{{ 'knowledge.roles.heading' | t }}</span>
+        <span>{{ 'knowledge.roles.chat' | t }}</span>
+        <span>{{ 'knowledge.roles.channels' | t }}</span>
+        <span>{{ 'knowledge.roles.sharepoint' | t }}</span>
+      </div>
+      <p class="inline-note principle" data-testid="knowledge-principle">{{ 'knowledge.principle' | t }}</p>
+
+      <ol class="stepper" data-testid="knowledge-stepper">
+        @for (key of stepKeys; track key; let index = $index) {
+          <li class="stepper__item" [class]="'stepper__item ' + stepClass(index)" [attr.aria-current]="stepClass(index) === 'is-current' ? 'step' : null">
+            <span class="stepper__dot">
+              @if (stepClass(index) === 'is-done') {
+                <ion-icon [name]="'checkmark-outline'" aria-hidden="true" />
+              } @else {
+                {{ index + 1 }}
+              }
+            </span>
+            <span class="stepper__label">{{ 'knowledge.steps.' + key | t }}</span>
+          </li>
+        }
+      </ol>
+
+      @switch (step()) {
+        @case ('select') {
+          <section class="panel" data-testid="knowledge-select">
+            <header class="panel__header">
+              <div>
+                <h2 class="section-title">{{ 'knowledge.select.heading' | t }}</h2>
+                <p class="muted">{{ 'knowledge.select.hint' | t }}</p>
+              </div>
+              <app-badge [text]="'knowledge.select.channel' | t" [color]="display.statusColor('draft')" />
+            </header>
+            <div class="chat" role="group" [attr.aria-label]="conversation()?.title">
+              <p class="chat__title">{{ conversation()?.title }} <span class="muted">· {{ conversation()?.channel }}</span></p>
+              @for (message of messages(); track message.id) {
+                <label class="message-row" [class.is-selected]="isSelected(message.id)" data-testid="chat-message" [attr.data-message-id]="message.id">
+                  <input type="checkbox" class="message-row__check" [checked]="isSelected(message.id)" [attr.aria-label]="messageLabel(message)" (change)="toggle(message.id)" />
+                  <span class="message-row__avatar" aria-hidden="true">{{ initialsOf(message.author) }}</span>
+                  <span class="message-row__body">
+                    <span class="message-row__meta">
+                      <strong>{{ message.author }}</strong>
+                      @if (message.role) {<span class="muted">{{ message.role }}</span>}
+                      @if (message.postedAt) {<span class="muted">{{ message.postedAt }}</span>}
+                    </span>
+                    <span class="message-row__text">{{ message.text }}</span>
+                  </span>
+                </label>
+              }
+            </div>
+            <footer class="panel__footer">
+              <span class="muted" data-testid="selected-count" aria-live="polite">{{ selectedText() }}</span>
+              @if (selectedCount() === 0) {
+                <span class="muted">{{ 'knowledge.select.needSelection' | t }}</span>
+              }
+              <button type="button" class="action action--primary" data-testid="save-as-knowledge" [disabled]="!canSave()" (click)="saveAsKnowledge()">
+                <ion-icon [name]="'bookmarks-outline'" aria-hidden="true" />
+                {{ 'knowledge.select.action' | t }}
+              </button>
+            </footer>
+          </section>
+        }
+
+        @case ('extracting') {
+          <section class="panel panel--center" data-testid="knowledge-extracting" role="status">
+            <ion-spinner aria-hidden="true" />
+            <h2 class="section-title">{{ 'knowledge.extracting.title' | t }}</h2>
+            <p class="muted">{{ 'knowledge.extracting.body' | t }}</p>
+          </section>
+        }
+
+        @case ('extractFailed') {
+          <section class="panel panel--center" data-testid="knowledge-extract-failed" role="alert">
+            <ion-icon class="panel__icon panel__icon--warn" [name]="icons.warning" aria-hidden="true" />
+            <h2 class="section-title">{{ 'knowledge.extractFailed.title' | t }}</h2>
+            <p>{{ extractErrorText() }}</p>
+            <p class="muted">{{ 'knowledge.extractFailed.body' | t }}</p>
+            <div class="button-row">
+              <button type="button" class="action action--primary" data-testid="extract-retry" (click)="saveAsKnowledge()">{{ 'knowledge.extractFailed.retry' | t }}</button>
+              <button type="button" class="action" data-testid="extract-manual" (click)="startBlankDraft()">{{ 'knowledge.extractFailed.manual' | t }}</button>
+              <button type="button" class="action" (click)="backToSelection()">{{ 'knowledge.review.back' | t }}</button>
+            </div>
+          </section>
+        }
+
+        @case ('review') {
+          @if (draft(); as current) {
+            <section class="panel" data-testid="knowledge-review">
+              <h2 class="section-title">{{ 'knowledge.review.heading' | t }}</h2>
+
+              <div class="detected" data-testid="ai-detected">
+                <p class="detected__title"><ion-icon [name]="'sparkles-outline'" aria-hidden="true" /> {{ 'knowledge.review.detected' | t }}</p>
+                <dl class="detected__facts">
+                  <div><dt>{{ 'knowledge.review.type' | t }}</dt><dd data-testid="detected-type">{{ value('category') || ('states.notAvailable' | t) }}</dd></div>
+                  <div><dt>{{ 'knowledge.review.titleLabel' | t }}</dt><dd data-testid="detected-title">{{ value('title') || ('states.notAvailable' | t) }}</dd></div>
+                  <div><dt>{{ 'knowledge.review.department' | t }}</dt><dd>{{ value('department') || ('states.notAvailable' | t) }}</dd></div>
+                  <div><dt>{{ 'knowledge.review.source' | t }}</dt><dd>{{ 'knowledge.review.sourceValue' | t }}</dd></div>
+                  <div><dt>{{ 'knowledge.review.status' | t }}</dt><dd><app-badge [text]="current.status" [color]="display.statusColor('draft')" /></dd></div>
+                </dl>
+                <p class="detected__meta muted">
+                  @if (extraction(); as info) {
+                    @if (info.label) {<span data-testid="extraction-label">{{ 'knowledge.review.providerLabel' | t }}: {{ info.label }}</span> · }
+                  }
+                  <span data-testid="confidence">{{ confidenceText() }}</span>
+                </p>
+                @if (lowConfidence()) {
+                  <p class="inline-note inline-note--warn" role="alert" data-testid="low-confidence">{{ 'knowledge.review.lowConfidence' | t }}</p>
+                }
+                @for (warning of extraction()?.warnings ?? []; track warning) {
+                  <p class="inline-note inline-note--warn" role="alert">{{ warning }}</p>
+                }
+              </div>
+
+              <p class="legend muted">
+                {{ 'knowledge.review.legend' | t }}
+                @for (origin of origins; track origin) {
+                  <span class="chip" [attr.data-origin]="origin">{{ originLabel(origin) }}</span>
+                }
+              </p>
+
+              <form class="form-grid" (submit)="$event.preventDefault()" novalidate>
+                @for (spec of fields; track spec.name) {
+                  <div class="field" [class.field--wide]="spec.wide" [attr.data-field]="spec.name">
+                    <label class="field__label" [for]="'kc-' + spec.name">
+                      <span>{{ 'knowledge.fields.' + (spec.name === 'ownerUpn' ? 'owner' : spec.name) | t }}</span>
+                      @if (fieldOrigin(spec); as origin) {
+                        <span class="chip" [attr.data-origin]="origin" [attr.data-testid]="'origin-' + spec.name">{{ originLabel(origin) }}</span>
+                      }
+                    </label>
+                    @switch (spec.kind) {
+                      @case ('area') {
+                        <textarea class="control" [id]="'kc-' + spec.name" [rows]="spec.rows ?? 3" [value]="value(spec.name)" [attr.aria-invalid]="fieldError(spec) !== null" (input)="onInput(spec, $event)"></textarea>
+                      }
+                      @case ('select') {
+                        <select class="control" [id]="'kc-' + spec.name" [attr.aria-invalid]="fieldError(spec) !== null" (change)="onInput(spec, $event)">
+                          @if (spec.name === 'department') {
+                            <option value="" [selected]="value(spec.name) === ''"></option>
+                          }
+                          @for (option of options(spec.name); track option) {
+                            <option [value]="option" [selected]="option === value(spec.name)">{{ option }}</option>
+                          }
+                        </select>
+                      }
+                      @case ('date') {
+                        <input class="control" type="date" [id]="'kc-' + spec.name" [value]="value(spec.name)" [attr.aria-invalid]="fieldError(spec) !== null" (input)="onInput(spec, $event)" />
+                      }
+                      @case ('email') {
+                        <input class="control" type="email" [id]="'kc-' + spec.name" [value]="value(spec.name)" [attr.aria-invalid]="fieldError(spec) !== null" (input)="onInput(spec, $event)" />
+                      }
+                      @default {
+                        <input class="control" type="text" [id]="'kc-' + spec.name" [value]="value(spec.name)" [attr.aria-invalid]="fieldError(spec) !== null" (input)="onInput(spec, $event)" />
+                      }
+                    }
+                    @if (spec.name === 'ownerUpn' && current.ownerMention) {
+                      <span class="muted field__hint">{{ ownerMentionText() }}</span>
+                    }
+                    @if (fieldError(spec); as message) {
+                      <span class="field__error" role="alert" [attr.data-testid]="'error-' + spec.name">{{ message }}</span>
+                    }
+                  </div>
+                }
+              </form>
+
+              <div class="attest">
+                <label class="check"><input type="checkbox" data-testid="authoritative" [checked]="authoritative()" (change)="setAuthoritative($event)" /> {{ 'knowledge.review.authoritative' | t }}</label>
+                <label class="check"><input type="checkbox" data-testid="attest" [checked]="attested()" (change)="setAttested($event)" /> {{ 'knowledge.review.attestation' | t }}</label>
+                @if (visibleErrors().includes('attestation')) {
+                  <span class="field__error" role="alert" data-testid="error-attestation">{{ 'knowledge.errors.attestation' | t }}</span>
+                }
+                <p class="muted">{{ 'knowledge.review.storeNote' | t }}</p>
+              </div>
+
+              @if (showErrors() && errors().length > 0) {
+                <p class="inline-note inline-note--warn" role="alert" data-testid="fix-errors">{{ 'knowledge.review.fixErrors' | t }}</p>
+              }
+              @if (publishError(); as problem) {
+                <div class="inline-note inline-note--error" role="alert" data-testid="publish-error">
+                  <strong>{{ 'knowledge.publishFailed.title' | t }}.</strong> {{ publishErrorText() }}
+                </div>
+              }
+
+              <footer class="panel__footer">
+                <button type="button" class="action" data-testid="review-cancel" [disabled]="publishing()" (click)="backToSelection()">{{ 'knowledge.review.cancel' | t }}</button>
+                <button type="button" class="action action--primary" data-testid="publish" [disabled]="publishing()" (click)="publish()">
+                  @if (publishing()) {
+                    <ion-spinner name="dots" aria-hidden="true" />
+                    {{ 'knowledge.review.publishing' | t }}
+                  } @else {
+                    <ion-icon [name]="icons.send" aria-hidden="true" />
+                    {{ 'knowledge.review.publish' | t }}
+                  }
+                </button>
+              </footer>
+            </section>
+          }
+        }
+
+        @case ('done') {
+          @if (result(); as published) {
+            <section class="panel panel--success" data-testid="knowledge-success">
+              <header class="success__header">
+                <ion-icon class="success__icon" [name]="'checkmark-circle-outline'" aria-hidden="true" />
+                <h2 class="section-title" data-testid="success-title">{{ 'knowledge.success.title' | t }}</h2>
+              </header>
+              <dl class="definition-list" data-testid="success-facts">
+                <dt>{{ 'knowledge.review.titleLabel' | t }}</dt><dd>{{ published.title }}</dd>
+                <dt>{{ 'knowledge.success.location' | t }}</dt><dd>{{ locationText(published) }}</dd>
+                <dt>{{ 'knowledge.success.category' | t }}</dt><dd>{{ published.category }}</dd>
+                <dt>{{ 'knowledge.success.owner' | t }}</dt><dd>{{ published.ownerName }}</dd>
+                <dt>{{ 'knowledge.success.published' | t }}</dt><dd>{{ i18n.date(published.publishedAt) }}</dd>
+                <dt>{{ 'knowledge.success.reviewDate' | t }}</dt><dd>{{ i18n.date(published.reviewDate) }}</dd>
+                <dt>{{ 'knowledge.success.lifecycle' | t }}</dt><dd>{{ published.lifecycleStatus }}</dd>
+                <dt>{{ 'knowledge.success.aiReady' | t }}</dt><dd>{{ (published.aiReady ? 'document.yes' : 'document.no') | t }}</dd>
+                <dt>{{ 'knowledge.success.trust' | t }}</dt><dd>{{ published.trustScore }}/100</dd>
+              </dl>
+
+              @if (published.demo) {
+                <p class="inline-note inline-note--warn" data-testid="demo-note">{{ 'knowledge.success.demoNote' | t }}</p>
+              }
+              @if (!published.aiReady) {
+                <div class="inline-note inline-note--warn" role="alert">
+                  {{ 'knowledge.success.notAiReady' | t }}
+                  <ul>@for (blocker of published.aiReadyBlockers; track blocker) {<li>{{ blocker }}</li>}</ul>
+                </div>
+              }
+              @for (warning of published.warnings; track warning) {
+                @if (!published.demo) {<p class="muted">{{ warning }}</p>}
+              }
+              @if (published.skippedFields.length > 0) {
+                <p class="muted">{{ skippedText(published) }}</p>
+              }
+
+              <div class="tracker" data-testid="indexing-tracker">
+                <h3 class="tracker__title">{{ 'knowledge.indexing.heading' | t }}</h3>
+                <ol class="tracker__steps">
+                  @for (key of indexSteps; track key) {
+                    <li class="tracker__step" [attr.data-state]="stepState(key)" [attr.data-step]="key">
+                      <span class="tracker__dot">
+                        @if (stepState(key) === 'done') {<ion-icon [name]="'checkmark-outline'" aria-hidden="true" />}
+                        @else if (stepState(key) === 'active') {<ion-spinner name="dots" aria-hidden="true" />}
+                      </span>
+                      <span>{{ 'knowledge.indexing.' + key | t }}</span>
+                    </li>
+                  }
+                </ol>
+                @if (indexing(); as status) {
+                  <p class="muted" data-testid="indexing-message" aria-live="polite" [attr.data-stage]="status.stage">
+                    <strong>{{ stageLabel(status.stage) }}.</strong> {{ status.message }}
+                  </p>
+                  @if (status.canTrigger) {
+                    <button type="button" class="action action--sm" data-testid="refresh-index" [disabled]="refreshing()" (click)="refreshIndex()">
+                      <ion-icon [name]="icons.retry" aria-hidden="true" />
+                      {{ (refreshing() ? 'knowledge.indexing.refreshing' : 'knowledge.indexing.refresh') | t }}
+                    </button>
+                  }
+                }
+              </div>
+
+              <div class="button-row">
+                @if (sharePointUrl(published); as url) {
+                  <a class="action action--primary" data-testid="open-sharepoint" [href]="url" target="_blank" rel="noopener noreferrer">
+                    <ion-icon [name]="icons.externalLink" aria-hidden="true" />
+                    {{ 'knowledge.success.open' | t }}
+                  </a>
+                } @else {
+                  <button type="button" class="action" data-testid="download-demo" (click)="downloadDemoDocument()">
+                    <ion-icon [name]="'document-text-outline'" aria-hidden="true" />
+                    {{ 'knowledge.success.openDemo' | t }}
+                  </button>
+                }
+                <button type="button" class="action action--primary" data-testid="ask-ai" (click)="askAi()">
+                  <ion-icon [name]="'sparkles-outline'" aria-hidden="true" />
+                  {{ 'knowledge.success.ask' | t }}
+                </button>
+                <button type="button" class="action" data-testid="capture-another" (click)="captureAnother()">{{ 'knowledge.success.another' | t }}</button>
+              </div>
+
+              <div class="demo-query">
+                <strong>{{ 'knowledge.demoQuery.heading' | t }}</strong>
+                <span class="muted">{{ 'knowledge.demoQuery.body' | t }}</span>
+                <q data-testid="demo-query">{{ askPrompt() }}</q>
+              </div>
+            </section>
+          }
+        }
+      }
+    }
+  </div>
+</ion-content>

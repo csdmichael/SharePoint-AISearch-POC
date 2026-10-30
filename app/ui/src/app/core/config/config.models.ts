@@ -20,6 +20,12 @@ export const ENDPOINT_KEYS = [
   'notificationDrafts',
   'notificationApprove',
   'notificationSend',
+  'knowledgeConfig',
+  'knowledgeExtract',
+  'knowledgeBlankDraft',
+  'knowledgePublish',
+  'knowledgeIndexing',
+  'knowledgeDocument',
 ] as const;
 
 export type EndpointKey = (typeof ENDPOINT_KEYS)[number];

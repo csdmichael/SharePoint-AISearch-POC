@@ -1,4 +1,5 @@
-"""Microsoft Graph client (v1.0). Used for sharing links, drive items, file content, users, groups and sendMail."""
+"""Microsoft Graph client (v1.0). Used for sharing links, drive items, file content, users, groups, sendMail and the
+Save to Knowledge upload."""
 
 from __future__ import annotations
 
@@ -97,6 +98,41 @@ class GraphClient:
             f"{self._base}/groups/{quote(group_id, safe='')}/owners/microsoft.graph.user",
             {"$select": "id,displayName,userPrincipalName,accountEnabled"},
         )
+
+    def site_lists(self, site_id: str) -> Iterator[dict[str, Any]]:
+        return self._pages(f"{self._base}/sites/{quote(site_id, safe='')}/lists", {"$select": "id,displayName,name,webUrl"})
+
+    def upload_file(self, drive_id: str, path: str, content: bytes) -> dict[str, Any]:
+        """Creates a new file at a drive-relative path (missing folders are created). Never overwrites: 409 on a clash."""
+
+        url = f"{self._base}/drives/{quote(drive_id, safe='')}/root:/{quote(path, safe='/')}:/content"
+        response = self._http.request(
+            "PUT",
+            url,
+            tokens=self._tokens,
+            headers={"Content-Type": "application/octet-stream"},
+            params={"@microsoft.graph.conflictBehavior": "fail"},
+            content=content,
+        )
+        if response.status_code == 409:
+            raise UpstreamError(self.service, "an item with this name already exists", code="name_conflict",
+                                status_code=409)
+        check_response(self.service, response)
+        payload = response.json()
+        if not isinstance(payload, dict) or not payload.get("id"):
+            raise UpstreamError(self.service, "returned an unexpected payload after the upload")
+        return payload
+
+    def update_item_fields(self, drive_id: str, item_id: str, fields: Mapping[str, Any]) -> None:
+        url = (f"{self._base}/drives/{quote(drive_id, safe='')}/items/{quote(item_id, safe='')}/listItem/fields")
+        response = self._http.request("PATCH", url, tokens=self._tokens, json_body=dict(fields))
+        check_response(self.service, response)
+
+    def delete_drive_item(self, drive_id: str, item_id: str) -> None:
+        url = f"{self._base}/drives/{quote(drive_id, safe='')}/items/{quote(item_id, safe='')}"
+        response = self._http.request("DELETE", url, tokens=self._tokens)
+        if response.status_code != 404:
+            check_response(self.service, response)
 
     def send_mail(self, sender_upn: str, message: dict[str, Any]) -> None:
         url = f"{self._base}/users/{quote(sender_upn, safe='@')}/sendMail"

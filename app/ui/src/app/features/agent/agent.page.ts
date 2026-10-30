@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
 import { IonContent, IonIcon, IonInput, IonTextarea } from '@ionic/angular';
 import { ApiError, asApiError, toApiError } from '../../core/api/api-error';
 import { ApiService } from '../../core/api/api.service';
@@ -44,6 +45,8 @@ export class AgentPage {
   private readonly api = inject(ApiService);
   private readonly config = inject(ConfigService);
   private readonly document = inject(DOCUMENT);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   readonly display = inject(DisplayService);
   readonly i18n = inject(I18nService);
   readonly session = inject(SessionService);
@@ -95,6 +98,20 @@ export class AgentPage {
   readonly stageLabel = computed(() => this.i18n.text(this.stageKeys[Math.min(this.stageIndex(), this.stageKeys.length - 1)]));
 
   constructor() {
+    const requested = this.route.snapshot.queryParamMap.get('prompt');
+    if (requested) {
+      let handed = false;
+      effect(() => {
+        if (handed || this.session.gate() !== 'ready') {
+          return;
+        }
+        handed = true;
+        untracked(() => {
+          void this.router.navigate([], { queryParams: { prompt: null }, queryParamsHandling: 'merge', replaceUrl: true });
+          this.send(requested);
+        });
+      });
+    }
     effect(() => {
       this.api.siteContext();
       untracked(() => {

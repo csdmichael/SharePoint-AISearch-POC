@@ -59,11 +59,13 @@ their tracebacks are logged on the server.
 | `agent-prompts.json` | Provisional sample prompts grouped by issue (intent id). Each intent must exist in `agent.json`. Returned by `GET /api/v1/agent/prompts`. |
 | `analytics.json` | TF-IDF settings; duplicate clustering (`duplicates`); anomaly model (`anomaly`: contamination, estimators, seed, top N, features); expiry date patterns and review grace days (`expiry`); exposure rules and labels (`exposure`); text extraction limits (`extraction`); login-name patterns. Exposure severities: critical for anonymous links and Everyone including external users; high for Everyone except external users and orphaned accounts; medium for organization links, external direct grants and broken inheritance; low for specific-people links. |
 | `notifications.json` | `mode` (`dryRun` by default); `outboxPath`; `sender.userPrincipalName` (holds the placeholder `<SENDER_UPN>`); `maxPerBatch` (25); `dedupeWindowHours` (72); `messages` (fallback, refusal and delivery text); `templates` (subject and body per finding id: expired-documents, requires-review, draft-documents, superseded-documents, exact-duplicates, near-duplicates, conflicting-authoritative, conflicts-with-authoritative). |
+| `knowledge-capture.json` | Save to Knowledge: `enabled`; `extraction` (`mode` auto/foundry/demo, `modelDeployment`, limits, review-date window, system prompt); `taxonomy` (categories, departments); `publish` (`mode` demo/graph, target `siteId`, library and folder, artifact ID prefix, source type and system, mappings to the existing `DocumentType` and `KnowledgeCategory` choices); `indexing` (`mode` demo/search, Search service name, indexer template, index aliases, expected delay); `teams.webAppUrl`; `demo` (the simulated Teams conversation, the scripted extraction and the demo question). See "Save to Knowledge Demo" in the root README. |
 
 ## Environment overrides
 
 - `API_CONFIG__<SECTION>__<KEY>` overrides a value in `api.config.json`, for example `API_CONFIG__cors__allowedOrigins`. Nested keys add segments, for example `API_CONFIG__graph__pageSize`.
 - `API_AGENT__<SECTION>__<KEY>` overrides `agent.json`, for example `API_AGENT__foundry__accountName`. There is no override prefix for `analytics.json` or `notifications.json`; edit those files.
+- `API_KNOWLEDGE__<SECTION>__<KEY>` overrides `knowledge-capture.json`, for example `API_KNOWLEDGE__publish__mode=graph`, `API_KNOWLEDGE__extraction__modelDeployment` or `API_KNOWLEDGE__indexing__serviceName`.
 - Key names match case-insensitively. A name that matches no key stops startup.
 - Values take the type of the value they replace: booleans accept true/false, 1/0, yes/no or on/off; numbers must parse; objects must be JSON; other values are text.
 - List values are comma-separated text (`a,b,c`). Use a JSON array (`["a,b","c"]`) when an item contains a comma.
@@ -109,6 +111,15 @@ Paths are relative to `/api/v1`. Every row needs a token with the Auditor role e
 | `POST /notifications/{notificationId}/send` | Send an approved notification (dryRun records only). |
 | `GET /agent/prompts` | Provisional sample prompts for the cleanup issues. |
 | `POST /agent/messages` | Ask a governance question; answered from live evidence. |
+| `GET /knowledge/config` | Save to Knowledge: taxonomy, the demo conversation, and how this deployment extracts, publishes and indexes. |
+| `POST /knowledge/extract` | Turn the selected messages into an editable knowledge draft (structured model output). Saves nothing. |
+| `GET /knowledge/draft/blank` | An empty draft for manual entry when AI extraction fails. |
+| `POST /knowledge/publish` | Validate and publish the reviewed draft to SharePoint with governance metadata. |
+| `GET /knowledge/artifacts/{artifactId}/indexing` | Published, indexing or available to AI. |
+| `POST /knowledge/artifacts/{artifactId}/indexing` | Start the SharePoint indexer now. |
+| `GET /knowledge/artifacts/{artifactId}/document` | Download the generated document (demo publishing only). |
+| `POST /knowledge/teams/draft` | Teams flow: draft from the selected message and return the review Adaptive Card. |
+| `POST /knowledge/teams/publish` | Teams flow: publish the values submitted from the card and return the result card. |
 
 ## Notifications
 

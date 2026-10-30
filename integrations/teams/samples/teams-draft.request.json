@@ -1,0 +1,9 @@
+{
+  "messageText": "We confirmed the qualification issue was caused by firmware 4.8.2. The workaround is to disable adaptive polling until 4.8.3 ships.",
+  "senderName": "Daniel Okafor",
+  "senderRole": "Engineer",
+  "messageId": "1730301240000",
+  "messageLink": "https://teams.microsoft.com/l/message/19:chat-id@thread.v2/1730301240000",
+  "postedAt": "2026-10-30T09:14:00Z",
+  "chatTopic": "ApexDrive X500 qualification"
+}

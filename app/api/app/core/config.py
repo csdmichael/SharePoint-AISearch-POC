@@ -25,9 +25,11 @@ from urllib.parse import urlsplit
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from app.core.governance import Governance, GovernanceDefinitionError
+from app.knowledge.models import KnowledgeExtraction
 
 API_ENV_PREFIX = "API_CONFIG__"
 AGENT_ENV_PREFIX = "API_AGENT__"
+KNOWLEDGE_ENV_PREFIX = "API_KNOWLEDGE__"
 PLACEHOLDER = re.compile(r"<[A-Za-z0-9_ .\-]+>")
 GUID_PATTERN = r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
 TRUE_TEXT = frozenset({"true", "1", "yes", "on"})
@@ -698,6 +700,135 @@ class PromptCatalog(_Model):
         return self
 
 
+class KnowledgeExtractionConfig(_Model):
+    mode: Literal["auto", "foundry", "demo"]
+    modelDeployment: str | None = None
+    timeoutSeconds: float = Field(gt=0)
+    maxMessages: int = Field(ge=1, le=500)
+    maxSourceChars: int = Field(ge=500, le=200000)
+    maxOutputTokens: int = Field(ge=200, le=16000)
+    defaultReviewMonths: int = Field(ge=1, le=120)
+    maxReviewMonths: int = Field(ge=1, le=240)
+    lowConfidenceThreshold: float = Field(ge=0, le=1)
+    demoProviderLabel: str = Field(min_length=1)
+    foundryProviderLabel: str = Field(min_length=1)
+    systemPrompt: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _review_window(self) -> "KnowledgeExtractionConfig":
+        if self.defaultReviewMonths > self.maxReviewMonths:
+            raise ValueError("defaultReviewMonths must not exceed maxReviewMonths")
+        return self
+
+
+class KnowledgeTaxonomyConfig(_Model):
+    categories: list[str] = Field(min_length=1)
+    departments: list[str] = Field(min_length=1)
+    fallbackCategory: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _fallback_listed(self) -> "KnowledgeTaxonomyConfig":
+        if self.fallbackCategory not in self.categories:
+            raise ValueError("fallbackCategory must be one of categories")
+        if len(set(self.categories)) != len(self.categories):
+            raise ValueError("categories must be unique")
+        return self
+
+
+class KnowledgePublishConfig(_Model):
+    mode: Literal["demo", "graph"]
+    siteId: str = Field(min_length=1)
+    libraryName: str = Field(min_length=1)
+    folder: str = Field(min_length=1, pattern=r"^[^\\:*?\"<>|]+$")
+    artifactIdPrefix: str = Field(pattern=r"^[A-Z0-9]{2,8}$")
+    sourceType: str = Field(min_length=1)
+    sourceSystem: str = Field(min_length=1)
+    documentIteration: str = Field(min_length=1)
+    defaultKnowledgeCategory: str = Field(min_length=1)
+    departmentToKnowledgeCategory: dict[str, str] = Field(default_factory=dict)
+    categoryToDocumentType: dict[str, str]
+    demoStatePath: str = Field(min_length=1)
+    maxDocumentBytes: int = Field(ge=1024)
+
+
+class KnowledgeIndexingConfig(_Model):
+    mode: Literal["demo", "search"]
+    serviceName: str | None = None
+    endpointTemplate: str = Field(pattern=r"^https://")
+    apiVersion: str = Field(min_length=1)
+    tokenScope: str = Field(min_length=1)
+    indexerTemplate: str = Field(min_length=1)
+    defaultIndexAlias: str = Field(min_length=1)
+    indexAliasBySiteId: dict[str, str] = Field(default_factory=dict)
+    scheduleHint: str = Field(min_length=1)
+    expectedDelaySeconds: int = Field(ge=1)
+    demoIndexingSeconds: float = Field(ge=0)
+
+
+class DemoMessage(_Model):
+    id: str = Field(min_length=1, max_length=64)
+    author: str = Field(min_length=1)
+    role: str | None = None
+    postedAt: str | None = None
+    text: str = Field(min_length=1)
+
+
+class DemoConversation(_Model):
+    id: str = Field(min_length=1, max_length=64)
+    title: str = Field(min_length=1)
+    channel: str = Field(min_length=1)
+    participants: list[str] = Field(default_factory=list)
+    keyMessageIds: list[str] = Field(min_length=1)
+    messages: list[DemoMessage] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _key_messages_exist(self) -> "DemoConversation":
+        known = {message.id for message in self.messages}
+        unknown = [item for item in self.keyMessageIds if item not in known]
+        if unknown:
+            raise ValueError(f"keyMessageIds names unknown messages: {', '.join(unknown)}")
+        return self
+
+
+class KnowledgeDemoConfig(_Model):
+    query: str = Field(min_length=1)
+    conversation: DemoConversation
+    scriptedExtraction: dict[str, dict[str, Any]] = Field(default_factory=dict)
+
+
+class KnowledgeTeamsConfig(_Model):
+    """The Teams (Power Automate) flow. webAppUrl is the governance web app, used for the 'Ask AI about this' link."""
+
+    webAppUrl: str | None = Field(default=None, pattern=r"^https://")
+
+
+class KnowledgeCaptureConfig(_Model):
+    schemaVersion: str | None = None
+    description: str | None = None
+    enabled: bool
+    extraction: KnowledgeExtractionConfig
+    taxonomy: KnowledgeTaxonomyConfig
+    publish: KnowledgePublishConfig
+    indexing: KnowledgeIndexingConfig
+    teams: KnowledgeTeamsConfig
+    demo: KnowledgeDemoConfig
+
+    @model_validator(mode="after")
+    def _scripted_extractions_valid(self) -> "KnowledgeCaptureConfig":
+        problems: list[str] = []
+        for conversation_id, scripted in self.demo.scriptedExtraction.items():
+            try:
+                parsed = KnowledgeExtraction.model_validate(scripted)
+            except ValidationError as exc:
+                problems.append(f"scriptedExtraction.{conversation_id}: {exc.errors()[0]['msg']}")
+                continue
+            if parsed.category not in self.taxonomy.categories:
+                problems.append(f"scriptedExtraction.{conversation_id}: category '{parsed.category}' is not in taxonomy")
+        if problems:
+            raise ValueError("; ".join(problems))
+        return self
+
+
 class _SharedModel(BaseModel):
     """The shared governance deployment file is read for tenant and site values only. Other sections are ignored."""
 
@@ -770,6 +901,8 @@ class Settings:
     foundry: FoundryTarget
     outbox_path: Path
     applied_overrides: tuple[str, ...]
+    knowledge: KnowledgeCaptureConfig
+    knowledge_state_path: Path
 
 
 T = TypeVar("T", bound=_Model)
@@ -1039,6 +1172,46 @@ def _foundry_target(config: FoundryConfig) -> FoundryTarget:
     )
 
 
+def _check_knowledge(
+    knowledge: KnowledgeCaptureConfig, governance: Governance, sites: tuple[SiteSettings, ...]
+) -> None:
+    """Every value the publisher writes to a Choice column must be an allowed choice of that column."""
+
+    problems: list[str] = []
+    publish = knowledge.publish
+    if publish.siteId.lower() not in {site.site_id for site in sites}:
+        problems.append(f"knowledge-capture.json: publish.siteId '{publish.siteId}' is not a configured SharePoint site")
+    checks = (
+        ("publish.categoryToDocumentType", "DocumentType", list(publish.categoryToDocumentType.values())),
+        ("publish.departmentToKnowledgeCategory", "KnowledgeCategory", list(publish.departmentToKnowledgeCategory.values())),
+        ("publish.defaultKnowledgeCategory", "KnowledgeCategory", [publish.defaultKnowledgeCategory]),
+        ("publish.documentIteration", "DocumentIteration", [publish.documentIteration]),
+    )
+    for label, column, values in checks:
+        allowed = governance.choices(column)
+        problems.extend(
+            f"knowledge-capture.json: {label} value '{value}' is not a choice of the {column} column ({', '.join(allowed)})"
+            for value in values if allowed and value not in allowed
+        )
+    missing = [name for name in knowledge.taxonomy.categories if name not in publish.categoryToDocumentType]
+    if missing:
+        problems.append(f"knowledge-capture.json: publish.categoryToDocumentType is missing {', '.join(missing)}")
+    if publish.sourceSystem not in governance.eligibility.get("approvedSourceSystems", []):
+        problems.append(
+            f"knowledge-capture.json: publish.sourceSystem '{publish.sourceSystem}' is not an approved source system "
+            "in the governance policy, so published content could never be AI-ready"
+        )
+    if knowledge.demo.conversation.id not in knowledge.demo.scriptedExtraction:
+        problems.append("knowledge-capture.json: demo.scriptedExtraction has no entry for the demo conversation")
+    if knowledge.indexing.mode == "search" and not knowledge.indexing.serviceName:
+        problems.append(
+            "knowledge-capture.json: indexing.serviceName is not set. Set it in the file or export "
+            "API_KNOWLEDGE__indexing__serviceName, or use indexing.mode = demo."
+        )
+    if problems:
+        raise ConfigError("\n".join(problems))
+
+
 def load_settings(config_path: str | Path, env: Mapping[str, str] | None = None) -> Settings:
     """Read, override and validate every configuration file. Raises ConfigError on any problem."""
 
@@ -1107,6 +1280,12 @@ def load_settings(config_path: str | Path, env: Mapping[str, str] | None = None)
         raise ConfigError("\n".join(problems))
 
     site_catalog = _site_catalog(deployment)
+    knowledge_raw = _read_object(config_dir / "knowledge-capture.json", "knowledge-capture.json")
+    applied.extend(apply_env_overrides(knowledge_raw, environment, "knowledge-capture.json", KNOWLEDGE_ENV_PREFIX))
+    check_resolved(knowledge_raw, (), "knowledge-capture.json", KNOWLEDGE_ENV_PREFIX)
+    knowledge = _validate(KnowledgeCaptureConfig, knowledge_raw, "knowledge-capture.json")
+    _check_knowledge(knowledge, governance, site_catalog)
+
     default_site_url = _site_settings(
         tenant_id=deployment.azure.tenantId,
         site_id="default",
@@ -1130,4 +1309,6 @@ def load_settings(config_path: str | Path, env: Mapping[str, str] | None = None)
         foundry=_foundry_target(agent.foundry),
         outbox_path=resolve_path(service_root, notifications.outboxPath),
         applied_overrides=tuple(applied),
+        knowledge=knowledge,
+        knowledge_state_path=resolve_path(service_root, knowledge.publish.demoStatePath),
     )

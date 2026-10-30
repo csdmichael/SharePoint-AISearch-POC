@@ -51,6 +51,7 @@ def write_config(
     analytics: dict[str, Any] | None = None,
     notifications: dict[str, Any] | None = None,
     agent: dict[str, Any] | None = None,
+    knowledge: dict[str, Any] | None = None,
 ) -> Path:
     """Copies the real config files into root\\app\\api\\config and applies overrides. Shared paths point at fixtures."""
 
@@ -80,7 +81,11 @@ def write_config(
         "notifications.json": notification_config,
         "agent.json": deep_merge(read_source("agent.json"), agent or {}),
         "agent-prompts.json": read_source("agent-prompts.json"),
+        "knowledge-capture.json": deep_merge(read_source("knowledge-capture.json"), {
+            "publish": {"demoStatePath": str(root / "state" / "knowledge-capture"), "siteId": "default"},
+        }),
     }
+    outputs["knowledge-capture.json"] = deep_merge(outputs["knowledge-capture.json"], knowledge or {})
     for name, content in outputs.items():
         (config_dir / name).write_text(json.dumps(content, indent=2), encoding="utf-8")
     return config_dir / "api.config.json"

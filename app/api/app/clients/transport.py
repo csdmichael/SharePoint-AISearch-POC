@@ -124,6 +124,7 @@ class UpstreamHttp:
         headers: Mapping[str, str] | None = None,
         params: Mapping[str, Any] | None = None,
         json_body: Any = None,
+        content: bytes | None = None,
     ) -> httpx.Response:
         attempt = 0
         while True:
@@ -132,7 +133,7 @@ class UpstreamHttp:
                 request_headers["Authorization"] = f"Bearer {tokens.token()}"
             try:
                 response = self._client.request(
-                    method, url, headers=request_headers, params=params, json=json_body
+                    method, url, headers=request_headers, params=params, json=json_body, content=content
                 )
             except httpx.TimeoutException as exc:
                 if attempt >= self._max_retries:

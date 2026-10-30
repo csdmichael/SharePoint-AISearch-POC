@@ -19,6 +19,11 @@ from app.clients.sharepoint import SharePointClient
 from app.clients.transport import TokenProvider, UpstreamHttp, build_credential
 from app.core.config import Settings
 from app.domain.principals import PrincipalClassifier
+from app.knowledge.demo_answer import DemoKnowledgeAnswerer
+from app.knowledge.extraction import DemoExtractor, Extractor, FoundryExtractor
+from app.knowledge.indexing import DemoIndexing, IndexingProvider, SearchIndexing, search_endpoint
+from app.knowledge.publisher import DemoPublisher, DemoStore, GraphPublisher, SharePointPublisher
+from app.knowledge.service import KnowledgeService, utc_now
 from app.services.access import AccessService
 from app.services.analytics import AnalyticsService
 from app.services.documents import DocumentService
@@ -152,12 +157,77 @@ class Container:
                 transport=transport,
                 sleep=sleep,
             )
+        self.knowledge = self._build_knowledge(
+            settings, graph_tokens_margin=margin, transport=transport, sleep=sleep
+        )
         self.agent = AgentService(
             agent=settings.agent,
             prompts=settings.prompts,
             router=IntentRouter(settings.agent.intents, settings.agent.fallbackIntent),
             context_for=self._agent_context,
             foundry=self.foundry,
+            demo_answer=DemoKnowledgeAnswerer(self.knowledge.store) if self.knowledge.publishing_demo else None,
+        )
+
+    def _build_knowledge(
+        self, settings: Settings, *, graph_tokens_margin: float, transport: httpx.BaseTransport | None,
+        sleep: Callable[[float], None],
+    ) -> KnowledgeService:
+        config = settings.knowledge
+        site = settings.site
+        graph_config = settings.api.graph
+        foundry_target = settings.foundry
+        store = DemoStore(settings.knowledge_state_path)
+
+        extractor: Extractor | None
+        foundry_ready = bool(foundry_target.endpoint and config.extraction.modelDeployment)
+        if config.extraction.mode == "demo" or (config.extraction.mode == "auto" and not foundry_ready):
+            extractor = DemoExtractor(config)
+        elif foundry_ready:
+            extractor = FoundryExtractor(
+                foundry_target,
+                deployment=str(config.extraction.modelDeployment),
+                config=config,
+                sensitivities=settings.governance.choices(settings.governance.column("sensitivity")),
+                tokens=TokenProvider(self.credential, foundry_target.token_scope, refresh_margin_seconds=graph_tokens_margin),
+                max_retry_delay_seconds=graph_config.maxRetryDelaySeconds,
+                transport=transport,
+                sleep=sleep,
+            )
+        else:
+            extractor = None
+
+        publisher: SharePointPublisher
+        if config.publish.mode == "demo":
+            publisher = DemoPublisher(store, config.publish, site)
+        else:
+            publisher = GraphPublisher(
+                config=config.publish, governance=settings.governance, site=site, graph=self.graph,
+                sharepoint=self.sharepoint,
+            )
+
+        indexing: IndexingProvider
+        endpoint = search_endpoint(config.indexing)
+        if config.indexing.mode == "search" and endpoint:
+            indexing = SearchIndexing(
+                config.indexing,
+                site_id=config.publish.siteId.lower(),
+                endpoint=endpoint,
+                tokens=TokenProvider(self.credential, config.indexing.tokenScope, refresh_margin_seconds=graph_tokens_margin),
+                transport=transport,
+                timeout_seconds=graph_config.timeoutSeconds,
+                max_retries=graph_config.maxRetries,
+                backoff_seconds=graph_config.retryBackoffSeconds,
+                max_delay_seconds=graph_config.maxRetryDelaySeconds,
+                sleep=sleep,
+                clock=utc_now,
+            )
+        else:
+            indexing = DemoIndexing(config.indexing, clock=utc_now)
+
+        return KnowledgeService(
+            config=config, governance=settings.governance, site=site, extractor=extractor, publisher=publisher,
+            indexing=indexing, store=store, clock=utc_now,
         )
 
     def _agent_context(self, caller: Caller) -> HandlerContext:

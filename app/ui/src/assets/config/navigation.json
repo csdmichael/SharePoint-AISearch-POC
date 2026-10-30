@@ -11,6 +11,7 @@
     { "id": "access", "route": "/access/by-user", "labelKey": "nav.access", "icon": "key-outline", "group": "governance" },
     { "id": "cleanup", "route": "/cleanup", "labelKey": "nav.cleanup", "icon": "trash-bin-outline", "group": "governance" },
     { "id": "notifications", "route": "/notifications", "labelKey": "nav.notifications", "icon": "notifications-outline", "group": "governance" },
+    { "id": "knowledge", "route": "/knowledge", "labelKey": "nav.knowledge", "icon": "bookmarks-outline", "group": "assistant" },
     { "id": "agent", "route": "/agent", "labelKey": "nav.agent", "icon": "chatbubbles-outline", "group": "assistant" }
   ]
 }
