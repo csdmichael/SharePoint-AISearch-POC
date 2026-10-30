@@ -209,9 +209,9 @@ Sales, Supply Chain, and Yield. Every artifact includes:
   bounded representative-sample observations.
 - Clearly labeled recommended follow-up actions, kept separate from source facts.
 - Charts, lineage diagrams, tables, bullets, and typed source schemas.
-- At least four Word pages with five tables and two visuals, eight PowerPoint
-  slides (with schema pagination when needed), or seven named Excel worksheets
-  with a chart and conditional formatting.
+- Eleven Word pages with twelve tables and four visuals, twelve PowerPoint
+  slides (with schema pagination and governance tables), or eleven named Excel
+  worksheets with a chart and conditional formatting.
 
 SharePoint metadata columns are the 27 governance columns defined in
 `config/governance-policy.json` (for example `ArtifactId`, `KnowledgeCategory`,
