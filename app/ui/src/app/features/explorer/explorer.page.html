@@ -189,21 +189,49 @@
       </section>
 
       <section class="pane pane--detail" data-testid="explorer-detail">
-        <h2 class="section-title">{{ 'explorer.detailHeading' | t }}</h2>
+        <div class="detail-header-row">
+          <h2 class="section-title" style="margin: 0;">{{ 'explorer.detailHeading' | t }}</h2>
+          @if (selectedItem(); as item) {
+            @if (item.kind === 'file') {
+              <div class="detail-tabs">
+                <button
+                  type="button"
+                  class="action action--sm"
+                  [class.action--primary]="detailTab() === 'preview'"
+                  (click)="setDetailTab('preview')"
+                  data-testid="detail-preview-tab"
+                >
+                  <ion-icon name="eye-outline" aria-hidden="true" />
+                  <span>Document Preview</span>
+                </button>
+                <button
+                  type="button"
+                  class="action action--sm"
+                  [class.action--primary]="detailTab() === 'details'"
+                  (click)="setDetailTab('details')"
+                  data-testid="detail-metadata-tab"
+                >
+                  <ion-icon name="information-circle-outline" aria-hidden="true" />
+                  <span>Metadata</span>
+                </button>
+              </div>
+            }
+          }
+        </div>
         @if (selectedItem(); as item) {
           <h3 class="detail__name" data-testid="detail-name">{{ item.name }}</h3>
-          @if (item.kind === 'file') {
-            <div class="detail-tabs">
-              <button type="button" class="action action--sm" [class.action--primary]="detailTab() === 'details'" (click)="setDetailTab('details')">
-                {{ 'explorer.detailHeading' | t }}
-              </button>
-              <button type="button" class="action action--sm" [class.action--primary]="detailTab() === 'preview'" (click)="setDetailTab('preview')" data-testid="detail-preview-tab">
-                Preview
-              </button>
-            </div>
-          }
           @if (detailTab() === 'preview' && item.kind === 'file') {
-            <app-document-viewer [document]="item" data-testid="document-viewer" />
+            <div class="explorer-viewer-container">
+              <app-document-viewer [document]="item" data-testid="document-viewer" />
+              @if (safeLink(item.webUrl); as link) {
+                <div class="explorer-viewer-footer">
+                  <a class="action action--sm" [href]="link" target="_blank" rel="noopener noreferrer">
+                    <ion-icon [name]="icons.externalLink" aria-hidden="true" />
+                    <span>{{ 'buttons.openInSharePoint' | t }}</span>
+                  </a>
+                </div>
+              }
+            </div>
           } @else {
           <dl class="definition-list">
             <dt>{{ 'explorer.kind' | t }}</dt>

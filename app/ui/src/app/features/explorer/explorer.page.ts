@@ -248,7 +248,7 @@ export class ExplorerPage {
     this.selectedItem.set(item);
     this.selectedPermissionId.set(null);
     this.expandedPrincipals.set(new Set());
-    this.detailTab.set('details');
+    this.detailTab.set(item.kind === 'file' ? 'preview' : 'details');
   }
 
   setDetailTab(tab: 'details' | 'preview'): void {

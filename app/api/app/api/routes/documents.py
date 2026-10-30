@@ -5,7 +5,7 @@ from __future__ import annotations
 import mimetypes
 from typing import Any
 
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, Depends, Path, Query, Request
 from fastapi.responses import Response
 
 from app.api.deps import get_container, resolve_page_size
@@ -23,6 +23,22 @@ MIME_OVERRIDES = {
     ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 }
+
+
+def _resolve_document_container(request: Request, item_id: str, container: Container) -> Container:
+    manager = getattr(request.app.state, "container_manager", None)
+    if manager is None:
+        return container
+    library_id = item_id.split(".")[0].lower()
+    for lib in container.libraries.configured():
+        if lib.id == library_id:
+            return container
+    for site_id in manager.site_ids():
+        candidate = manager.for_site(site_id)
+        for lib in candidate.libraries.configured():
+            if lib.id == library_id:
+                return candidate
+    return container
 
 
 @router.get("/documents", summary="Governance list of documents, filtered and paged")
@@ -53,18 +69,22 @@ def list_documents(
 
 @router.get("/documents/{itemId}", summary="One document with trust reasons, conflicts and duplicate status")
 def document_detail(
+    request: Request,
     item_id: str = Path(alias="itemId", pattern=ITEM_PATTERN),
     container: Container = Depends(get_container),
 ) -> dict[str, Any]:
-    return container.documents.detail(item_id)
+    target_container = _resolve_document_container(request, item_id, container)
+    return target_container.documents.detail(item_id)
 
 
 @router.get("/documents/{itemId}/content", summary="Raw file bytes for the in-page viewer (PDF, video, text)")
 def document_content(
+    request: Request,
     item_id: str = Path(alias="itemId", pattern=ITEM_PATTERN),
     container: Container = Depends(get_container),
 ) -> Response:
-    content, name, extension = container.documents.content(item_id)
+    target_container = _resolve_document_container(request, item_id, container)
+    content, name, extension = target_container.documents.content(item_id)
     media_type = MIME_OVERRIDES.get(extension) or mimetypes.guess_type(name)[0] or "application/octet-stream"
     return Response(
         content=content,
@@ -75,8 +95,11 @@ def document_content(
 
 @router.get("/documents/{itemId}/preview", summary="Structured preview (paragraphs/sheets/slides) for docx, xlsx, pptx")
 def document_preview(
+    request: Request,
     item_id: str = Path(alias="itemId", pattern=ITEM_PATTERN),
     container: Container = Depends(get_container),
 ) -> dict[str, Any]:
-    return container.documents.preview(item_id)
+    target_container = _resolve_document_container(request, item_id, container)
+    return target_container.documents.preview(item_id)
+
 

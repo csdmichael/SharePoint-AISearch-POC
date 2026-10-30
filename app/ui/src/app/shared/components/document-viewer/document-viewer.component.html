@@ -1,29 +1,43 @@
 @switch (state().status) {
   @case ('loading') {
     <div class="viewer-fallback">
-      <ion-icon name="hourglass-outline" class="viewer-fallback__icon" aria-hidden="true" />
-      <p>Loading preview…</p>
+      <ion-icon name="sync-outline" class="viewer-fallback__icon spinning" aria-hidden="true" />
+      <p>Loading document preview…</p>
     </div>
   }
   @case ('error') {
     <div class="viewer-fallback">
-      <ion-icon name="warning-outline" class="viewer-fallback__icon" aria-hidden="true" />
-      <p>This document could not be loaded for preview.</p>
+      <ion-icon name="warning-outline" class="viewer-fallback__icon" style="color: #d97706;" aria-hidden="true" />
+      <p>This document could not be previewed directly in the page.</p>
+      @if (document()?.webUrl) {
+        <a [href]="document()!.webUrl" target="_blank" rel="noopener noreferrer" class="action action--sm action--primary">
+          <ion-icon name="open-outline" aria-hidden="true" />
+          <span>Open in SharePoint / Office</span>
+        </a>
+      }
     </div>
   }
   @case ('unsupported') {
     <div class="viewer-fallback">
       <ion-icon name="document-outline" class="viewer-fallback__icon" aria-hidden="true" />
-      <p>Preview isn't available for this file type.</p>
+      <p>In-page preview is not available for this file type.</p>
+      @if (document()?.webUrl) {
+        <a [href]="document()!.webUrl" target="_blank" rel="noopener noreferrer" class="action action--sm action--primary">
+          <ion-icon name="open-outline" aria-hidden="true" />
+          <span>Open in SharePoint</span>
+        </a>
+      }
     </div>
   }
   @case ('ready') {
     @switch (document() ? viewerType(document()!.name) : 'other') {
       @case ('pdf') {
-        <iframe [src]="safeResourceUrl(state().objectUrl)" class="doc-viewer-frame" title="Document viewer"></iframe>
+        <iframe [src]="safeResourceUrl(state().objectUrl)" class="doc-viewer-frame" title="PDF viewer"></iframe>
       }
       @case ('media') {
-        <video [src]="state().objectUrl" controls class="doc-viewer-video"></video>
+        <div class="doc-viewer-media-wrap">
+          <video [src]="state().objectUrl" controls class="doc-viewer-video"></video>
+        </div>
       }
       @case ('text') {
         <pre class="doc-viewer-text">{{ state().textContent }}</pre>
@@ -39,23 +53,25 @@
               }
             }
             @for (table of state().preview!.tables; track $index) {
-              <table class="doc-preview-table">
-                <tbody>
-                  @for (row of table; track $index) {
-                    <tr>
-                      @for (cell of row; track $index) {
-                        <td>{{ cell }}</td>
-                      }
-                    </tr>
-                  }
-                </tbody>
-              </table>
+              <div class="doc-preview-table-wrap">
+                <table class="doc-preview-table">
+                  <tbody>
+                    @for (row of table; track $index) {
+                      <tr>
+                        @for (cell of row; track $index) {
+                          <td>{{ cell }}</td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
             }
           }
           @if (state().preview?.kind === 'pptx') {
             @for (slide of state().preview!.slides; track slide.number) {
               <div class="doc-preview-slide">
-                <h3 class="doc-preview-heading">{{ slide.number }}. {{ slide.title }}</h3>
+                <h4 class="doc-preview-slide-title">{{ slide.number }}. {{ slide.title }}</h4>
                 @for (block of slide.blocks; track $index) {
                   @if (block.lines) {
                     <ul class="doc-preview-bullets">
@@ -65,17 +81,19 @@
                     </ul>
                   }
                   @if (block.table) {
-                    <table class="doc-preview-table">
-                      <tbody>
-                        @for (row of block.table; track $index) {
-                          <tr>
-                            @for (cell of row; track $index) {
-                              <td>{{ cell }}</td>
-                            }
-                          </tr>
-                        }
-                      </tbody>
-                    </table>
+                    <div class="doc-preview-table-wrap">
+                      <table class="doc-preview-table">
+                        <tbody>
+                          @for (row of block.table; track $index) {
+                            <tr>
+                              @for (cell of row; track $index) {
+                                <td>{{ cell }}</td>
+                              }
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
                   }
                 }
               </div>
@@ -83,18 +101,22 @@
           }
           @if (state().preview?.kind === 'xlsx') {
             @for (sheet of state().preview!.sheets; track sheet.name) {
-              <h3 class="doc-preview-heading">{{ sheet.name }}</h3>
-              <table class="doc-preview-table">
-                <tbody>
-                  @for (row of sheet.rows; track $index) {
-                    <tr>
-                      @for (cell of row; track $index) {
-                        <td>{{ cell }}</td>
+              <div class="doc-preview-sheet">
+                <h4 class="doc-preview-sheet-title">{{ sheet.name }}</h4>
+                <div class="doc-preview-table-wrap">
+                  <table class="doc-preview-table">
+                    <tbody>
+                      @for (row of sheet.rows; track $index) {
+                        <tr>
+                          @for (cell of row; track $index) {
+                            <td>{{ cell }}</td>
+                          }
+                        </tr>
                       }
-                    </tr>
-                  }
-                </tbody>
-              </table>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             }
           }
         </div>
@@ -103,3 +125,4 @@
   }
   @default {}
 }
+

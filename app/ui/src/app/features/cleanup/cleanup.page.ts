@@ -1,18 +1,17 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonIcon, IonLabel, IonSegment, IonSegmentButton } from '@ionic/angular';
 import { forkJoin } from 'rxjs';
 import { ApiError, toApiError } from '../../core/api/api-error';
 import { ApiService } from '../../core/api/api.service';
 import { draftTemplateId } from '../../core/api/api.mappers';
-import { CleanupDraftTemplates, CleanupRecord, DocumentPreview, DocumentRef, ResponseMode } from '../../core/api/models/api.models';
+import { CleanupDraftTemplates, CleanupRecord, DocumentRef, ResponseMode } from '../../core/api/models/api.models';
 import { ConfigService } from '../../core/config/config.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { NavigationService } from '../../core/navigation/navigation';
 import { SessionService, ViewState, resolveViewState } from '../../core/session/session.service';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
+import { DocumentViewerComponent } from '../../shared/components/document-viewer/document-viewer.component';
 import { StateViewComponent } from '../../shared/components/state-view/state-view.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { CursorList } from '../../shared/util/cursor-list';
@@ -28,22 +27,11 @@ export interface ComparisonPair {
   duplicate: DocumentRef;
 }
 
-/** In-page viewer state for one document pane. 'media' covers PDF (iframe) and video (video tag); both use objectUrl. */
-export interface DocumentViewerState {
-  status: 'idle' | 'loading' | 'ready' | 'error' | 'unsupported';
-  objectUrl: string | null;
-  textContent: string | null;
-  preview: DocumentPreview | null;
-  error: string | null;
-}
-
-const IDLE_VIEWER: DocumentViewerState = { status: 'idle', objectUrl: null, textContent: null, preview: null, error: null };
-
 /** Cleanup segments (duplicates, expiry, anomalies, exposure). Rows can be selected and drafted as notifications. */
 @Component({
   selector: 'app-cleanup-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonIcon, IonLabel, IonSegment, IonSegmentButton, RouterLink, NgTemplateOutlet, BadgeComponent, StateViewComponent, TranslatePipe],
+  imports: [IonContent, IonIcon, IonLabel, IonSegment, IonSegmentButton, RouterLink, BadgeComponent, DocumentViewerComponent, StateViewComponent, TranslatePipe],
   templateUrl: './cleanup.page.html',
   styleUrl: './cleanup.page.scss',
   host: { class: 'ion-page' },
@@ -51,7 +39,6 @@ const IDLE_VIEWER: DocumentViewerState = { status: 'idle', objectUrl: null, text
 export class CleanupPage {
   private readonly api = inject(ApiService);
   private readonly config = inject(ConfigService);
-  private readonly sanitizer = inject(DomSanitizer);
   readonly display = inject(DisplayService);
   readonly i18n = inject(I18nService);
   readonly navigation = inject(NavigationService);
@@ -62,8 +49,6 @@ export class CleanupPage {
 
   readonly selectedComparison = signal<ComparisonPair | null>(null);
   readonly viewerTab = signal<'viewer' | 'metadata'>('viewer');
-  readonly canonicalViewer = signal<DocumentViewerState>(IDLE_VIEWER);
-  readonly duplicateViewer = signal<DocumentViewerState>(IDLE_VIEWER);
 
   readonly segment = signal(this.config.pages.cleanup.defaultSegment);
 
@@ -158,14 +143,10 @@ export class CleanupPage {
   openComparison(canonical: DocumentRef, duplicate: DocumentRef): void {
     this.selectedComparison.set({ canonical, duplicate });
     this.viewerTab.set('viewer');
-    this.loadViewer(canonical, this.canonicalViewer);
-    this.loadViewer(duplicate, this.duplicateViewer);
   }
 
   closeComparison(): void {
     this.selectedComparison.set(null);
-    this.revokeAndReset(this.canonicalViewer);
-    this.revokeAndReset(this.duplicateViewer);
   }
 
   setViewerTab(tab: 'viewer' | 'metadata'): void {
@@ -199,48 +180,6 @@ export class CleanupPage {
       default:
         return { label: 'File Document', icon: 'document-outline', color: '#6B7280', viewerType: 'other' };
     }
-  }
-
-  /** Angular requires an explicitly trusted SafeResourceUrl for iframe src (used for the PDF viewer). */
-  safeResourceUrl(url: string | null): SafeResourceUrl | null {
-    return url ? this.sanitizer.bypassSecurityTrustResourceUrl(url) : null;
-  }
-
-  /** Loads a document into its pane for in-page rendering: a blob (pdf/video/text) or a structured preview (office). */
-  private loadViewer(document: DocumentRef, target: ReturnType<typeof signal<DocumentViewerState>>): void {
-    this.revokeAndReset(target);
-    const viewerType = this.fileTypeInfo(document.name).viewerType;
-    if (viewerType === 'other') {
-      target.set({ ...IDLE_VIEWER, status: 'unsupported' });
-      return;
-    }
-    target.set({ ...IDLE_VIEWER, status: 'loading' });
-    if (viewerType === 'office') {
-      this.api.documentPreview(document.id).subscribe({
-        next: (preview) => target.set({ ...IDLE_VIEWER, status: 'ready', preview }),
-        error: (error: unknown) => target.set({ ...IDLE_VIEWER, status: 'error', error: toApiError(error).kind }),
-      });
-      return;
-    }
-    this.api.documentContent(document.id).subscribe({
-      next: (blob) => {
-        if (viewerType === 'text') {
-          blob.text().then((textContent) => target.set({ ...IDLE_VIEWER, status: 'ready', textContent }));
-        } else {
-          const objectUrl = URL.createObjectURL(blob);
-          target.set({ ...IDLE_VIEWER, status: 'ready', objectUrl });
-        }
-      },
-      error: (error: unknown) => target.set({ ...IDLE_VIEWER, status: 'error', error: toApiError(error).kind }),
-    });
-  }
-
-  private revokeAndReset(target: ReturnType<typeof signal<DocumentViewerState>>): void {
-    const current = target();
-    if (current.objectUrl) {
-      URL.revokeObjectURL(current.objectUrl);
-    }
-    target.set(IDLE_VIEWER);
   }
 
   selectAll(): void {

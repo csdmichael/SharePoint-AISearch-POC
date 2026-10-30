@@ -17,6 +17,7 @@ interface ViewerState {
   objectUrl: string | null;
   textContent: string | null;
   preview: DocumentPreview | null;
+  error?: string;
 }
 
 const IDLE_STATE: ViewerState = { status: 'idle', objectUrl: null, textContent: null, preview: null };
@@ -37,63 +38,79 @@ export class DocumentViewerComponent {
   private readonly api = inject(ApiService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly destroyRef = inject(DestroyRef);
+  private activeObjectUrl: string | null = null;
 
   readonly document = input<ViewableDocument | null>(null);
   readonly state = signal<ViewerState>(IDLE_STATE);
 
   constructor() {
-    effect((onCleanup) => {
-      const doc = this.document();
-      this.revoke();
-      if (!doc) {
-        this.state.set(IDLE_STATE);
-        return;
-      }
-      const type = this.viewerType(doc.name);
-      if (type === 'other') {
-        this.state.set({ ...IDLE_STATE, status: 'unsupported' });
-        return;
-      }
-      this.state.set({ ...IDLE_STATE, status: 'loading' });
-      let cancelled = false;
-      onCleanup(() => {
-        cancelled = true;
-      });
-      if (type === 'office') {
-        this.api.documentPreview(doc.id).subscribe({
-          next: (preview) => {
-            if (!cancelled) this.state.set({ ...IDLE_STATE, status: 'ready', preview });
+    effect(
+      (onCleanup) => {
+        const doc = this.document();
+        this.revokeObjectUrl();
+        if (!doc) {
+          this.state.set(IDLE_STATE);
+          return;
+        }
+        const type = this.viewerType(doc.name);
+        if (type === 'other') {
+          this.state.set({ ...IDLE_STATE, status: 'unsupported' });
+          return;
+        }
+        this.state.set({ ...IDLE_STATE, status: 'loading' });
+        let cancelled = false;
+        onCleanup(() => {
+          cancelled = true;
+          this.revokeObjectUrl();
+        });
+
+        if (type === 'office') {
+          this.api.documentPreview(doc.id).subscribe({
+            next: (preview) => {
+              if (!cancelled) {
+                this.state.set({ ...IDLE_STATE, status: 'ready', preview });
+              }
+            },
+            error: () => {
+              if (!cancelled) {
+                this.state.set({ ...IDLE_STATE, status: 'error', error: 'Document preview could not be loaded.' });
+              }
+            },
+          });
+          return;
+        }
+
+        this.api.documentContent(doc.id).subscribe({
+          next: (blob) => {
+            if (cancelled) return;
+            if (type === 'text') {
+              blob.text().then((textContent) => {
+                if (!cancelled) {
+                  this.state.set({ ...IDLE_STATE, status: 'ready', textContent });
+                }
+              });
+            } else {
+              this.activeObjectUrl = URL.createObjectURL(blob);
+              this.state.set({ ...IDLE_STATE, status: 'ready', objectUrl: this.activeObjectUrl });
+            }
           },
           error: () => {
-            if (!cancelled) this.state.set({ ...IDLE_STATE, status: 'error' });
+            if (!cancelled) {
+              this.state.set({ ...IDLE_STATE, status: 'error', error: 'Document content could not be loaded.' });
+            }
           },
         });
-        return;
-      }
-      this.api.documentContent(doc.id).subscribe({
-        next: (blob) => {
-          if (cancelled) return;
-          if (type === 'text') {
-            blob.text().then((textContent) => {
-              if (!cancelled) this.state.set({ ...IDLE_STATE, status: 'ready', textContent });
-            });
-          } else {
-            const objectUrl = URL.createObjectURL(blob);
-            this.state.set({ ...IDLE_STATE, status: 'ready', objectUrl });
-          }
-        },
-        error: () => {
-          if (!cancelled) this.state.set({ ...IDLE_STATE, status: 'error' });
-        },
-      });
-    });
-    this.destroyRef.onDestroy(() => this.revoke());
+      },
+      { allowSignalWrites: true },
+    );
+
+    this.destroyRef.onDestroy(() => this.revokeObjectUrl());
   }
 
-  private revoke(): void {
-    const current = this.state();
-    if (current.objectUrl) {
-      URL.revokeObjectURL(current.objectUrl);
+  private revokeObjectUrl(): void {
+    if (this.activeObjectUrl) {
+      URL.revokeObjectURL(this.activeObjectUrl);
+      this.activeObjectUrl = null;
     }
   }
 
