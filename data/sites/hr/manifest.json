@@ -6,7 +6,7 @@
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/employee-handbook-code-of-conduct.docx"
   },
   {
@@ -16,7 +16,7 @@
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/employee-handbook-code-of-conduct (copy).docx"
   },
   {
@@ -26,7 +26,7 @@
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/employee-handbook-code-of-conduct (edited copy).docx"
   },
   {
@@ -36,7 +36,7 @@
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/flexible-work-and-remote-work-policy.docx"
   },
   {
@@ -46,317 +46,327 @@
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/paid-time-off-and-leave-of-absence-policy.docx"
   },
   {
     "artifact_id": "HR-DOC-006",
+    "filename": "parental-and-family-leave-policy.docx",
+    "title": "Parental and Family Leave Policy",
+    "category": "HR Policies",
+    "source_table": "corp.hr.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
+    "relative_path": "HR Policies/parental-and-family-leave-policy.docx"
+  },
+  {
+    "artifact_id": "HR-DOC-007",
     "filename": "workplace-safety-and-incident-reporting-policy.docx",
     "title": "Workplace Safety and Incident Reporting Policy",
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/workplace-safety-and-incident-reporting-policy.docx"
   },
   {
-    "artifact_id": "HR-DOC-007",
+    "artifact_id": "HR-DOC-008",
     "filename": "data-privacy-and-confidentiality-policy.docx",
     "title": "Data Privacy and Confidentiality Policy",
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/data-privacy-and-confidentiality-policy.docx"
   },
   {
-    "artifact_id": "HR-DOC-008",
+    "artifact_id": "HR-DOC-009",
     "filename": "diversity-equity-and-inclusion-policy.docx",
     "title": "Diversity, Equity, and Inclusion Policy",
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/diversity-equity-and-inclusion-policy.docx"
   },
   {
-    "artifact_id": "HR-DOC-009",
+    "artifact_id": "HR-DOC-010",
     "filename": "global-workplace-governance-architecture-deck.pptx",
     "title": "Global Workplace Governance Architecture Deck",
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/global-workplace-governance-architecture-deck.pptx"
   },
   {
-    "artifact_id": "HR-DOC-010",
+    "artifact_id": "HR-DOC-011",
     "filename": "global-workplace-governance-architecture-deck (copy).pptx",
     "title": "Global Workplace Governance Architecture Deck (Copy)",
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/global-workplace-governance-architecture-deck (copy).pptx"
   },
   {
-    "artifact_id": "HR-DOC-011",
+    "artifact_id": "HR-DOC-012",
     "filename": "global-workplace-governance-architecture-deck (edited copy).pptx",
     "title": "Global Workplace Governance Architecture Deck (Edited Copy)",
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/global-workplace-governance-architecture-deck (edited copy).pptx"
   },
   {
-    "artifact_id": "HR-DOC-012",
+    "artifact_id": "HR-DOC-013",
     "filename": "enterprise-hr-policy-compliance-master-workbook.xlsx",
     "title": "Enterprise HR Policy Compliance Master Workbook",
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/enterprise-hr-policy-compliance-master-workbook.xlsx"
   },
   {
-    "artifact_id": "HR-DOC-013",
+    "artifact_id": "HR-DOC-014",
     "filename": "enterprise-hr-policy-compliance-master-workbook (copy).xlsx",
     "title": "Enterprise HR Policy Compliance Master Workbook (Copy)",
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/enterprise-hr-policy-compliance-master-workbook (copy).xlsx"
   },
   {
-    "artifact_id": "HR-DOC-014",
+    "artifact_id": "HR-DOC-015",
     "filename": "enterprise-hr-policy-compliance-master-workbook (edited copy).xlsx",
     "title": "Enterprise HR Policy Compliance Master Workbook (Edited Copy)",
     "category": "HR Policies",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "HR Policies/enterprise-hr-policy-compliance-master-workbook (edited copy).xlsx"
   },
   {
-    "artifact_id": "HR-DOC-015",
+    "artifact_id": "HR-DOC-016",
     "filename": "manager-s-guide-to-structured-interviewing.docx",
     "title": "Manager's Guide to Structured Interviewing",
     "category": "Recruiting and Onboarding",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Recruiting and Onboarding/manager-s-guide-to-structured-interviewing.docx"
   },
   {
-    "artifact_id": "HR-DOC-016",
+    "artifact_id": "HR-DOC-017",
     "filename": "new-hire-30-60-90-day-onboarding-plan.docx",
     "title": "New Hire 30-60-90 Day Onboarding Plan",
     "category": "Recruiting and Onboarding",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Recruiting and Onboarding/new-hire-30-60-90-day-onboarding-plan.docx"
   },
   {
-    "artifact_id": "HR-DOC-017",
+    "artifact_id": "HR-DOC-018",
     "filename": "background-check-and-offer-approval-matrix.xlsx",
     "title": "Background Check and Offer Approval Matrix",
     "category": "Recruiting and Onboarding",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Recruiting and Onboarding/background-check-and-offer-approval-matrix.xlsx"
   },
   {
-    "artifact_id": "HR-DOC-018",
+    "artifact_id": "HR-DOC-019",
     "filename": "employee-referral-program-guide.docx",
     "title": "Employee Referral Program Guide",
     "category": "Recruiting and Onboarding",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Recruiting and Onboarding/employee-referral-program-guide.docx"
   },
   {
-    "artifact_id": "HR-DOC-019",
+    "artifact_id": "HR-DOC-020",
     "filename": "recruiting-pipeline-and-requisition-tracker.xlsx",
     "title": "Recruiting Pipeline and Requisition Tracker",
     "category": "Recruiting and Onboarding",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Recruiting and Onboarding/recruiting-pipeline-and-requisition-tracker.xlsx"
   },
   {
-    "artifact_id": "HR-DOC-020",
+    "artifact_id": "HR-DOC-021",
     "filename": "talent-acquisition-operating-review-deck.pptx",
     "title": "Talent Acquisition Operating Review Deck",
     "category": "Recruiting and Onboarding",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Recruiting and Onboarding/talent-acquisition-operating-review-deck.pptx"
   },
   {
-    "artifact_id": "HR-DOC-021",
+    "artifact_id": "HR-DOC-022",
     "filename": "global-talent-funnel-and-onboarding-analytics-report.pdf",
     "title": "Global Talent Funnel and Onboarding Analytics Report",
     "category": "Recruiting and Onboarding",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Recruiting and Onboarding/global-talent-funnel-and-onboarding-analytics-report.pdf"
   },
   {
-    "artifact_id": "HR-DOC-022",
+    "artifact_id": "HR-DOC-023",
     "filename": "annual-merit-increase-cycle-guide.docx",
     "title": "Annual Merit Increase Cycle Guide",
     "category": "Compensation and Benefits",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Compensation and Benefits/annual-merit-increase-cycle-guide.docx"
   },
   {
-    "artifact_id": "HR-DOC-023",
+    "artifact_id": "HR-DOC-024",
     "filename": "health-plan-comparison-guide.pdf",
     "title": "Health Plan Comparison Guide",
     "category": "Compensation and Benefits",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Compensation and Benefits/health-plan-comparison-guide.pdf"
   },
   {
-    "artifact_id": "HR-DOC-024",
+    "artifact_id": "HR-DOC-025",
     "filename": "401-k-enrollment-and-employer-match-guide.docx",
     "title": "401(k) Enrollment and Employer Match Guide",
     "category": "Compensation and Benefits",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Compensation and Benefits/401-k-enrollment-and-employer-match-guide.docx"
   },
   {
-    "artifact_id": "HR-DOC-025",
+    "artifact_id": "HR-DOC-026",
     "filename": "annual-bonus-plan-structure.pdf",
     "title": "Annual Bonus Plan Structure",
     "category": "Compensation and Benefits",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Compensation and Benefits/annual-bonus-plan-structure.pdf"
   },
   {
-    "artifact_id": "HR-DOC-026",
+    "artifact_id": "HR-DOC-027",
     "filename": "relocation-assistance-policy.docx",
     "title": "Relocation Assistance Policy",
     "category": "Compensation and Benefits",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Compensation and Benefits/relocation-assistance-policy.docx"
   },
   {
-    "artifact_id": "HR-DOC-027",
+    "artifact_id": "HR-DOC-028",
     "filename": "performance-improvement-plan-template-and-guide.docx",
     "title": "Performance Improvement Plan Template and Guide",
     "category": "Employee Relations",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Employee Relations/performance-improvement-plan-template-and-guide.docx"
   },
   {
-    "artifact_id": "HR-DOC-028",
+    "artifact_id": "HR-DOC-029",
     "filename": "workplace-investigation-checklist.docx",
     "title": "Workplace Investigation Checklist",
     "category": "Employee Relations",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Employee Relations/workplace-investigation-checklist.docx"
   },
   {
-    "artifact_id": "HR-DOC-029",
+    "artifact_id": "HR-DOC-030",
     "filename": "grievance-and-appeals-procedure.docx",
     "title": "Grievance and Appeals Procedure",
     "category": "Employee Relations",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Employee Relations/grievance-and-appeals-procedure.docx"
   },
   {
-    "artifact_id": "HR-DOC-030",
+    "artifact_id": "HR-DOC-031",
     "filename": "exit-interview-summary-and-themes-report.pdf",
     "title": "Exit Interview Summary and Themes Report",
     "category": "Employee Relations",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Employee Relations/exit-interview-summary-and-themes-report.pdf"
   },
   {
-    "artifact_id": "HR-DOC-031",
+    "artifact_id": "HR-DOC-032",
     "filename": "employee-relations-case-tracker.xlsx",
     "title": "Employee Relations Case Tracker",
     "category": "Employee Relations",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Employee Relations/employee-relations-case-tracker.xlsx"
   },
   {
-    "artifact_id": "HR-DOC-032",
+    "artifact_id": "HR-DOC-033",
     "filename": "leadership-development-curriculum.pptx",
     "title": "Leadership Development Curriculum",
     "category": "Learning and Development",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Learning and Development/leadership-development-curriculum.pptx"
   },
   {
-    "artifact_id": "HR-DOC-033",
+    "artifact_id": "HR-DOC-034",
     "filename": "compliance-training-completion-tracker.xlsx",
     "title": "Compliance Training Completion Tracker",
     "category": "Learning and Development",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Learning and Development/compliance-training-completion-tracker.xlsx"
   },
   {
-    "artifact_id": "HR-DOC-034",
+    "artifact_id": "HR-DOC-035",
     "filename": "mentorship-program-guide.docx",
     "title": "Mentorship Program Guide",
     "category": "Learning and Development",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Learning and Development/mentorship-program-guide.docx"
   },
   {
-    "artifact_id": "HR-DOC-035",
+    "artifact_id": "HR-DOC-036",
     "filename": "skills-gap-analysis-and-career-pathing-framework.pdf",
     "title": "Skills Gap Analysis and Career Pathing Framework",
     "category": "Learning and Development",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Learning and Development/skills-gap-analysis-and-career-pathing-framework.pdf"
   },
   {
-    "artifact_id": "HR-DOC-036",
+    "artifact_id": "HR-DOC-037",
     "filename": "manager-essentials-workshop-deck.pptx",
     "title": "Manager Essentials Workshop Deck",
     "category": "Learning and Development",
     "source_table": "corp.hr.knowledge_assets",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Learning and Development/manager-essentials-workshop-deck.pptx"
   },
   {
@@ -366,7 +376,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/q1-open-enrollment-planning-review.vtt"
   },
   {
@@ -376,7 +386,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/q1-open-enrollment-planning-review.txt"
   },
   {
@@ -386,7 +396,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/new-hire-onboarding-process-audit.vtt"
   },
   {
@@ -396,7 +406,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/new-hire-onboarding-process-audit.txt"
   },
   {
@@ -406,7 +416,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/annual-performance-calibration-session.vtt"
   },
   {
@@ -416,7 +426,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/annual-performance-calibration-session.txt"
   },
   {
@@ -426,7 +436,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/employee-relations-case-review.vtt"
   },
   {
@@ -436,7 +446,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/employee-relations-case-review.txt"
   },
   {
@@ -446,7 +456,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/dei-employee-resource-group-budget-planning.vtt"
   },
   {
@@ -456,7 +466,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/dei-employee-resource-group-budget-planning.txt"
   },
   {
@@ -466,7 +476,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/compensation-benchmarking-data-review.vtt"
   },
   {
@@ -476,7 +486,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/compensation-benchmarking-data-review.txt"
   },
   {
@@ -486,7 +496,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/manager-essentials-workshop-debrief.vtt"
   },
   {
@@ -496,7 +506,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/manager-essentials-workshop-debrief.txt"
   },
   {
@@ -506,7 +516,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/referral-program-performance-review.vtt"
   },
   {
@@ -516,7 +526,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/referral-program-performance-review.txt"
   },
   {
@@ -526,7 +536,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/leadership-development-cohort-kickoff.vtt"
   },
   {
@@ -536,7 +546,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/leadership-development-cohort-kickoff.txt"
   },
   {
@@ -546,7 +556,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/remote-work-policy-exceptions-review.vtt"
   },
   {
@@ -556,7 +566,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/remote-work-policy-exceptions-review.txt"
   },
   {
@@ -566,7 +576,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/exit-interview-themes-quarterly-readout.vtt"
   },
   {
@@ -576,7 +586,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/exit-interview-themes-quarterly-readout.txt"
   },
   {
@@ -586,7 +596,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/401-k-plan-vendor-check-in.vtt"
   },
   {
@@ -596,7 +606,7 @@
     "category": "Meeting Recordings and Transcripts",
     "source_table": "corp.hr.meeting_recordings",
     "source_system": "SharePoint Online",
-    "profile_generated_at": "2026-10-30T15:38:40.866357+00:00",
+    "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/401-k-plan-vendor-check-in.txt"
   }
 ]
