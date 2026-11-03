@@ -1,11 +1,12 @@
-# SharePoint Semiconductor Knowledge Search
+# SharePoint Content Governance and AI Search
 
-This proof of concept turns source-grounded semiconductor data from Azure
-Databricks into a rich Microsoft 365 document corpus and indexes it directly
-from SharePoint Online with [Azure AI Search](https://learn.microsoft.com/azure/search/search-what-is-azure-search).
-[Foundry IQ](https://learn.microsoft.com/azure/foundry/agents/concepts/what-is-foundry-iq)
-exposes the promoted chunk index through a knowledge source and knowledge base,
-and a Microsoft Foundry prompt agent returns grounded answers with citations.
+This proof of concept uses SharePoint Online as its knowledge source. Microsoft
+Graph APIs help inventory and categorize content and identify duplicate,
+expired, or stale files for cleanup. The goal is to make content across sites
+such as HR, Sales, and Manufacturing searchable through
+[Azure AI Search](https://learn.microsoft.com/azure/search/search-what-is-azure-search),
+so an agent can answer questions using semantic search and citations grounded
+in the source documents.
 
 The solution does **not** copy or stage SharePoint files in Azure Blob Storage.
 SharePoint Online remains the document system of record.
@@ -18,6 +19,7 @@ SharePoint Online remains the document system of record.
    - [Customer setup guide](#customer-setup-guide)
 4. [Architecture](#architecture)
 5. [Data and corpus](#data-and-corpus)
+   - [Cleanup algorithms and effective permissions](#cleanup-algorithms-and-effective-permissions)
 6. [Repository layout](#repository-layout)
 7. [Configuration](#configuration)
 8. [Prerequisites](#prerequisites)
@@ -38,7 +40,7 @@ SharePoint Online remains the document system of record.
 
 | Component | Configuration | Status |
 | --- | --- | --- |
-| Databricks source | Six tables in `{Databricks Catalog}.{Databricks Schema}` | Profiled through `{Profile Source Agent}` |
+| Microsoft Graph governance | SharePoint content inventory, categorization, duplicate and expiry analysis | Integrated |
 | Office corpus | `{DOCX Count}` DOCX, `{PPTX Count}` PPTX, `{XLSX Count}` XLSX | `{Expected Document Count}` structurally validated |
 | Azure AI Search | `{Search SKU}`, `{Azure Region}`, `{Partition Count}` partition, `{Replica Count}` replica | Deployed |
 | Embeddings | `{Embedding Deployment}`, `{Embedding Dimensions}` dimensions | Deployment authorized for Search |
@@ -49,8 +51,8 @@ SharePoint Online remains the document system of record.
 | Feedback loop | `{Feedback Index}` | Deployed and write-tested |
 
 SharePoint Online is a Microsoft 365 service, so the site itself is not an
-Azure resource inside `{Resource Group}`. Azure AI Search, Databricks, Foundry,
-and related Azure resources are in the configured resource group.
+Azure resource inside `{Resource Group}`. Azure AI Search, Foundry, and related
+Azure resources are in the configured resource group.
 
 ## Deployed URLs
 
@@ -61,7 +63,6 @@ and related Azure resources are in the configured resource group.
 | Azure AI Search portal | `https://portal.azure.com/#/resource/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>/providers/Microsoft.Search/searchServices/<SEARCH_SERVICE_NAME>/overview` |
 | Search endpoint | `https://<SEARCH_SERVICE_NAME>.search.windows.net` |
 | Search Explorer | `https://portal.azure.com/#/resource/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>/providers/Microsoft.Search/searchServices/<SEARCH_SERVICE_NAME>/searchExplorer` |
-| Databricks workspace | `https://portal.azure.com/#/resource/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>/providers/Microsoft.Databricks/workspaces/<DATABRICKS_WORKSPACE>/overview` |
 | Foundry resource | `https://portal.azure.com/#/resource/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>/providers/Microsoft.CognitiveServices/accounts/<FOUNDRY_ACCOUNT>/overview` |
 | Foundry IQ agent | `https://ai.azure.com/...` (open from your Foundry project after deployment) |
 
@@ -219,6 +220,45 @@ SharePoint metadata columns are the 27 governance columns defined in
 `LifecycleStatus`, `Authoritative`, `ReviewDate`, `Sensitivity`, `TrustScore`
 and `AIReady`). The Search data sources request them with `additionalColumns`,
 and each projected chunk inherits them as filterable index fields.
+
+### Cleanup algorithms and effective permissions
+
+Cleanup findings combine deterministic rules with statistical and text-similarity
+methods. They identify candidates for owner review; they do not automatically
+delete files or change SharePoint permissions.
+
+- **Exact duplicates:** extract text from supported Office and transcript files,
+  normalize whitespace, then compare a SHA-256 content digest. Matching digests
+  identify exact duplicates.
+- **Near duplicates:** use TF-IDF text vectors and cosine similarity, with
+  agglomerative clustering to group similar documents. A matching numeric
+  fingerprint is also required, so documents with different figures are not
+  silently treated as copies.
+- **Conflicts:** documents in the same configured scope with sufficiently
+  similar text but different numeric fingerprints are surfaced as conflict
+  candidates, rather than merged into a duplicate group. The canonical copy is
+  selected by authoritative status, effective date, and stable artifact ID.
+- **Expiry and review:** configured date patterns extract expiration and review
+  dates from text; these are checked alongside SharePoint governance metadata
+  and review grace periods. This is rule-based date analysis, not a learned
+  expiry predictor.
+- **Anomalies:** Isolation Forest scores unusual combinations of configured
+  document features. Per-feature robust deviation scores explain which values
+  contributed to an outlier; they are explanatory indicators, not causal
+  attributions.
+
+The API combines SharePoint role assignments with Microsoft Graph permissions
+and directory data to report effective access across nested files and folders.
+For role assignments, it checks whether an item has unique permissions; if not,
+it walks up the folder tree to the nearest uniquely secured folder, then falls
+back to the library root or site. Each resulting grant records its source path,
+so inherited access can be distinguished from permissions assigned directly
+to the file or folder. Microsoft Graph drive-item permission data contributes
+sharing-link scope and recipients, and Graph transitive group membership helps
+expand group grants when calculating which users can reach an item. SharePoint
+role assignments are also used for inheritance resolution, with Graph permission
+data as a fallback where applicable; this is a combined Graph and SharePoint
+permission view, not a claim that a single Graph endpoint resolves every ACL.
 
 ### Knowledge hubs, libraries and folders
 
