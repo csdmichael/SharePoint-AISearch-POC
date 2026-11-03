@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { configureBrowser, documentId, routes, signIn } from '../fixtures/signed-in';
+import { configureBrowser, documentId, routes, signIn, testRequestTimeoutMs } from '../fixtures/signed-in';
 
 test('all data pages leave loading, display API failures, and retry', async ({ page }) => {
   const consoleErrors: string[] = [];
@@ -42,7 +42,7 @@ test('a timed-out document request stops loading and recovers on retry', async (
   let slow = true;
   await configureBrowser(page, async (route) => {
     if (slow) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, testRequestTimeoutMs + 1500));
     }
     await route.fulfill({ json: {
       items: [], page: 1, total: 0, totalPages: 1, pageSize: 25, knowledgeCategories: [],
@@ -50,7 +50,7 @@ test('a timed-out document request stops loading and recovers on retry', async (
   });
   await signIn(page);
   await page.goto('/documents');
-  await expect(page.getByTestId('state-view')).toHaveAttribute('data-gate', 'apiUnreachable');
+  await expect(page.getByTestId('state-view')).toHaveAttribute('data-gate', 'apiUnreachable', { timeout: testRequestTimeoutMs + 5000 });
   await expect(page.locator('[data-state="loading"]')).toHaveCount(0);
   slow = false;
   await page.getByTestId('state-retry').click();

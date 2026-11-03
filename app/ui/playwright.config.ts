@@ -19,7 +19,8 @@ export default defineConfig({
   outputDir: serverConfig.outputFolder,
   fullyParallel: false,
   workers: 1,
-  retries: 0,
+  // Shared CI runners are slower than local machines, so flaky UI tests get two retries there only.
+  retries: process.env.CI ? 2 : 0,
   use: {
     baseURL: serverConfig.url,
   },

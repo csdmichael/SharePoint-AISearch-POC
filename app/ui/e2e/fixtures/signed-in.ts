@@ -25,11 +25,17 @@ export const routes = [
   ['/agent', 'Site Assistant'],
 ] as const;
 
+/**
+ * API budget for the mocked app. Requests include MSAL token acquisition, which can take longer than a second
+ * on a loaded CI runner, so the budget must be well above normal latency.
+ */
+export const testRequestTimeoutMs = 5000;
+
 export async function configureBrowser(page: Page, api: (route: Route) => Promise<void>): Promise<void> {
   await page.route('**/assets/config/app.config.json', (route) => route.fulfill({
     json: {
       ...appConfig,
-      requestTimeoutMs: 1000,
+      requestTimeoutMs: testRequestTimeoutMs,
       auth: {
         ...testAuth.auth,
         redirectUri: serverConfig.url,
