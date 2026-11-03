@@ -247,6 +247,118 @@ delete files or change SharePoint permissions.
   contributed to an outlier; they are explanatory indicators, not causal
   attributions.
 
+### Cleanup ML and analytics pipeline
+
+This cleanup pipeline is intentionally a light-weight analytics workflow rather than
+an AI training or file-copying process. The system reads files from SharePoint by
+calling Microsoft Graph. It downloads raw document bytes only when the document
+content is needed for text extraction, and it keeps the extracted normalized text
+in an in-memory `TextCache` (and optionally on disk via `textCachePath` when
+configured). There is no Blob Storage staging step for the clustering work. The
+clustering inputs live in the library corpus in memory, and the analysis results are
+returned by the API and memoized for the library cache TTL; they are not persisted
+as a separate data warehouse table for cleanup.
+
+#### 1) Exact duplicate detection
+
+- Use case: find byte-for-byte or text-equivalent copies of the same document.
+- Algorithm: SHA-256 content digest of normalized text.
+- Explanation: the API extracts text from `.docx`, `.pptx`, `.xlsx`, `.txt`, and
+  `.vtt` files, normalizes whitespace and punctuation, then computes a hash. Any
+  document with the same hash is treated as an exact duplicate.
+- Inputs: raw file bytes from Graph, document extension, normalized text.
+- Outputs: duplicate groups where all members share the same content digest.
+- Example:
+  - Input text: `Procedure v3: ... same steps ...` in two files
+  - Output: both files belong to the same `{exact}` cluster, canonical chosen by
+    authoritative status and effective date.
+- Data flow: Graph `drive_item_content(...)` -> `LibraryCorpus._load_text()` ->
+  `analytics.text.extract_text()` -> `normalize_text()` -> `content_digest()` ->
+  duplicate clustering result in memory.
+
+#### 2) Near duplicate clustering
+
+- Use case: find copies that are not byte-identical but are materially the same
+  document with minor edits or formatting changes.
+- Algorithm: TF-IDF vectorization + cosine similarity + agglomerative clustering.
+- Explanation: each supported document is converted to a weighted term vector,
+  similarity is measured by cosine distance, and documents that meet the threshold
+  and share the same numeric fingerprint are merged into one near-duplicate cluster.
+  The numeric fingerprint prevents false positives where the text is similar but the
+  numbers differ (for example, a revised yield target or revision number).
+- Inputs: normalized extracted text, configured `nearDuplicateCosine`, document
+  fingerprint from numeric values in the text, per-library `DupDoc` records.
+- Outputs: `near` clusters with `cluster_id`, `canonical`, `members`, and similarity
+  metrics.
+- Example:
+  - Input: `Supplier Quality Review v2` and `Supplier Quality Review v3` with the
+    same process and similar wording but only a few changed paragraphs.
+  - Output: same near-duplicate cluster with `canonical=doc_v3`, members
+    `doc_v2`, `doc_v3`, similarity mean `0.97`.
+- Data flow: Graph content download -> text extraction -> `TfidfVectorizer()` ->
+  similarity matrix -> `AgglomerativeClustering()` -> `analyze_duplicates()` -> API
+  `/api/v1/analytics/duplicates` result.
+
+#### 3) Conflict detection and canonical selection
+
+- Use case: identify two authoritative documents that describe the same scope but
+  disagree on numbers or revisions.
+- Algorithm: cosine similarity on document text + numeric fingerprint mismatch +
+  policy-based canonical ranking.
+- Explanation: if documents are in the same configured scope and similar enough but
+  contain different numeric identifiers or values, they are surfaced as conflict
+  candidates instead of duplicates. The canonical copy is chosen by authoritative
+  status, effective date, and artifact ID, so cleanup never silently deletes the
+  authoritative document.
+- Inputs: duplicate candidate pair, scope tuple `(productFamily, processArea,
+  documentType)`, `fingerprint`, `authoritative`, `effectiveDate`.
+- Outputs: `conflicts` list with the two document keys, similarity score and a
+  reason string.
+- Example:
+  - Input: `Yield Analysis Rev-410` and `Yield Analysis Rev-411`, same scope,
+    same section headings, different numbers in the body.
+  - Output: `conflict candidate` with similarity `0.86`, `scope=(Yield, Wafer, Procedure)`.
+- Data flow: near-duplicate pass -> same-scope comparison -> conflict evaluation ->
+  canonical ranking -> API result and UI cleanup page.
+
+#### 4) Anomaly detection for stale or unusual content
+
+- Use case: flag outlier documents that may be stale, unusually exposed, or
+  structurally different from peers.
+- Algorithm: Isolation Forest on a feature matrix.
+- Explanation: the service scores items using features such as age since last
+  modification, duplicate cluster size, principal count, broken inheritance and
+  anonymous links. Isolation Forest learns how documents normally behave in the
+  library and flags the rare ones.
+- Inputs: per-document feature dictionary assembled from the snapshot, permissions,
+  sharing links and duplicate groups.
+- Outputs: anomaly rows with `score`, `rank`, `isAnomaly`, and per-feature
+  contributions explaining why the item was flagged.
+- Example:
+  - Input feature values: `daysSinceModified=340`, `duplicateClusterSize=7`,
+    `anonymousLink=1`.
+  - Output: anomaly rank `#3`, `score=0.82`, contributions show that age and
+    anonymous link are the main drivers.
+- Data flow: library snapshot -> permission + duplicate enrichment -> feature table
+  -> `IsolationForest` -> anomaly rankings -> dashboard and hygiene findings.
+
+#### 5) Expiry and review date analysis
+
+- Use case: find documents whose review or expiration dates are overdue.
+- Algorithm: deterministic date extraction and comparison rules.
+- Explanation: the system scans document text and governance metadata for review and
+  expiration dates, then compares them to the current date and the configured grace
+  period. This is rule-based date analysis, not a learned prediction model.
+- Inputs: document text, SharePoint metadata fields such as `reviewDate` and
+  `expirationDate`.
+- Outputs: `ExpiryFinding` with `expired`, `review_overdue`, and supporting date
+  sources.
+- Example:
+  - Input: text contains `Review date: 2025-03-30` and metadata shows `expires: 2025-02-01`.
+  - Output: `expired=true`, `review_overdue=true`, `days_past_expiration=120`.
+- Data flow: Graph content -> text extraction -> regex date patterns -> expiry
+  analysis -> hygiene and owner notifications.
+
 The API combines SharePoint role assignments with Microsoft Graph permissions
 and directory data to report effective access across nested files and folders.
 For role assignments, it checks whether an item has unique permissions; if not,
