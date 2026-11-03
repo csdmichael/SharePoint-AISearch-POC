@@ -306,6 +306,77 @@ memory; with it configured, the cache can be reloaded after an API restart.
 Graph reads are used for inventory and content retrieval; cleanup analysis does
 not write back to SharePoint.
 
+#### Cleanup architecture
+
+The diagram groups the components by layer. Solid arrows are runtime calls; the
+dashed arrow is the optional disk cache.
+
+```mermaid
+flowchart TB
+    subgraph SRC["Source (Microsoft 365)"]
+        LIB["SharePoint document libraries<br/>Documents, Meeting Recordings"]
+        GOV["Governance columns<br/>review, expiration, owner, authoritative"]
+    end
+
+    subgraph ACC["Access layer (read only)"]
+        MI["API managed identity<br/>Sites.Read.All, Files.Read.All"]
+        GRAPH["GraphClient<br/>app/api/app/clients/graph.py"]
+    end
+
+    subgraph CORP["Corpus layer (per library, in memory)"]
+        SNAP["LibrarySnapshot<br/>items, paths, fields, permissions"]
+        CORPUS["LibraryCorpus<br/>app/api/app/services/corpus.py"]
+        TC["TextCache<br/>keyed by drive item + cTag"]
+        DISK[("Optional text cache file<br/>textCachePath")]
+    end
+
+    subgraph ENG["Analytics engines (app/api/app/analytics)"]
+        TXT["text.py<br/>extract, normalize, SHA-256, numeric fingerprint"]
+        DUP["duplicates.py<br/>exact groups, TF-IDF, agglomerative clustering, conflicts"]
+        EXP["expiry.py<br/>date patterns and metadata rules"]
+        ANO["anomaly.py<br/>IsolationForest and robust contributions"]
+    end
+
+    subgraph SVC["Service and cache layer"]
+        AS["AnalyticsService<br/>app/api/app/services/analytics.py"]
+        MEMO["Memoized results<br/>keyed by library and as-of date"]
+        WARM["CacheWarmer<br/>rebuilds corpora on an interval"]
+        HYG["HygieneService<br/>findings and metrics"]
+    end
+
+    subgraph API["API and UI"]
+        ROUTE["FastAPI routes<br/>/api/v1/analytics/*, /api/v1/hygiene/*"]
+        AUTH["Entra token check<br/>Auditor app role"]
+        UI["Cleanup page<br/>app/ui/src/app/features/cleanup"]
+        AGENT["Foundry agent intents<br/>duplicates, expired-content, anomalies"]
+    end
+
+    LIB --> GRAPH
+    GOV --> GRAPH
+    MI --> GRAPH
+    GRAPH --> SNAP
+    GRAPH -->|"file bytes for changed or uncached items"| CORPUS
+    SNAP --> CORPUS
+    CORPUS <--> TC
+    TC -.-> DISK
+    CORPUS --> TXT
+    TXT --> DUP
+    TXT --> EXP
+    DUP -->|"duplicate-cluster sizes"| ANO
+    SNAP -->|"permissions, links, dates"| ANO
+    DUP --> AS
+    EXP --> AS
+    ANO --> AS
+    AS --> MEMO
+    WARM -->|"fresh=true, then save"| CORPUS
+    WARM --> HYG
+    HYG --> AS
+    MEMO --> ROUTE
+    AUTH --> ROUTE
+    ROUTE --> UI
+    ROUTE --> AGENT
+```
+
 #### 1) Exact duplicate detection
 
 - Use case: find byte-for-byte or text-equivalent copies of the same document.
