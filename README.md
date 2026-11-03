@@ -259,6 +259,53 @@ clustering inputs live in the library corpus in memory, and the analysis results
 returned by the API and memoized for the library cache TTL; they are not persisted
 as a separate data warehouse table for cleanup.
 
+```mermaid
+flowchart LR
+    SPO["SharePoint Online<br/>files + governance metadata"]
+    API["Governance API<br/>library snapshot"]
+    GRAPH["Microsoft Graph<br/>drive item content"]
+    TEXT["Extract supported text<br/>DOCX / PPTX / XLSX / TXT / VTT<br/>normalize whitespace"]
+    CACHE["Extracted-text cache<br/>memory; optional textCachePath on disk"]
+    DOCS["In-memory document records<br/>text + digest + numeric fingerprint + scope"]
+    EXACT["Exact duplicates<br/>SHA-256 digest grouping"]
+    NEAR["Near duplicates<br/>TF-IDF + cosine + agglomerative clustering"]
+    CONFLICT["Conflict candidates<br/>same scope + similar text + different numbers"]
+    EXPIRY["Expiry and review<br/>date-pattern + metadata rules"]
+    FEATURES["Anomaly features<br/>age + permissions + links + duplicate cluster size"]
+    FOREST["Isolation Forest<br/>outlier scores + feature contributions"]
+    RESULTS["API findings<br/>memoized for library cache TTL"]
+    UI["Cleanup UI / API caller<br/>owner review; no automatic deletion"]
+
+    SPO -->|"inventory and metadata"| API
+    API -->|"item IDs, cTags and metadata"| DOCS
+    API -->|"request content as needed"| GRAPH
+    SPO <-->|"read-only Graph access"| GRAPH
+    GRAPH -->|"file bytes on cache miss or changed content tag"| TEXT
+    TEXT --> CACHE
+    CACHE --> DOCS
+    DOCS --> EXACT
+    DOCS --> NEAR
+    DOCS --> CONFLICT
+    DOCS --> EXPIRY
+    API --> FEATURES
+    EXACT --> FEATURES
+    NEAR --> FEATURES
+    API -->|"document text"| EXPIRY
+    FEATURES --> FOREST
+    EXACT --> RESULTS
+    NEAR --> RESULTS
+    CONFLICT --> RESULTS
+    EXPIRY --> RESULTS
+    FOREST --> RESULTS
+    RESULTS --> UI
+```
+
+The optional disk cache stores extracted text, not downloaded source files or
+analysis results. Without `textCachePath`, extracted text remains in process
+memory; with it configured, the cache can be reloaded after an API restart.
+Graph reads are used for inventory and content retrieval; cleanup analysis does
+not write back to SharePoint.
+
 #### 1) Exact duplicate detection
 
 - Use case: find byte-for-byte or text-equivalent copies of the same document.
