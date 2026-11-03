@@ -382,6 +382,38 @@ body {
   background: color-mix(in srgb, var(--ion-color-danger) 8%, var(--surface-card));
 }
 
+/* Changed rows in a document comparison. Striped table cells set their own background, so table rows are
+   tinted with inset shadows, which paint over that background. */
+.is-changed {
+  padding-inline: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ion-color-warning) 14%, transparent);
+  box-shadow: inset 3px 0 0 var(--ion-color-warning);
+}
+
+.doc-preview-table tr.is-changed {
+  background: none;
+  box-shadow: none;
+}
+
+.doc-preview-table tr.is-changed > td {
+  box-shadow: inset 0 0 0 999px color-mix(in srgb, var(--ion-color-warning) 14%, transparent);
+}
+
+.doc-preview-table tr.is-changed > td:first-child {
+  box-shadow: inset 3px 0 0 var(--ion-color-warning), inset 0 0 0 999px color-mix(in srgb, var(--ion-color-warning) 14%, transparent);
+}
+
+/* Page, slide and sheet buttons in the document viewer that contain changes. */
+.pager-btn.has-changes {
+  box-shadow: inset 0 -3px 0 var(--ion-color-warning);
+}
+
+.pager-btn.has-changes:not(.is-active) {
+  border-color: var(--ion-color-warning);
+  background: color-mix(in srgb, var(--ion-color-warning) 18%, var(--surface-card));
+}
+
 /* Panels, form fields and origin chips shared by workflow pages such as Knowledge Capture. */
 .panel {
   display: flex;

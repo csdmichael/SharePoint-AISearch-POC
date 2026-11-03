@@ -149,6 +149,7 @@
               <div>
                 <h2 id="comparison-title" class="comparison-modal__title">Side-by-Side Duplicate Document Comparison</h2>
                 <p class="muted" style="margin: 0; font-size: 0.8125rem;">Compare canonical and candidate duplicate documents side-by-side</p>
+                <p class="muted" style="margin: 0; font-size: 0.8125rem;">Highlighted content differs from the other document; amber page numbers mark pages with changes.</p>
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: var(--space-sm);">
@@ -178,7 +179,11 @@
 
               @if (viewerTab() === 'viewer') {
                 <div class="viewer-container">
-                  <app-document-viewer [document]="pair.canonical" />
+                  <app-document-viewer
+                    [document]="pair.canonical"
+                    [changes]="comparisonChanges()?.canonical ?? null"
+                    (previewLoaded)="onComparisonPreview(pair.canonical.id, $event)"
+                  />
                   <div class="viewer-actions">
                     <span class="file-type-pill">{{ fileTypeInfo(pair.canonical.name).label }}</span>
                     @if (pair.canonical.webUrl) {
@@ -218,7 +223,11 @@
 
               @if (viewerTab() === 'viewer') {
                 <div class="viewer-container">
-                  <app-document-viewer [document]="pair.duplicate" />
+                  <app-document-viewer
+                    [document]="pair.duplicate"
+                    [changes]="comparisonChanges()?.duplicate ?? null"
+                    (previewLoaded)="onComparisonPreview(pair.duplicate.id, $event)"
+                  />
                   <div class="viewer-actions">
                     <span class="file-type-pill">{{ fileTypeInfo(pair.duplicate.name).label }}</span>
                     @if (pair.duplicate.webUrl) {

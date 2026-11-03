@@ -5,7 +5,7 @@ import { forkJoin } from 'rxjs';
 import { ApiError, toApiError } from '../../core/api/api-error';
 import { ApiService } from '../../core/api/api.service';
 import { draftTemplateId } from '../../core/api/api.mappers';
-import { CleanupDraftTemplates, CleanupRecord, DocumentRef, ResponseMode } from '../../core/api/models/api.models';
+import { CleanupDraftTemplates, CleanupRecord, DocumentPreview, DocumentRef, ResponseMode } from '../../core/api/models/api.models';
 import { ConfigService } from '../../core/config/config.service';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { NavigationService } from '../../core/navigation/navigation';
@@ -16,6 +16,7 @@ import { StateViewComponent } from '../../shared/components/state-view/state-vie
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { CursorList } from '../../shared/util/cursor-list';
 import { DisplayService } from '../../shared/util/display.service';
+import { diffDocumentPreviews } from '../../shared/util/document-diff';
 
 interface DraftSummary {
   mode: ResponseMode;
@@ -49,6 +50,22 @@ export class CleanupPage {
 
   readonly selectedComparison = signal<ComparisonPair | null>(null);
   readonly viewerTab = signal<'viewer' | 'metadata'>('viewer');
+  /** Loaded previews by document id. Each viewer reports its preview, and the diff is computed once both are present. */
+  readonly comparisonPreviews = signal<ReadonlyMap<string, DocumentPreview>>(new Map());
+  readonly comparisonChanges = computed(() => {
+    const pair = this.selectedComparison();
+    if (!pair) {
+      return null;
+    }
+    const previews = this.comparisonPreviews();
+    const canonical = previews.get(pair.canonical.id);
+    const duplicate = previews.get(pair.duplicate.id);
+    if (!canonical || !duplicate) {
+      return null;
+    }
+    const { left, right } = diffDocumentPreviews(canonical, duplicate);
+    return { canonical: left, duplicate: right };
+  });
 
   readonly segment = signal(this.config.pages.cleanup.defaultSegment);
 
@@ -149,10 +166,15 @@ export class CleanupPage {
 
   closeComparison(): void {
     this.selectedComparison.set(null);
+    this.comparisonPreviews.set(new Map());
   }
 
   setViewerTab(tab: 'viewer' | 'metadata'): void {
     this.viewerTab.set(tab);
+  }
+
+  onComparisonPreview(documentId: string, preview: DocumentPreview): void {
+    this.comparisonPreviews.update((previews) => new Map(previews).set(documentId, preview));
   }
 
   fileExtension(name: string): string {

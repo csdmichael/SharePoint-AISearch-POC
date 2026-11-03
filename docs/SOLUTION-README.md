@@ -259,7 +259,7 @@ The reusable workflow [_component.yml](../.github/workflows/_component.yml) is t
 | Capability | Status | Notes |
 | --- | --- | --- |
 | Duplicate, near-duplicate and conflict detection | Built & Live | TF-IDF and SHA-256 across `.docx`, `.pptx` and `.xlsx` in the API and `Sync-GovernanceFields.py`. |
-| In-page multi-page document viewer & side-by-side comparison | Built & Live | Renders 10+ page `.docx`, `.pdf`, `.pptx`, `.xlsx` (with tables, embedded diagrams/charts, and page navigation) plus `.mp4` and `.vtt`/`.txt` in `/explorer` and `/cleanup`. |
+| In-page multi-page document viewer & side-by-side comparison | Built & Live | Renders 10+ page `.docx`, `.pdf`, `.pptx`, `.xlsx` (with tables, embedded diagrams/charts, and page navigation) plus `.mp4` and `.vtt`/`.txt` in `/explorer` and `/cleanup`. Side-by-side comparisons highlight changed content and the pages that contain it. |
 | Expiry and review-date detection | Built & Live | Text and metadata dates. |
 | Anomaly detection | Built & Live | IsolationForest, contamination 0.1. |
 | Owner gaps and hygiene metrics | Built & Live | Findings and drill-down across all four knowledge hubs. |

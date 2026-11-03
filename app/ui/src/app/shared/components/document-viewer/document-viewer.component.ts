@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, input, output, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { IonIcon } from '@ionic/angular';
 import { ApiService } from '../../../core/api/api.service';
 import { DocumentPreview, DocumentPreviewSheet, DocumentPreviewSlide } from '../../../core/api/models/api.models';
+import { ChangePart, DocumentChanges, changeKey, previewPages } from '../../util/document-diff';
 
 export interface ViewableDocument {
   id: string;
@@ -41,6 +42,10 @@ export class DocumentViewerComponent {
   private activeObjectUrl: string | null = null;
 
   readonly document = input<ViewableDocument | null>(null);
+  /** Rows that differ from the other document in a comparison. */
+  readonly changes = input<DocumentChanges | null>(null);
+  /** Emits the structured preview once it loads, so a parent can compare it with another document. */
+  readonly previewLoaded = output<DocumentPreview>();
   readonly state = signal<ViewerState>(IDLE_STATE);
   /** null means show all pages/slides/sheets; 1..N means show a single page/slide/sheet. */
   readonly selectedPage = signal<number | null>(null);
@@ -48,17 +53,7 @@ export class DocumentViewerComponent {
 
   readonly pageItems = computed<DocumentPreviewSlide[]>(() => {
     const p = this.state().preview;
-    if (!p) return [];
-    if (p.kind === 'pptx' && p.slides?.length) return p.slides;
-    if ((p.kind === 'docx' || p.kind === 'pdf') && p.pages?.length) return p.pages;
-    if (p.kind === 'docx' && (p.blocks?.length || p.tables?.length)) {
-      const blocks = [
-        ...(p.blocks ?? []),
-        ...(p.tables ?? []).map((table) => ({ kind: 'table' as const, table })),
-      ];
-      return [{ number: 1, title: 'Page 1', blocks }];
-    }
-    return [];
+    return p ? previewPages(p) : [];
   });
 
   readonly sheetItems = computed<DocumentPreviewSheet[]>(() => {
@@ -121,6 +116,7 @@ export class DocumentViewerComponent {
           next: (preview) => {
             if (!cancelled) {
               this.state.set({ ...IDLE_STATE, status: 'ready', preview });
+              this.previewLoaded.emit(preview);
             }
           },
           error: () => {
@@ -184,6 +180,14 @@ export class DocumentViewerComponent {
         }
       },
     });
+  }
+
+  hasChanges(unit: number): boolean {
+    return this.changes()?.units.has(unit) ?? false;
+  }
+
+  isChanged(unit: number, part: ChangePart, row = 0): boolean {
+    return this.changes()?.rows.has(changeKey(unit, part, row)) ?? false;
   }
 
   selectPage(pageNumber: number | null): void {

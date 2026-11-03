@@ -776,7 +776,7 @@ flows.**
 | `/documents` | Titles, pagination, sorting, category and **Document Iteration** filters (`Draft`, `Ready`, etc.) with quick "Drafts Only" toggle | File reads, governance schema, and `DocumentIteration` column |
 | `/documents/<library-guid>.<item-number>` | Open a real document link, then refresh; still renders detail | Static SPA deep-link fallback and an actual file ID, not a folder ID |
 | `/access/by-user` | Slick compact view with key fields, expandable row details, client-side pagination, user deduplication, and CSV export | SharePoint permission enumeration, group membership and user reads |
-| `/cleanup` | Check **Duplicates, Expiry, Anomalies and Exposure** individually; test **Side-by-Side Duplicate Viewer** for Word, PPT, Excel, and PDF files | Content reads, deduplication analysis, and Office/PDF web preview integration |
+| `/cleanup` | Check **Duplicates, Expiry, Anomalies and Exposure** individually; test **Side-by-Side Duplicate Viewer** for Word, PPT, Excel, and PDF files, and confirm changed content and pages are highlighted | Content reads, deduplication analysis, and Office/PDF web preview integration |
 | `/notifications` | All status tabs load; draft/preview/approve only against test data | Writable outbox and dry-run mode |
 | `/agent` | Prompts load; answers render markdown tables, visual metrics charts, positive/negative draft filtering tests, and direct export to Excel, Word, and PowerPoint | Same live data grants; optional Foundry project/model/role |
 | Signed out / unauthorized | Data is gated; missing token gets 401, missing Auditor role gets 403 | Incoming API authentication and role assignment |

@@ -564,7 +564,9 @@ for desktop, web, tablet, and mobile displays:
 - **Side-by-Side Duplicate Viewer (`/cleanup`):** Under the Duplicates segment,
   open the canonical document and its candidate duplicate (`.docx`, `.pptx`, or
   `.xlsx`) next to each other. Both panes render the multi-page content in the
-  page using the same `<app-document-viewer>` component.
+  page using the same `<app-document-viewer>` component. Changed rows are
+  highlighted in both panes, and each pagination control highlights the page,
+  slide or sheet numbers that contain changes.
 - **Document filtering (`/documents`):** Filter by lifecycle status, data quality
   and authority. Draft content is excluded from retrieval by the knowledge base
   filter (`lifecycle_status eq 'Published'`).

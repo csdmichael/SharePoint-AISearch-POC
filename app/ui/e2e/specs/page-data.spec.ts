@@ -230,6 +230,59 @@ test('compare side by side opens the modal and renders both documents in page', 
   await expect(page.locator('.comparison-overlay')).toBeVisible();
 });
 
+test('compare side by side highlights changed content and the pages that contain it', async ({ page }) => {
+  await setup(page);
+  const copy = { ...document, id: `${libraryId}.99`, name: 'Test guide (copy).docx', path: '/Test/Test guide (copy).docx' };
+  const section = (number: number, body: string, status: string) => ({
+    number,
+    title: `Section ${number}`,
+    blocks: [
+      { kind: 'heading', text: `Section ${number}` },
+      { kind: 'paragraph', text: body },
+      { kind: 'table', table: [['Control', 'Status'], [`CTRL-${number}`, status]] },
+    ],
+  });
+  await page.route('**/api/v1/analytics/duplicates*', (route) => route.fulfill({
+    json: {
+      exact: [{ clusterId: 'c1', libraryId, kind: 'exact', reason: 'same hash', canonical: documentId, size: 2,
+        members: [{ ...document, role: 'canonical' }, { ...copy, role: 'duplicate' }] }],
+      near: [], asOfDate: '2026-10-28', libraries: [],
+    },
+  }));
+  await page.route(`**/api/v1/documents/${documentId}/preview*`, (route) => route.fulfill({
+    json: {
+      kind: 'docx', name: document.name, pageCount: 3, blocks: [], tables: [],
+      pages: [section(1, 'Stable intro', 'Verified'), section(2, 'Retention is 12 weeks', 'Verified'), section(3, 'Escalation path', 'Verified')],
+    },
+  }));
+  await page.route(`**/api/v1/documents/${copy.id}/preview*`, (route) => route.fulfill({
+    json: {
+      kind: 'docx', name: copy.name, pageCount: 3, blocks: [], tables: [],
+      pages: [section(1, 'Stable intro', 'Verified'), section(2, 'Retention is 16 weeks', 'Verified'), section(3, 'Escalation path', 'Pending')],
+    },
+  }));
+  await page.goto('/cleanup');
+  await page.getByRole('button', { name: 'Compare Side-by-Side' }).click();
+  const dialog = page.getByRole('dialog', { name: /Side-by-Side/ });
+  const canonicalViewer = dialog.locator('app-document-viewer').nth(0);
+  const duplicateViewer = dialog.locator('app-document-viewer').nth(1);
+
+  await expect(canonicalViewer.locator('.is-changed')).toHaveCount(2);
+  await expect(canonicalViewer.locator('p.is-changed')).toHaveText('Retention is 12 weeks');
+  await expect(canonicalViewer.locator('tr.is-changed')).toContainText('CTRL-3');
+  await expect(duplicateViewer.locator('.is-changed')).toHaveCount(2);
+  await expect(duplicateViewer.locator('p.is-changed')).toHaveText('Retention is 16 weeks');
+  await expect(duplicateViewer.locator('tr.is-changed')).toContainText('Pending');
+
+  for (const viewer of [canonicalViewer, duplicateViewer]) {
+    const pageButtons = viewer.getByTestId('viewer-page-btn');
+    await expect(pageButtons).toHaveCount(3);
+    await expect(pageButtons.nth(0)).not.toHaveClass(/has-changes/);
+    await expect(pageButtons.nth(1)).toHaveClass(/has-changes/);
+    await expect(pageButtons.nth(2)).toHaveClass(/has-changes/);
+  }
+});
+
 test('explorer renders the viewer between the tree and the permissions and navigates multi-page docs', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await setup(page);

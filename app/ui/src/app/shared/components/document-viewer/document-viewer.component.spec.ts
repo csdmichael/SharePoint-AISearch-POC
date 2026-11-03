@@ -13,6 +13,8 @@ import stringsConfig from '../../../../assets/config/strings.json';
 import themeConfig from '../../../../assets/config/theme.json';
 import pagesConfig from '../../../../assets/config/pages.json';
 import { registerIcons } from '../../../core/icons/icon-registry';
+import { DocumentPreview } from '../../../core/api/models/api.models';
+import { diffDocumentPreviews } from '../../util/document-diff';
 
 describe('DocumentViewerComponent', () => {
   let component: DocumentViewerComponent;
@@ -99,5 +101,30 @@ describe('DocumentViewerComponent', () => {
     expect(component.selectedPage()).toBe(5);
     component.selectPage(null);
     expect(component.visiblePages().length).toBe(12);
+  });
+
+  it('reports its loaded preview and highlights changes passed in by a comparison', () => {
+    const introPage = { number: 1, title: 'Intro', blocks: [{ kind: 'paragraph' as const, text: 'Same text' }] };
+    const termsPage = { number: 2, title: 'Terms', blocks: [{ kind: 'paragraph' as const, text: 'Retention is 12 weeks' }] };
+    const preview: DocumentPreview = { kind: 'docx', name: 'handbook.docx', pageCount: 2, pages: [introPage, termsPage], blocks: [], tables: [] };
+    const edited: DocumentPreview = {
+      ...preview,
+      pages: [introPage, { ...termsPage, blocks: [{ kind: 'paragraph' as const, text: 'Retention is 16 weeks' }] }],
+    };
+    apiService.documentPreview.and.returnValue(of(preview));
+    const loaded: DocumentPreview[] = [];
+    component.previewLoaded.subscribe((value) => loaded.push(value));
+
+    fixture.componentRef.setInput('document', { id: 'handbook.1', name: 'handbook.docx' });
+    fixture.detectChanges();
+    expect(loaded).toEqual([preview]);
+
+    fixture.componentRef.setInput('changes', diffDocumentPreviews(preview, edited).left);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const changed = Array.from(element.querySelectorAll('.is-changed'), (node) => node.textContent?.trim());
+    expect(changed).toEqual(['Retention is 12 weeks']);
+    const pageButtons = Array.from(element.querySelectorAll<HTMLButtonElement>('[data-testid="viewer-page-btn"]'));
+    expect(pageButtons.map((button) => button.classList.contains('has-changes'))).toEqual([false, true]);
   });
 });
