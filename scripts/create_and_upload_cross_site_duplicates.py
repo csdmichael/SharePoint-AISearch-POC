@@ -1,4 +1,4 @@
-"""Generate and upload cross-site duplicate documents with controlled page-level differences.
+"""Generate and upload cross-site duplicate documents with randomized page-level differences.
 
 This script implements:
 1. Four SharePoint sites:
@@ -9,8 +9,9 @@ This script implements:
 2. Per site in data/sites/<siteId>:
    - Base document
    - Exact copy (100% identical, same page count)
-   - Near duplicate (same page count, differences in only 2 pages, remaining pages identical)
-   - Extended duplicate (+2 more pages, differences in 1 existing page + 2 newly added pages)
+   - Edited copy (same page count, wording edits on 2 randomly chosen pages)
+   - Extended copy (+2 appended pages, wording edits on 3 randomly chosen pages)
+   Each edit sits at a seeded-random position on its page (see duplicate_variations.py).
 3. Uploads to all 4 SharePoint sites via Microsoft Graph API.
 4. Computes exact percentage similarity (overall & page-by-page) and highlights differences.
 """
@@ -35,6 +36,11 @@ from typing import Any
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt, RGBColor
+
+try:
+    from .duplicate_variations import EDITED_COPY_PAGES, EXTENDED_COPY_EDITED_PAGES, write_variant
+except ImportError:
+    from duplicate_variations import EDITED_COPY_PAGES, EXTENDED_COPY_EDITED_PAGES, write_variant
 
 
 def get_graph_token(tenant_id: str = "12a4b86b-e64c-43f9-af05-d9130a72dfd2") -> str:
@@ -163,41 +169,11 @@ def generate_manufacturing_docs():
     # Ensure exact copy is 100% identical
     shutil.copy2(base_path, copy_path)
 
-    # 1. Generate Edited Copy (same 5 pages, only pages 2 and 4 different)
-    doc_edited = Document(str(base_path))
-    # P2: paragraphs 10-15
-    doc_edited.paragraphs[12].text = (
-        "Operational requirement 2.1: Dimensional verification utilizes calibrated laser micrometers and coordinate "
-        "measuring machines (CMM) logged daily against the ISO 17025 metrology schedule. Secondary control 2.2: "
-        "Nonconforming lots are quarantined immediately with electronic ERP hold tags and physical red containment locks "
-        "pending Material Review Board disposition within 4 business hours."
-    )
-    doc_edited.paragraphs[13].text = (
-        "Automated optical inspection (AOI) verification gate added for high-tolerance fastener threading."
-    )
-    doc_edited.paragraphs[14].text = (
-        "Quarantine disposition protocol requires joint electronic sign-off from Quality Engineering and Plant Operations Lead."
-    )
+    write_variant(base_path, edited_path, pages=EDITED_COPY_PAGES, kind="edited")
+    write_variant(base_path, extended_path, pages=EXTENDED_COPY_EDITED_PAGES, kind="extended")
 
-    # P4: paragraphs 27-32
-    doc_edited.paragraphs[29].text = (
-        "Operational requirement 4.1: Suppliers are formally issued an electronic SCAR (Supplier Corrective Action Request) "
-        "within 8 business hours of any lot rejection with full digital coordinate measurement scans. Secondary control 4.2: "
-        "Sampling adheres to an ANSI/ASQ Z1.4 Level II tightened inspection plan (AQL 0.65) for any vendor exhibiting repeated dimensional variance."
-    )
-    doc_edited.paragraphs[30].text = (
-        "Target supplier defect containment SLA is compressed from 14 calendar days to 3 business days."
-    )
-    doc_edited.paragraphs[31].text = (
-        "Supplier first-pass yield target benchmark elevated to 99.4% for critical tier-1 structural brackets."
-    )
-    doc_edited.save(edited_path)
-
-    # 2. Generate Extended Copy (7 pages: 5 + 2 extra pages, with page 2 modified)
-    doc_ext = Document(str(base_path))
-    doc_ext.paragraphs[12].text = doc_edited.paragraphs[12].text
-    doc_ext.paragraphs[13].text = doc_edited.paragraphs[13].text
-    doc_ext.paragraphs[14].text = doc_edited.paragraphs[14].text
+    # Reopen the extended copy so the appended pages follow its edited base pages
+    doc_ext = Document(str(extended_path))
 
     # Page 6: Appendix A
     doc_ext.add_page_break()
@@ -276,41 +252,11 @@ def generate_sales_docs():
     # Ensure exact copy is 100% identical
     shutil.copy2(base_path, copy_path)
 
-    # 1. Generate Edited Copy (same 6 pages, only pages 2 and 4 different)
-    doc_edited = Document(str(base_path))
-    # P2: paragraphs 10-15
-    doc_edited.paragraphs[12].text = (
-        "Operational requirement 2.1: Rigorously qualify MEDDPICC criteria (Metrics, Economic Buyer, Decision Criteria, "
-        "Decision Process, Paper Process, Identify Pain, Champion, Competition) prior to committing Solutions Architecture resources. "
-        "Secondary control 2.2: Synchronize AI-transcribed meeting highlights, customer pain quantification, and mutually agreed "
-        "action plan milestones into Salesforce CRM within 2 business hours."
-    )
-    doc_edited.paragraphs[13].text = (
-        "Discovery questioning framework must quantify customer baseline financial cost of inaction in annual operating terms."
-    )
-    doc_edited.paragraphs[14].text = (
-        "Executive buyer discovery alignment must precede technical architecture deep dives and sandbox staging."
-    )
+    write_variant(base_path, edited_path, pages=EDITED_COPY_PAGES, kind="edited")
+    write_variant(base_path, extended_path, pages=EXTENDED_COPY_EDITED_PAGES, kind="extended")
 
-    # P4: paragraphs 27-32
-    doc_edited.paragraphs[29].text = (
-        "Operational requirement 4.1: Opportunities exceeding $150k ARR without an identified Economic Buyer by discovery completion "
-        "require mandatory Deal Desk escalation and Regional VP review. Secondary control 4.2: Frame all value proposition narratives "
-        "around quantified operational ROI and cloud governance compliance rather than point feature comparisons."
-    )
-    doc_edited.paragraphs[30].text = (
-        "Discovery-to-technical validation conversion rate benchmark established at 45% for enterprise tier accounts."
-    )
-    doc_edited.paragraphs[31].text = (
-        "Pre-meeting alignment with customer champion mandatory at least 24 hours prior to executive discovery call."
-    )
-    doc_edited.save(edited_path)
-
-    # 2. Generate Extended Copy (8 pages: 6 + 2 extra pages, with page 2 modified)
-    doc_ext = Document(str(base_path))
-    doc_ext.paragraphs[12].text = doc_edited.paragraphs[12].text
-    doc_ext.paragraphs[13].text = doc_edited.paragraphs[13].text
-    doc_ext.paragraphs[14].text = doc_edited.paragraphs[14].text
+    # Reopen the extended copy so the appended pages follow its edited base pages
+    doc_ext = Document(str(extended_path))
 
     # Page 7: Appendix A
     doc_ext.add_page_break()
@@ -389,41 +335,11 @@ def generate_hr_docs():
     # Ensure exact copy is 100% identical
     shutil.copy2(base_path, copy_path)
 
-    # 1. Generate Edited Copy (same 11 pages, only pages 3 and 7 different)
-    doc_edited = Document(str(base_path))
-    # Page 3: paragraphs 21-24
-    doc_edited.paragraphs[21].text = (
-        "Operational requirement 3.1: Company equipment, digital communication accounts, generative AI tools, and enterprise "
-        "repositories may only be used for authorized business operations with mandatory multi-factor authentication (MFA) "
-        "and cryptographic device health validation. Secondary control 3.2: Violations undergo formal investigation by "
-        "Employee Relations and Corporate Compliance, resulting in disciplinary escalation tiers up to and including immediate termination."
-    )
-    doc_edited.paragraphs[22].text = (
-        "Annual mandatory recertification on professional ethics, harassment prevention, and data privacy required for all personnel."
-    )
-    doc_edited.paragraphs[23].text = (
-        "Confidential reporting hotlines and whistleblower protections guaranteed under Corporate Governance Directive 2026-HR."
-    )
+    write_variant(base_path, edited_path, pages=EDITED_COPY_PAGES, kind="edited")
+    write_variant(base_path, extended_path, pages=EXTENDED_COPY_EDITED_PAGES, kind="extended")
 
-    # Page 7: paragraphs 55-58
-    doc_edited.paragraphs[55].text = (
-        "Operational requirement 7.1: Confidential employee personal records, equity award documentation, and health information "
-        "must be encrypted at rest and accessible only through least-privilege RBAC role gates. Secondary control 7.2: "
-        "Quarterly access privilege audits and automated offboarding revocation must terminate all system credentials within 24 hours."
-    )
-    doc_edited.paragraphs[56].text = (
-        "Cross-border data transfers of personnel records must strictly adhere to GDPR, CCPA, and corporate binding rules."
-    )
-    doc_edited.paragraphs[57].text = (
-        "Unapproved use of consumer-grade cloud storage or AI services for company data constitutes a critical security incident."
-    )
-    doc_edited.save(edited_path)
-
-    # 2. Generate Extended Copy (13 pages: 11 + 2 extra pages, with page 3 modified)
-    doc_ext = Document(str(base_path))
-    doc_ext.paragraphs[21].text = doc_edited.paragraphs[21].text
-    doc_ext.paragraphs[22].text = doc_edited.paragraphs[22].text
-    doc_ext.paragraphs[23].text = doc_edited.paragraphs[23].text
+    # Reopen the extended copy so the appended pages follow its edited base pages
+    doc_ext = Document(str(extended_path))
 
     # Page 12: Addendum A
     doc_ext.add_page_break()
@@ -507,42 +423,11 @@ def generate_semiconductor_docs():
     shutil.copy2(source_corpus, base_path)
     shutil.copy2(source_corpus, copy_path)
 
-    # 1. Generate Edited Copy (same 5 pages, only pages 2 and 4 different)
-    doc_edited = Document(str(base_path))
-    # Page 2: paragraphs 12-16
-    doc_edited.paragraphs[12].text = (
-        "Full-table fact: The source profile contains 504 verified production wafer lots covering 2025-01-01 through "
-        "2025-12-01 across Fab 3 and Fab 7 advanced lithography nodes."
-    )
-    doc_edited.paragraphs[13].text = (
-        "Data quality fact: 100% telemetry completeness with zero missing or anomalous sensor readings across all 11 critical metrology channels."
-    )
-    doc_edited.paragraphs[14].text = (
-        "Full-table range: Particle defect density PPM spans from 32.40 to 392.10, with a calibrated volume-weighted average of 147.25 PPM."
-    )
-    doc_edited.paragraphs[15].text = (
-        "Representative-sample observation: Within this artifact's bounded sample, AI accelerator wafer lot Lot-2025-01-01 "
-        "exhibited localized cluster defects at die periphery, accounting for 215 defective die."
-    )
-    doc_edited.paragraphs[16].text = (
-        "Recommended follow-up: Initiate automated photolithography dose re-calibration on Line 4 scanner and tighten "
-        "chemical-mechanical planarization (CMP) slurry delivery tolerances."
-    )
+    write_variant(base_path, edited_path, pages=EDITED_COPY_PAGES, kind="edited")
+    write_variant(base_path, extended_path, pages=EXTENDED_COPY_EDITED_PAGES, kind="extended")
 
-    # Page 4: paragraph 23
-    doc_edited.paragraphs[23].text = (
-        "Diagram: Real-time Databricks Delta Lake telemetry is validated via automated quality gates, materialized into analytical "
-        "workbooks with SHA-256 cryptographic hashes, governed in SharePoint, and indexed into Azure AI Search for sub-second retrieval."
-    )
-    doc_edited.save(edited_path)
-
-    # 2. Generate Extended Copy (7 pages: 5 + 2 extra pages, with page 2 modified)
-    doc_ext = Document(str(base_path))
-    doc_ext.paragraphs[12].text = doc_edited.paragraphs[12].text
-    doc_ext.paragraphs[13].text = doc_edited.paragraphs[13].text
-    doc_ext.paragraphs[14].text = doc_edited.paragraphs[14].text
-    doc_ext.paragraphs[15].text = doc_edited.paragraphs[15].text
-    doc_ext.paragraphs[16].text = doc_edited.paragraphs[16].text
+    # Reopen the extended copy so the appended pages follow its edited base pages
+    doc_ext = Document(str(extended_path))
 
     # Page 6: Addendum 1
     doc_ext.add_page_break()
@@ -1021,7 +906,7 @@ def run_analysis_report():
                     "differences": []
                 },
                 {
-                    "type": "Near Duplicate (Differences in Few Pages)",
+                    "type": "Near Duplicate (Edits on 2 Pages)",
                     "filename": Path(site["edited_file"]).name,
                     "page_count": len(edited_pages),
                     "page_difference": 0,
@@ -1031,7 +916,7 @@ def run_analysis_report():
                     "differences": edited_diff_details
                 },
                 {
-                    "type": "Extended Duplicate (1-2 More Pages + Few Differences)",
+                    "type": "Extended Duplicate (+2 Pages, Edits on 3 Pages)",
                     "filename": Path(site["extended_file"]).name,
                     "page_count": len(ext_pages),
                     "page_difference": len(ext_pages) - base_page_count,

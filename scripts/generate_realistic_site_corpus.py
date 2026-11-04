@@ -21,7 +21,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import copy
 import io
 import json
 import math
@@ -56,6 +55,11 @@ try:
     from .site_corpus_data import PARTICIPANTS, SITE_DATA, SITE_LABELS
 except ImportError:
     from site_corpus_data import PARTICIPANTS, SITE_DATA, SITE_LABELS
+
+try:
+    from .duplicate_variations import EDITED_COPY_PAGES, write_variant
+except ImportError:
+    from duplicate_variations import EDITED_COPY_PAGES, write_variant
 
 EXTENSION_FOR_DOC_TYPE = {
     "policy": "docx",
@@ -462,34 +466,6 @@ def render_pptx(path: Path, doc: dict, site_label: str, department: str, generat
 RENDERERS = {"docx": render_docx, "pdf": render_pdf, "xlsx": render_xlsx, "pptx": render_pptx}
 
 
-def _make_near_duplicate_doc(doc: dict) -> dict:
-    edited = copy.deepcopy(doc)
-    swaps = [
-        ("standards", "guidelines"),
-        ("Defines", "Establishes"),
-        ("Describes", "Outlines"),
-        ("Walks", "Guides"),
-        ("Tracks", "Monitors"),
-        ("Compares", "Evaluates"),
-        ("Summarizes", "Reviews"),
-        ("Overview", "Summary"),
-        ("Twelve-slide", "Multi-slide"),
-        ("Multi-sheet", "Comprehensive"),
-        ("employees", "staff members"),
-        ("managers", "team leads"),
-    ]
-    summary = edited["summary"]
-    changed = 0
-    for old, new in swaps:
-        if old in summary:
-            summary = summary.replace(old, new, 1)
-            changed += 1
-    if changed == 0:
-        summary = summary + " Reviewed for current governance cycle."
-    edited["summary"] = summary
-    return edited
-
-
 # ---------------------------------------------------------------------------
 # Meeting recordings (video + transcript)
 # ---------------------------------------------------------------------------
@@ -703,8 +679,7 @@ def generate_site(site_id: str, output_root: Path, seconds: int, fps: int, skip_
                 counter += 1
                 near_filename = f"{base_slug} (edited copy).{extension}"
                 near_rel = f"{folder}/{near_filename}"
-                near_doc = _make_near_duplicate_doc(doc)
-                RENDERERS[extension](site_root / near_rel, near_doc, site_label, folder, generated_at)
+                write_variant(destination, site_root / near_rel, pages=EDITED_COPY_PAGES, kind="edited")
                 manifest.append(
                     {
                         "artifact_id": f"{site_id.upper()}-DOC-{counter:03d}",

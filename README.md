@@ -510,7 +510,12 @@ department would organise it rather than as numbered placeholder files:
   narrative. Exact (`(copy)`) and near (`(edited copy)`) duplicate pairs exist
   for `.docx`, `.pptx`, and `.xlsx`; a copy is seeded as a **Draft,
   non-authoritative** duplicate of its original, which is the approved,
-  authoritative document.
+  authoritative document. An `(edited copy)` differs from its original on exactly
+  two pages, with one wording edit per page at a random position on that page. A
+  DOCX `(extended copy)` differs on three existing pages and appends two new pages.
+  Edits never change a number, so a copy stays a near duplicate. The choices are
+  seeded from each file name, so regenerating a hub reproduces the same copies;
+  `scripts/duplicate_variations.py` makes them.
 - Each hub's **meeting library** holds recordings and transcripts at the library
   root: one `.mp4`, one `.vtt` and one `.txt` per meeting, named after the
   meeting (`q1-open-enrollment-planning-review.mp4`), never numbered.
@@ -609,6 +614,7 @@ for desktop, web, tablet, and mobile displays:
     |-- Test-FoundryAgent.ps1           # end-to-end agent test, one question per hub
     |-- site_corpus_data.py             # authored hub content (documents and meetings)
     |-- generate_realistic_site_corpus.py
+    |-- duplicate_variations.py         # randomized wording edits for duplicate copies
     |-- sync_site_corpora_to_data.py
     |-- Publish-SiteCorpusToSharePoint.ps1
     |-- Add-GovernanceColumnsToLibrary.ps1
