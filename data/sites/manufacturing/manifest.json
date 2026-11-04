@@ -518,5 +518,15 @@
     "source_system": "SharePoint Online",
     "profile_generated_at": "2026-10-30T15:38:43.864997+00:00",
     "relative_path": "Meeting Recordings and Transcripts/incoming-inspection-process-improvement-session.txt"
+  },
+  {
+    "artifact_id": "MFG-DOC-EXT-001",
+    "filename": "incoming-material-inspection-procedure (extended copy).docx",
+    "title": "Incoming Material Inspection Procedure (Extended Copy)",
+    "category": "Quality Assurance",
+    "source_table": "corp.manufacturing.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-11-04T04:34:48.268497+00:00",
+    "relative_path": "Quality Assurance/incoming-material-inspection-procedure (extended copy).docx"
   }
 ]

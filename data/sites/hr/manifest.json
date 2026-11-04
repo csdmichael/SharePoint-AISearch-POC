@@ -608,5 +608,15 @@
     "source_system": "SharePoint Online",
     "profile_generated_at": "2026-10-30T18:27:35.137597+00:00",
     "relative_path": "Meeting Recordings and Transcripts/401-k-plan-vendor-check-in.txt"
+  },
+  {
+    "artifact_id": "HR-DOC-EXT-001",
+    "filename": "employee-handbook-code-of-conduct (extended copy).docx",
+    "title": "Employee Handbook - Code of Conduct (Extended Copy)",
+    "category": "HR Policies",
+    "source_table": "corp.hr.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-11-04T04:34:48.256357+00:00",
+    "relative_path": "HR Policies/employee-handbook-code-of-conduct (extended copy).docx"
   }
 ]

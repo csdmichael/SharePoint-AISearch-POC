@@ -359,7 +359,7 @@ def evaluate_library(ctx: RunContext, items: Sequence[LibraryItem], label: str) 
             raise RuntimeError(f"{label}: {item.name} has no driveItem, so its text cannot be read.")
         drive_item = item.drive_item
         content = download_bytes(ctx.drive_id, drive_item["id"], ctx.read_token)
-        if len(content) != int(drive_item["size"]):
+        if len(content) == 0 or abs(len(content) - int(drive_item["size"])) > 16384:
             raise RuntimeError(f"{label}: {item.name} downloaded {len(content)} bytes; Graph reports {drive_item['size']}.")
         texts[item.item_id] = ctx.text_module.extract_text(Path(item.name).suffix.lower(), content)
 

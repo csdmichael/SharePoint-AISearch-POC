@@ -518,5 +518,15 @@
     "source_system": "SharePoint Online",
     "profile_generated_at": "2026-10-30T15:38:46.200127+00:00",
     "relative_path": "Meeting Recordings and Transcripts/churn-risk-review-leadership-sync.txt"
+  },
+  {
+    "artifact_id": "SALES-DOC-EXT-001",
+    "filename": "discovery-call-guide (extended copy).docx",
+    "title": "Discovery Call Guide (Extended Copy)",
+    "category": "Sales Playbooks",
+    "source_table": "corp.sales.knowledge_assets",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-11-04T04:34:48.281356+00:00",
+    "relative_path": "Sales Playbooks/discovery-call-guide (extended copy).docx"
   }
 ]

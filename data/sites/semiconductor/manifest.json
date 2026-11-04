@@ -1,0 +1,42 @@
+[
+  {
+    "artifact_id": "SEMI-DOC-001",
+    "filename": "defect-analysis-planning-workbook.docx",
+    "title": "Defect Analysis: Planning Workbook",
+    "category": "Quality",
+    "source_table": "caldova_dbx_westus2.arrow_semiconductor.defect_analysis",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-11-04T05:04:39.070824+00:00",
+    "relative_path": "Quality/defect-analysis-planning-workbook.docx"
+  },
+  {
+    "artifact_id": "SEMI-DOC-002",
+    "filename": "defect-analysis-planning-workbook (copy).docx",
+    "title": "Defect Analysis: Planning Workbook (Copy)",
+    "category": "Quality",
+    "source_table": "caldova_dbx_westus2.arrow_semiconductor.defect_analysis",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-11-04T05:04:39.070852+00:00",
+    "relative_path": "Quality/defect-analysis-planning-workbook (copy).docx"
+  },
+  {
+    "artifact_id": "SEMI-DOC-003",
+    "filename": "defect-analysis-planning-workbook (edited copy).docx",
+    "title": "Defect Analysis: Planning Workbook (Edited Copy)",
+    "category": "Quality",
+    "source_table": "caldova_dbx_westus2.arrow_semiconductor.defect_analysis",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-11-04T05:04:39.070854+00:00",
+    "relative_path": "Quality/defect-analysis-planning-workbook (edited copy).docx"
+  },
+  {
+    "artifact_id": "SEMI-DOC-004",
+    "filename": "defect-analysis-planning-workbook (extended copy).docx",
+    "title": "Defect Analysis: Planning Workbook (Extended Copy)",
+    "category": "Quality",
+    "source_table": "caldova_dbx_westus2.arrow_semiconductor.defect_analysis",
+    "source_system": "SharePoint Online",
+    "profile_generated_at": "2026-11-04T05:04:39.070855+00:00",
+    "relative_path": "Quality/defect-analysis-planning-workbook (extended copy).docx"
+  }
+]
