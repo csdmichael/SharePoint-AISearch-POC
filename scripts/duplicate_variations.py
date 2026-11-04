@@ -5,8 +5,8 @@ updated on another. This module makes such copies of .docx, .pptx and .xlsx file
 a PPTX slide or an XLSX sheet) receives one edit at a randomly chosen body-text position, so the copy differs from
 its source on exactly the chosen pages.
 
-Edits never add, remove or change a digit. An edited copy keeps the numeric fingerprint of its source and stays a
-near duplicate under the governance rules (cosine threshold plus identical numeric fingerprint).
+Edits never add, remove or change a digit. An edited copy keeps the numeric fingerprint of its source, so the
+governance rules can still classify it as a near duplicate; they also require a cosine similarity of at least 0.95.
 
 Choices are seeded from the source file name and the copy kind, so regenerating a corpus reproduces the same copies.
 """

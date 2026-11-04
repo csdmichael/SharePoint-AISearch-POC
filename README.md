@@ -513,7 +513,8 @@ department would organise it rather than as numbered placeholder files:
   authoritative document. An `(edited copy)` differs from its original on exactly
   two pages, with one wording edit per page at a random position on that page. A
   DOCX `(extended copy)` differs on three existing pages and appends two new pages.
-  Edits never change a number, so a copy stays a near duplicate. The choices are
+  Edits never change a number, so a copy keeps its source's numeric fingerprint and
+  can still be classified as a near duplicate (the cosine threshold also applies). The choices are
   seeded from each file name, so regenerating a hub reproduces the same copies;
   `scripts/duplicate_variations.py` makes them.
 - Each hub's **meeting library** holds recordings and transcripts at the library
